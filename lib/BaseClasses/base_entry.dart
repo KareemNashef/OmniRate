@@ -1,22 +1,16 @@
 // Flutter imports
 import 'package:flutter/material.dart';
 
-// Local imports
-
-// ===== Entry page ===== //
+// ========== Entry page ========== //
 
 class EntryBase extends StatefulWidget {
-  const EntryBase({Key? key}) : super(key: key);
+  const EntryBase({super.key});
 
   @override
   EntryBaseState createState() => EntryBaseState();
 }
 
 class EntryBaseState extends State<EntryBase> {
-  // ===== Class Variables ===== //
-
-  // ===== Class Methods ===== //
-
   // ===== Class Widgets ===== //
 
   // Entry main
@@ -40,27 +34,27 @@ class EntryBaseState extends State<EntryBase> {
         SizedBox(width: 10),
 
         // Title
-              Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Entry',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Theme.of(context).colorScheme.primary,
-                    ),
-                  ),
-                  Text(
-                    'Rating',
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Theme.of(context).colorScheme.secondary,
-                    ),
-                  ),
-                ],
+        Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Entry',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Theme.of(context).colorScheme.primary,
               ),
+            ),
+            Text(
+              'Rating',
+              style: TextStyle(
+                fontSize: 16,
+                color: Theme.of(context).colorScheme.secondary,
+              ),
+            ),
+          ],
+        ),
       ],
     );
   }
@@ -69,7 +63,7 @@ class EntryBaseState extends State<EntryBase> {
   Widget addToList() {
     return Container(
       width: double.infinity,
-        padding: const EdgeInsets.all(8.0),
+      padding: const EdgeInsets.all(8.0),
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(
           padding: EdgeInsets.symmetric(horizontal: 24, vertical: 16),
@@ -88,6 +82,6 @@ class EntryBaseState extends State<EntryBase> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(body: Column(children: [entryMain(), addToList()]));
+    return SizedBox.shrink();
   }
 }

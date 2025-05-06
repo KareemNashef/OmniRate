@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 // Local imports
 import 'package:omnirate/Settings/settings_main.dart';
 
-// ===== Main page base ===== //
+// ========== Main page base ========== //
 class MainPageBase extends StatefulWidget {
   const MainPageBase({super.key});
 
@@ -13,11 +13,6 @@ class MainPageBase extends StatefulWidget {
 }
 
 class MainPageBaseState extends State<MainPageBase> {
-  // ===== Class Variables ===== //
-
-  // Text controllers
-
-  // ===== Class Methods ===== //
 
   // ===== Class Widgets ===== //
 

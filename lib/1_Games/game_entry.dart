@@ -2,22 +2,21 @@
 import 'package:flutter/material.dart';
 
 // Local imports
-import 'package:omnirate/Shared/base_entry.dart';
+import 'package:omnirate/BaseClasses/base_entry.dart';
+
+// ========== Game entry page ========== //
 
 class GameEntry extends EntryBase {
-  GameEntry({Key? key}) : super(key: key);
+  const GameEntry({super.key});
 
   @override
   GameEntryState createState() => GameEntryState();
 }
 
 class GameEntryState extends EntryBaseState {
-  // ===== Class Variables ===== //
-
-  // ===== Class Methods ===== //
-
   // ===== Class Widgets ===== //
 
+  // Game info
   Widget gameInfo() {
     return Card(
       color: Theme.of(context).colorScheme.surfaceContainer,

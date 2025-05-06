@@ -2,26 +2,19 @@
 import 'package:flutter/material.dart';
 
 // Local imports
-import 'package:omnirate/Shared/base_main.dart';
+import 'package:omnirate/BaseClasses/base_main.dart';
 
+// ========== Movies main page ========== //
 
-// Class template
-class PlayMainPage extends MainPageBase {
-  const PlayMainPage({super.key});
+class MoviesMainPage extends MainPageBase {
+  const MoviesMainPage({super.key});
 
   @override
-  PlayMainPageState createState() => PlayMainPageState();
+  MoviesMainPageState createState() => MoviesMainPageState();
 }
 
-class PlayMainPageState extends MainPageBaseState {
-  // ===== Class Variables ===== //
-
-  // Text controllers
-
-  // ===== Class Methods ===== //
-
-  // ===== Class Widgets ===== //
-
+class MoviesMainPageState extends MainPageBaseState {
+  
   // ===== Build Method ===== //
 
   @override

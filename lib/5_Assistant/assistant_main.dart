@@ -4,23 +4,16 @@ import 'package:flutter/material.dart';
 // Local imports
 import 'package:omnirate/BaseClasses/base_main.dart';
 
+// ========== Assistant main page ========== //
 
-// Class template
-class WatchMainPage extends MainPageBase {
-  const WatchMainPage({super.key});
+class AssistantMainPage extends MainPageBase {
+  const AssistantMainPage({super.key});
 
   @override
-  WatchMainPageState createState() => WatchMainPageState();
+  AssistantMainPageState createState() => AssistantMainPageState();
 }
 
-class WatchMainPageState extends MainPageBaseState {
-  // ===== Class Variables ===== //
-
-  // Text controllers
-
-  // ===== Class Methods ===== //
-
-  // ===== Class Widgets ===== //
+class AssistantMainPageState extends MainPageBaseState {
 
   // ===== Build Method ===== //
 

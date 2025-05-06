@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 
 // Local imports
 import 'package:omnirate/Settings/settings_theme.dart';
-import 'package:omnirate/Play/game_entry.dart';
+import 'package:omnirate/1_Games/game_entry.dart';
 
 // Settings page main
 class SettingsPage extends StatefulWidget {

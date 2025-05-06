@@ -1,18 +1,12 @@
 // Flutter imports
 import 'package:flutter/material.dart';
 
-// Local imports
-import 'package:omnirate/Settings/settings_main.dart';
-
-// ===== List page base ===== //
+// ========== List page base ========== //
 class ListPageBase extends StatefulWidget {
-
+  // ===== Class Variables ===== //
   final String listType;
 
-  const ListPageBase({
-    Key? key, 
-    required this.listType,
-  }) : super(key: key);
+  const ListPageBase({super.key, required this.listType});
 
   @override
   State<ListPageBase> createState() => ListPageBaseState();
@@ -22,23 +16,28 @@ class ListPageBaseState extends State<ListPageBase>
     with SingleTickerProviderStateMixin {
   // ===== Class Variables ===== //
 
+  // Controllers
   late TabController _tabController;
 
   // ===== Class Methods ===== //
 
+  // Initialize controllers
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 4, vsync: this);
   }
 
+  // Dispose controllers
   @override
   void dispose() {
     _tabController.dispose();
     super.dispose();
   }
+
   // ===== Class Widgets ===== //
 
+  // Build list grid
   Widget listGrid() {
     return GridView.builder(
       // Grid Properties

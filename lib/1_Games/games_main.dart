@@ -5,22 +5,16 @@ import 'package:flutter/material.dart';
 import 'package:omnirate/BaseClasses/base_main.dart';
 
 
-// Class template
-class WatchMainPage extends MainPageBase {
-  const WatchMainPage({super.key});
+// ========== Games main page ========== //
+
+class GamesMainPage extends MainPageBase {
+  const GamesMainPage({super.key});
 
   @override
-  WatchMainPageState createState() => WatchMainPageState();
+  GamesMainPageState createState() => GamesMainPageState();
 }
 
-class WatchMainPageState extends MainPageBaseState {
-  // ===== Class Variables ===== //
-
-  // Text controllers
-
-  // ===== Class Methods ===== //
-
-  // ===== Class Widgets ===== //
+class GamesMainPageState extends MainPageBaseState {
 
   // ===== Build Method ===== //
 

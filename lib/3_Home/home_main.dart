@@ -2,11 +2,13 @@
 import 'package:flutter/material.dart';
 
 // Local imports
-import 'package:omnirate/Shared/base_main.dart';
-import 'package:omnirate/Shared/base_list.dart';
+import 'package:omnirate/BaseClasses/base_main.dart';
+import 'package:omnirate/BaseClasses/base_list.dart';
 import 'package:omnirate/Settings/settings_main.dart';
 
-// Class template
+
+// ========== Home main page ========== //
+
 class HomeMainPage extends MainPageBase {
   const HomeMainPage({super.key});
 
@@ -15,10 +17,6 @@ class HomeMainPage extends MainPageBase {
 }
 
 class HomeMainPageState extends MainPageBaseState {
-  // ===== Class Variables ===== //
-
-  // ===== Class Methods ===== //
-
   // ===== Class Widgets ===== //
 
   // Welcome Text
@@ -187,6 +185,7 @@ class HomeMainPageState extends MainPageBaseState {
             listsButtons(),
             SizedBox(height: 8),
             blankCarousel("Continue Playing"),
+            blankCarousel("Continue Watching"),
             blankCarousel("Continue Watching"),
           ],
         ),

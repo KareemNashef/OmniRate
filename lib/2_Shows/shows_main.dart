@@ -4,23 +4,16 @@ import 'package:flutter/material.dart';
 // Local imports
 import 'package:omnirate/BaseClasses/base_main.dart';
 
+// ========== Shows main page ========== //
 
-// Class template
-class WatchMainPage extends MainPageBase {
-  const WatchMainPage({super.key});
+class ShowsMainPage extends MainPageBase {
+  const ShowsMainPage({super.key});
 
   @override
-  WatchMainPageState createState() => WatchMainPageState();
+  ShowsMainPageState createState() => ShowsMainPageState();
 }
 
-class WatchMainPageState extends MainPageBaseState {
-  // ===== Class Variables ===== //
-
-  // Text controllers
-
-  // ===== Class Methods ===== //
-
-  // ===== Class Widgets ===== //
+class ShowsMainPageState extends MainPageBaseState {
 
   // ===== Build Method ===== //
 
