@@ -11,7 +11,6 @@ class ThemeProvider with ChangeNotifier {
 
   void setThemeMode(ThemeMode mode) {
     _themeMode = mode;
-    print(_themeMode);
     notifyListeners();
   }
 

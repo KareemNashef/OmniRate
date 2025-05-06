@@ -149,21 +149,25 @@ class ThemeSettingsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Row(
-        children: [
-          Text("Theme"),
-          Spacer(),
-          Icon(Icons.format_paint, size: 32, color: Theme.of(context).colorScheme.primary), 
-
-        ],
-      )),
+      appBar: AppBar(
+        title: Row(
+          children: [
+            Text("Theme"),
+            Spacer(),
+            Icon(
+              Icons.format_paint,
+              size: 32,
+              color: Theme.of(context).colorScheme.primary,
+            ),
+          ],
+        ),
+      ),
       body: SingleChildScrollView(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
             themeSelectionBar(context),
             SizedBox(height: 16),
-
 
             // Title
             Text(

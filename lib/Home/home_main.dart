@@ -2,18 +2,19 @@
 import 'package:flutter/material.dart';
 
 // Local imports
-import 'package:omnirate/Shared/utils.dart';
-import 'package:omnirate/Shared/settings_main.dart';
+import 'package:omnirate/Shared/base_main.dart';
+import 'package:omnirate/Shared/base_list.dart';
+import 'package:omnirate/Settings/settings_main.dart';
 
 // Class template
-class HomeMainPage extends StatefulWidget {
+class HomeMainPage extends MainPageBase {
   const HomeMainPage({super.key});
 
   @override
-  State<HomeMainPage> createState() => HomeMainPageState();
+  HomeMainPageState createState() => HomeMainPageState();
 }
 
-class HomeMainPageState extends State<HomeMainPage> {
+class HomeMainPageState extends MainPageBaseState {
   // ===== Class Variables ===== //
 
   // ===== Class Methods ===== //
@@ -57,7 +58,7 @@ class HomeMainPageState extends State<HomeMainPage> {
               ),
             ],
           ),
-      
+
           // Settings
           ElevatedButton(
             // Button style
@@ -65,12 +66,15 @@ class HomeMainPageState extends State<HomeMainPage> {
               shape: const CircleBorder(),
               padding: const EdgeInsets.all(12),
             ),
-      
+
             // Button action
             onPressed: () {
-              Navigator.push(context, MaterialPageRoute(builder: (context) => const SettingsPage()));
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const SettingsPage()),
+              );
             },
-      
+
             // Button icon
             child: Icon(
               Icons.settings,
@@ -88,7 +92,6 @@ class HomeMainPageState extends State<HomeMainPage> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-
         // Games List
         ElevatedButton(
           style: ElevatedButton.styleFrom(
@@ -102,7 +105,7 @@ class HomeMainPageState extends State<HomeMainPage> {
             Navigator.of(context).push(
               MaterialPageRoute<void>(
                 builder: (context) {
-                  return const ListPageBase();
+                  return const ListPageBase(listType: "Games");
                 },
               ),
             );
@@ -125,7 +128,7 @@ class HomeMainPageState extends State<HomeMainPage> {
             Navigator.of(context).push(
               MaterialPageRoute<void>(
                 builder: (context) {
-                  return const ListPageBase();
+                  return const ListPageBase(listType: "Shows");
                 },
               ),
             );
@@ -148,144 +151,12 @@ class HomeMainPageState extends State<HomeMainPage> {
             Navigator.of(context).push(
               MaterialPageRoute<void>(
                 builder: (context) {
-                  return const ListPageBase();
+                  return const ListPageBase(listType: "Movies");
                 },
               ),
             );
           },
           child: Text('Movies'),
-        ),
-      ],
-    );
-  }
-
-  // Continue Playing Carousel
-  Widget continuePlaying() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Title
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8),
-          child: Text(
-            "Continue Playing",
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: Theme.of(context).colorScheme.primary,
-            ),
-          ),
-        ),
-
-        SizedBox(height: 8),
-
-        // Carousel
-        SizedBox(
-          height: 200,
-          child: PageView.builder(
-            itemCount: 5,
-            padEnds: false,
-            controller: PageController(viewportFraction: 0.4),
-            itemBuilder: (context, index) {
-              return Column(
-                children: [
-                  // Thumbnail
-                  Container(
-                    margin: EdgeInsets.symmetric(horizontal: 8),
-                    width: 90,
-                    height: 160,
-                    decoration: BoxDecoration(
-                      color:
-                          Colors.primaries[DateTime.now()
-                                  .millisecondsSinceEpoch %
-                              Colors.primaries.length],
-                      borderRadius: BorderRadius.circular(
-                        12,
-                      ), // Circular border with radius 12
-                    ),
-                  ),
-
-                  // Padding
-                  SizedBox(height: 8),
-
-                  // Title
-                  Text(
-                    "Entry $index",
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Theme.of(context).colorScheme.secondary,
-                    ),
-                  ),
-                ],
-              );
-            },
-          ),
-        ),
-      ],
-    );
-  }
-
-  // Continue Watching Carousel
-  Widget continueWatching() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Title
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8),
-          child: Text(
-            "Continue Watching",
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: Theme.of(context).colorScheme.primary,
-            ),
-          ),
-        ),
-
-        SizedBox(height: 8),
-
-        // Carousel
-        SizedBox(
-          height: 200,
-          child: PageView.builder(
-            itemCount: 5,
-            padEnds: false,
-            controller: PageController(viewportFraction: 0.4),
-            itemBuilder: (context, index) {
-              return Column(
-                children: [
-                  // Thumbnail
-                  Container(
-                    margin: EdgeInsets.symmetric(horizontal: 8),
-                    width: 90,
-                    height: 160,
-                    decoration: BoxDecoration(
-                      color:
-                          Colors.primaries[DateTime.now()
-                                  .millisecondsSinceEpoch %
-                              Colors.primaries.length],
-                      borderRadius: BorderRadius.circular(
-                        12,
-                      ), // Circular border with radius 12
-                    ),
-                  ),
-
-                  // Padding
-                  SizedBox(height: 8),
-
-                  // Title
-                  Text(
-                    "Entry $index",
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Theme.of(context).colorScheme.secondary,
-                    ),
-                  ),
-                ],
-              );
-            },
-          ),
         ),
       ],
     );
@@ -315,11 +186,12 @@ class HomeMainPageState extends State<HomeMainPage> {
             ),
             listsButtons(),
             SizedBox(height: 8),
-            continuePlaying(),
-            continueWatching(),
+            blankCarousel("Continue Playing"),
+            blankCarousel("Continue Watching"),
           ],
         ),
       ),
     );
   }
+
 }

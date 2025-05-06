@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 
 // Local imports
-import 'package:omnirate/Shared/utils.dart';
+import 'package:omnirate/Shared/base_main.dart';
 
 
 // Class template

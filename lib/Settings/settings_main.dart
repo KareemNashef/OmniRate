@@ -2,7 +2,8 @@
 import 'package:flutter/material.dart';
 
 // Local imports
-import 'package:omnirate/Shared/settings_theme.dart';
+import 'package:omnirate/Settings/settings_theme.dart';
+import 'package:omnirate/Play/game_entry.dart';
 
 // Settings page main
 class SettingsPage extends StatefulWidget {
@@ -86,7 +87,11 @@ class _SettingsPageState extends State<SettingsPage> {
 
           // Arrow icon on the right
           Spacer(),
-          Icon(Icons.arrow_forward_ios, size: 24, color: Theme.of(context).colorScheme.primary),
+          Icon(
+            Icons.arrow_forward_ios,
+            size: 24,
+            color: Theme.of(context).colorScheme.primary,
+          ),
         ],
       ),
     );
@@ -135,9 +140,15 @@ class _SettingsPageState extends State<SettingsPage> {
             ThemeSettingsPage(),
           ),
 
-          // List entry - 
+          // List entry - Debug
+          listTileEntry(
+            Icons.info,
+            "Debug",
+            "stuff",
+            GameEntry(),
+          ),
 
-
+          // List entry -
         ],
       ),
     );
