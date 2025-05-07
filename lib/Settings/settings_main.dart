@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 
 // Local imports
 import 'package:omnirate/Settings/settings_theme.dart';
-import 'package:omnirate/1_Games/game_entry.dart';
+
+import 'package:omnirate/BaseClasses/base_discover.dart';
+import 'package:omnirate/Games/game_entry.dart';
 
 // Settings page main
 class SettingsPage extends StatefulWidget {
@@ -140,7 +142,7 @@ class _SettingsPageState extends State<SettingsPage> {
             ThemeSettingsPage(),
           ),
 
-          // List entry - Debug
+          // List entry - Debug 1
           listTileEntry(
             Icons.info,
             "Debug",
@@ -148,7 +150,13 @@ class _SettingsPageState extends State<SettingsPage> {
             GameEntry(),
           ),
 
-          // List entry -
+          // List entry - Debug 2
+          listTileEntry(
+            Icons.info,
+            "Debug 2",
+            "stuff",
+            DiscoverPageBase(inType: "Games"),
+          ),
         ],
       ),
     );

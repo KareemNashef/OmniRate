@@ -53,7 +53,7 @@ class MoviesMainPageState extends MainPageBaseState {
             SizedBox(height: 20),
             searchBar(),
             mainCarousel(selectedPaths3, selectedMovies3),
-            discoverButtons("Discover New Movies"),
+            discoverButtons("Discover New Movies", "Movies"),
             blankCarousel("Recent Releases", selectedPaths1, selectedMovies1),
             blankCarousel("Trending", selectedPaths2, selectedMovies2),
             blankCarousel("Top Rated", selectedPaths3, selectedMovies3),

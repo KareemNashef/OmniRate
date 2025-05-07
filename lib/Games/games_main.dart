@@ -53,7 +53,7 @@ class GamesMainPageState extends MainPageBaseState {
             SizedBox(height: 20),
             searchBar(),
             mainCarousel(selectedPaths3, selectedGames3),
-            discoverButtons("Discover New Games"),
+            discoverButtons("Discover New Games", "Games"),
             blankCarousel("Recent Releases", selectedPaths1, selectedGames1),
             blankCarousel("Trending", selectedPaths2, selectedGames2),
             blankCarousel("Top Rated", selectedPaths3, selectedGames3),

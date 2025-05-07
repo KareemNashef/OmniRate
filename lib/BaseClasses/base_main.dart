@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 // Local imports
 import 'package:omnirate/Settings/settings_main.dart';
+import 'package:omnirate/BaseClasses/base_discover.dart';
 
 // ========== Main page base ========== //
 class MainPageBase extends StatefulWidget {
@@ -143,7 +144,7 @@ class MainPageBaseState extends State<MainPageBase> {
   }
 
   // Genres button
-  Widget discoverButtons(String inTitle) {
+  Widget discoverButtons(String inTitle, String inType) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8),
       child: SizedBox(
@@ -157,7 +158,17 @@ class MainPageBaseState extends State<MainPageBase> {
               borderRadius: BorderRadius.circular(16),
             ),
           ),
-          onPressed: () {},
+          onPressed: () {
+              // Open the discover page
+              Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (context) {
+                    return DiscoverPageBase(inType: inType);
+                  },
+                ),
+              );
+
+          },
           icon: Icon(Icons.travel_explore),
           label: Text(
             inTitle,

@@ -2,11 +2,11 @@
 import 'package:flutter/material.dart';
 
 // Local imports
-import 'package:omnirate/1_Games/games_main.dart';
-import 'package:omnirate/2_Shows/shows_main.dart';
-import 'package:omnirate/3_Home/home_main.dart';
-import 'package:omnirate/4_Movies/movies_main.dart';
-import 'package:omnirate/5_Assistant/assistant_main.dart';
+import 'package:omnirate/Games/games_main.dart';
+import 'package:omnirate/Shows/shows_main.dart';
+import 'package:omnirate/Home/home_main.dart';
+import 'package:omnirate/Movies/movies_main.dart';
+import 'package:omnirate/Assistant/assistant_main.dart';
 import 'package:omnirate/Main/animated_bar.dart';
 
 // ========== Main page ========== //

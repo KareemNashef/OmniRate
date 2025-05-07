@@ -56,7 +56,7 @@ class ShowsMainPageState extends MainPageBaseState {
             SizedBox(height: 20),
             searchBar(),
             mainCarousel(selectedPaths3, selectedShows3),
-            discoverButtons("Discover New Shows"),
+            discoverButtons("Discover New Shows", "Shows"),
             blankCarousel("Recent Releases", selectedPaths1, selectedShows1),
             blankCarousel("Trending", selectedPaths2, selectedShows2),
             blankCarousel("Top Rated", selectedPaths3, selectedShows3),
