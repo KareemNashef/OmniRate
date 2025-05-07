@@ -1,11 +1,12 @@
 // Flutter imports
 import 'package:flutter/material.dart';
+import 'dart:math';
 
 // Local imports
 import 'package:omnirate/BaseClasses/base_main.dart';
 import 'package:omnirate/BaseClasses/base_list.dart';
 import 'package:omnirate/Settings/settings_main.dart';
-
+import 'package:omnirate/Shared/utils.dart';
 
 // ========== Home main page ========== //
 
@@ -164,6 +165,27 @@ class HomeMainPageState extends MainPageBaseState {
 
   @override
   Widget build(BuildContext context) {
+    // ===== UI SPRINT ===== //
+
+    final random = Random();
+    final indices = <int>{};
+
+    // Pick 4 unique random indices
+    while (indices.length < 3) {
+      indices.add(random.nextInt(gamesList.length));
+    }
+
+    final selectedGames = indices.map((i) => gamesList[i]).toList();
+    final selectedGamesPaths = indices.map((i) => gamesPaths[i]).toList();
+
+    final selectedShows = indices.map((i) => showsList[i]).toList();
+    final selectedShowsPaths = indices.map((i) => showsPaths[i]).toList();
+
+    final selectedMovies = indices.map((i) => moviesList[i]).toList();
+    final selectedMoviesPaths = indices.map((i) => moviesPaths[i]).toList();
+
+    // ===== UI SPRINT ===== //
+
     return SingleChildScrollView(
       child: Padding(
         padding: const EdgeInsets.all(8.0),
@@ -184,13 +206,27 @@ class HomeMainPageState extends MainPageBaseState {
             ),
             listsButtons(),
             SizedBox(height: 8),
-            blankCarousel("Continue Playing"),
-            blankCarousel("Continue Watching"),
-            blankCarousel("Continue Watching"),
+            blankCarousel(
+              "Continue Playing",
+              selectedGamesPaths,
+              selectedGames,
+            ),
+            blankCarousel(
+              "Continue Watching Shows",
+              selectedShowsPaths,
+              selectedShows,
+            ),
+            blankCarousel(
+              "Continue Watching Movies",
+              selectedMoviesPaths,
+              selectedMovies,
+            ),
+
+            // Padding
+            SizedBox(height: 64),
           ],
         ),
       ),
     );
   }
-
 }

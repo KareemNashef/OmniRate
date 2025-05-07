@@ -13,7 +13,6 @@ class MainPageBase extends StatefulWidget {
 }
 
 class MainPageBaseState extends State<MainPageBase> {
-
   // ===== Class Widgets ===== //
 
   // Search bar
@@ -62,57 +61,81 @@ class MainPageBaseState extends State<MainPageBase> {
   }
 
   // Main Carousel
-  Widget mainCarousel() {
+  Widget mainCarousel(List<String> inPaths, List<String> inTitles) {
     return SizedBox(
-      height: 240,
+      height: 290,
       child: PageView.builder(
-        itemCount: 5,
+        itemCount: inTitles.length,
         controller: PageController(viewportFraction: 1),
         itemBuilder: (context, index) {
-          return Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-
-              // Thumbnail
-              Container(
-                width: 135,
-                height: 240,
-                decoration: BoxDecoration(
-                  color:
-                      Colors.primaries[DateTime.now().millisecondsSinceEpoch %
-                          Colors.primaries.length],
-                  borderRadius: BorderRadius.circular(
-                    12,
+          return Card(
+            color: Theme.of(context).colorScheme.surfaceContainer,
+            elevation: 4,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                // Thumbnail
+                Container(
+                  width: 135,
+                  height: 240,
+                  decoration: BoxDecoration(
+                    image: DecorationImage(
+                      image: AssetImage(inPaths[index]),
+                      fit: BoxFit.cover,
+                    ),
+                    borderRadius: BorderRadius.circular(12),
                   ),
                 ),
-              ),
 
-              // Padding
-              SizedBox(width: 10),
+                // Padding
+                SizedBox(width: 10),
 
-              // Title and description
-              Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Entry $index',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Theme.of(context).colorScheme.primary,
-                    ),
+                // Title and rating
+                SizedBox(
+                  width: 180,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      // Title
+                      Text(
+                        inTitles[index],
+                        maxLines: 3,
+                        textAlign: TextAlign.center,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
+                      ),
+
+                      // Padding
+                      SizedBox(height: 8),
+
+                      // Rating
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.star, size: 16, color: Colors.amber),
+                          SizedBox(width: 4),
+                          Text(
+                            '8.5',
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Theme.of(context).colorScheme.secondary,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
-                  Text(
-                    'Entry description',
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Theme.of(context).colorScheme.secondary,
-                    ),
-                  ),
-                ],
-              ),
-            ],
+                ),
+              ],
+            ),
           );
         },
       ),
@@ -120,25 +143,37 @@ class MainPageBaseState extends State<MainPageBase> {
   }
 
   // Genres button
-  Widget discoverButtons() {
-    return SizedBox(
-      width: double.infinity,
-      child: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-          padding: EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-          minimumSize: Size(120, 50),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+  Widget discoverButtons(String inTitle) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8),
+      child: SizedBox(
+        width: 200,
+        child: ElevatedButton.icon(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+            foregroundColor: Theme.of(context).colorScheme.onPrimaryContainer,
+            padding: EdgeInsets.symmetric(vertical: 14),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+          ),
+          onPressed: () {},
+          icon: Icon(Icons.travel_explore),
+          label: Text(
+            inTitle,
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
           ),
         ),
-        onPressed: () {},
-        child: Text('Genres'),
       ),
     );
   }
 
   // Blank Carousel
-  Widget blankCarousel(String inTitle) {
+  Widget blankCarousel(
+    String inTitle,
+    List<String> inPaths,
+    List<String> inTitles,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -160,23 +195,28 @@ class MainPageBaseState extends State<MainPageBase> {
 
         // Carousel
         SizedBox(
-          height: 200,
+          height: 230,
           child: PageView.builder(
-            itemCount: 5,
+            itemCount: inPaths.length,
             padEnds: false,
             controller: PageController(viewportFraction: 0.3),
             itemBuilder: (context, index) {
               return Column(
+                mainAxisAlignment:
+                    MainAxisAlignment.start, // Align the items at the top
+                crossAxisAlignment:
+                    CrossAxisAlignment
+                        .center, // Center the children horizontally
                 children: [
                   // Thumbnail
                   Container(
                     width: 90,
                     height: 160,
                     decoration: BoxDecoration(
-                      color:
-                          Colors.primaries[DateTime.now()
-                                  .millisecondsSinceEpoch %
-                              Colors.primaries.length],
+                      image: DecorationImage(
+                        image: AssetImage(inPaths[index]),
+                        fit: BoxFit.cover,
+                      ),
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
@@ -184,9 +224,13 @@ class MainPageBaseState extends State<MainPageBase> {
                   // Padding
                   SizedBox(height: 8),
 
-                  // Title
+                  // Title - It is now horizontally centered
                   Text(
-                    "Entry $index",
+                    inTitles[index],
+                    maxLines: 3,
+                    textAlign:
+                        TextAlign
+                            .center, // Centers the text within the text widget
                     style: TextStyle(
                       fontSize: 14,
                       color: Theme.of(context).colorScheme.secondary,

@@ -11,6 +11,8 @@ dependencies:
     sdk: flutter
   animations: ^2.0.7
   provider: ^6.0.5
+  sqflite: ^2.0.0+4
+  path_provider: ^2.0.8
 
 dev_dependencies:
   flutter_test:
@@ -21,3 +23,6 @@ flutter:
   uses-material-design: true
   assets:
     - assets/settings/
+    - assets/Debug/Games/
+    - assets/Debug/Movies/
+    - assets/Debug/Shows/

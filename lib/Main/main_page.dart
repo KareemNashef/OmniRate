@@ -7,7 +7,7 @@ import 'package:omnirate/2_Shows/shows_main.dart';
 import 'package:omnirate/3_Home/home_main.dart';
 import 'package:omnirate/4_Movies/movies_main.dart';
 import 'package:omnirate/5_Assistant/assistant_main.dart';
-import 'package:omnirate/Main/navigation_bar.dart';
+import 'package:omnirate/Main/animated_bar.dart';
 
 // ========== Main page ========== //
 
@@ -72,9 +72,16 @@ class MainPageState extends State<MainPage> {
 
   // Custom navigation bar implementation
   Widget navigationBar() {
-    return AnimatedNavigationBar(
-      selectedIndex: _currentIndex,
-      onDestinationSelected: (int index) {
+    return AnimatedBottomBar(
+      items: const [
+        AnimatedBottomBarItem(icon: Icons.gamepad, title: 'Games'),
+        AnimatedBottomBarItem(icon: Icons.tv, title: 'Shows'),
+        AnimatedBottomBarItem(icon: Icons.home, title: 'Home'),
+        AnimatedBottomBarItem(icon: Icons.movie, title: 'Movies'),
+        AnimatedBottomBarItem(icon: Icons.assistant, title: 'Assistant'),
+      ],
+      initialIndex: _currentIndex,
+      onTabSelected: (index) {
         setState(() {
           _currentIndex = index;
         });
