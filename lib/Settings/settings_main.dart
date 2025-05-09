@@ -1,11 +1,13 @@
 // Flutter imports
 import 'package:flutter/material.dart';
+import 'package:omnirate/Movies/movie_entry.dart';
 
 // Local imports
 import 'package:omnirate/Settings/settings_theme.dart';
 
 import 'package:omnirate/BaseClasses/base_discover.dart';
 import 'package:omnirate/Games/game_entry.dart';
+import 'package:omnirate/Shows/show_entry.dart';
 
 // Settings page main
 class SettingsPage extends StatefulWidget {
@@ -155,7 +157,15 @@ class _SettingsPageState extends State<SettingsPage> {
             Icons.info,
             "Debug 2",
             "stuff",
-            DiscoverPageBase(inType: "Games"),
+            MovieEntry(),
+          ),
+
+          // List entry - Debug 3
+          listTileEntry(
+            Icons.info,
+            "Debug 3",
+            "stuff",
+            ShowEntry(),
           ),
         ],
       ),

@@ -112,7 +112,6 @@ class EntryBaseState extends State<EntryBase> {
     );
   }
 
-
   // ===== Build Method ===== //
 
   @override
