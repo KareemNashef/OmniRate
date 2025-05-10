@@ -1,37 +1,33 @@
-class Game {
+class Movie {
   // Main data
   final String name;
   final String thumbnailUrl;
   final String rating;
 
   // Additional info
-  final String releaseDate;
-  final String developer;
+  final String releaseStatus;
   final List<String> genres;
   final String overview;
 
   // Extra data
-  final String timeHaste;
-  final String timeNormal;
-  final String timeComplete;
+  final String budget;
+  final String revenue;
 
   // User's data
   String status;
   String userRating;
 
-  Game({
+  Movie({
     required this.name,
     required this.thumbnailUrl,
     this.rating = 'N/A',
 
-    this.releaseDate = 'N/A',
-    this.developer = 'N/A',
+    this.releaseStatus = 'N/A',
     this.genres = const [],
     this.overview = 'N/A',
 
-    this.timeHaste = 'N/A',
-    this.timeNormal = 'N/A',
-    this.timeComplete = 'N/A',
+    this.budget = 'N/A',
+    this.revenue = 'N/A',
 
     this.status = 'N/A',
     this.userRating = 'N/A',
@@ -42,32 +38,28 @@ class Game {
     'thumbnailUrl': thumbnailUrl,
     'rating': rating,
 
-    'releaseDate': releaseDate,
-    'developer': developer,
+    'releaseDate': releaseStatus,
     'genres': genres.join(','),
     'overview': overview,
 
-    'timeHaste': timeHaste,
-    'timeNormal': timeNormal,
-    'timeComplete': timeComplete,
+    'budget': budget,
+    'revenue': revenue,
 
     'status': status,
     'userRating': userRating,
   };
 
-  factory Game.fromMap(Map<String, dynamic> map) => Game(
+  factory Movie.fromMap(Map<String, dynamic> map) => Movie(
     name: map['name'],
     thumbnailUrl: map['thumbnailUrl'],
     rating: map['rating'],
 
-    releaseDate: map['releaseDate'],
-    developer: map['developer'],
+    releaseStatus: map['releaseDate'],
     genres: (map['genres'] as String).split(','),
     overview: map['overview'],
 
-    timeHaste: map['timeHaste'],
-    timeNormal: map['timeNormal'],
-    timeComplete: map['timeComplete'],
+    budget: map['budget'],
+    revenue: map['revenue'],
 
     status: map['status'],
     userRating: map['userRating'],

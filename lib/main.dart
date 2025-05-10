@@ -1,12 +1,21 @@
 // Flutter imports
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter/services.dart';
 
 // Local imports
 import 'Main/main_page.dart';
 import 'package:omnirate/Shared/providers.dart';
 
 void main() {
+
+  SystemChrome.setSystemUIOverlayStyle(
+  SystemUiOverlayStyle(
+    systemNavigationBarColor: Colors.black,
+    systemNavigationBarIconBrightness: Brightness.light,
+  ),
+);
+
   runApp(
     MultiProvider(
       // Providers

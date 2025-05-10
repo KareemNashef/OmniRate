@@ -22,7 +22,7 @@ class GameEntryState extends EntryBaseState {
     String inReleaseDate,
     String inDeveloper,
     String inGenres,
-    String inStory,
+    String inOverview,
   ) {
     return Card(
       color: Theme.of(context).colorScheme.surfaceContainer,
@@ -100,8 +100,8 @@ class GameEntryState extends EntryBaseState {
               color: Theme.of(context).colorScheme.primary,
             ),
 
-            // Story with Read More toggle
-            ExpandableText(label: 'Story: ', content: inStory),
+            // Overview with Read More toggle
+            ExpandableText(label: 'Overview: ', content: inOverview),
           ],
         ),
       ),
@@ -259,7 +259,7 @@ class GameEntryState extends EntryBaseState {
                 "May 19, 2015",
                 "CD PROJEKT RED",
                 "Action, RPG",
-                "The Witcher 3: Wild Hunt concludes the story of the witcher Geralt of Rivia, the series' protagonist, whose story to date has been covered in the previous installments. Geralt's new mission comes in dark times as the mysterious and otherworldly army known as the Wild Hunt invades the Northern Kingdoms, leaving only blood soaked earth and fiery ruin in its wake; and it seems the Witcher is the key to stopping their cataclysmic rampage.",
+                "The Witcher 3: Wild Hunt concludes the overview of the witcher Geralt of Rivia, the series' protagonist, whose overview to date has been covered in the previous installments. Geralt's new mission comes in dark times as the mysterious and otherworldly army known as the Wild Hunt invades the Northern Kingdoms, leaving only blood soaked earth and fiery ruin in its wake; and it seems the Witcher is the key to stopping their cataclysmic rampage.",
               ),
 
               // Padding

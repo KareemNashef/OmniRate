@@ -17,16 +17,6 @@ class ShowEntry extends EntryBase {
 class ShowEntryState extends EntryBaseState {
   // ===== Class Widgets ===== //
 
-  // first air date
-  // last_air_date
-  // genres
-  // number_of_episodes
-  // number_of_seasons
-  // overview
-  // status
-  //
-  // seasons
-
   // Show info
   Widget showInfo(
     String inReleaseStatus,
