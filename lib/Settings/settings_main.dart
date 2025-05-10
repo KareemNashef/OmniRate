@@ -8,6 +8,7 @@ import 'package:omnirate/Settings/settings_theme.dart';
 import 'package:omnirate/BaseClasses/base_discover.dart';
 import 'package:omnirate/Games/game_entry.dart';
 import 'package:omnirate/Shows/show_entry.dart';
+import 'package:omnirate/Main/login_page.dart';
 
 // Settings page main
 class SettingsPage extends StatefulWidget {
@@ -166,6 +167,14 @@ class _SettingsPageState extends State<SettingsPage> {
             "Debug 3",
             "stuff",
             ShowEntry(),
+          ),
+
+                    // List entry - Debug 4
+          listTileEntry(
+            Icons.info,
+            "Debug 4",
+            "stuff",
+            LoginPage(),
           ),
         ],
       ),

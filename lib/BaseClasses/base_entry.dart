@@ -29,14 +29,14 @@ class EntryBaseState extends State<EntryBase> {
               width: 135,
               height: 240,
               decoration: BoxDecoration(
-                    image: DecorationImage(
-                      image: AssetImage(inPath),
-                      fit: BoxFit.cover,
-                    ),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
+                image: DecorationImage(
+                  image: AssetImage(inPath),
+                  fit: BoxFit.cover,
+                ),
+                borderRadius: BorderRadius.circular(12),
+              ),
             ),
-      
+
             // Padding
             SizedBox(width: 10),
             // Title and rating
@@ -58,10 +58,10 @@ class EntryBaseState extends State<EntryBase> {
                       color: Theme.of(context).colorScheme.primary,
                     ),
                   ),
-      
+
                   // Padding
                   SizedBox(height: 8),
-      
+
                   // Rating
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -89,7 +89,7 @@ class EntryBaseState extends State<EntryBase> {
   // Add to list button
   Widget addToList() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 4),
       child: SizedBox(
         width: double.infinity,
         child: ElevatedButton.icon(
