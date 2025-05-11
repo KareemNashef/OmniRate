@@ -110,17 +110,12 @@ class LoginPage extends StatelessWidget {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-
         // Logo
-        SvgPicture.asset(
-          'assets/settings/logo.svg',
-          height: 200,
-          color: Theme.of(context).colorScheme.primary,
-        ),
+        Image.asset('assets/settings/logo.png', height: 200),
 
         // Padding
         const SizedBox(height: 32),
-        
+
         // Title
         Text(
           "Let's get started!",
@@ -137,28 +132,29 @@ class LoginPage extends StatelessWidget {
 
   // ===== Build Method ===== //
 
-@override
-Widget build(BuildContext context) {
-  return Scaffold(
-    body: SingleChildScrollView(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          mainAxisSize: MainAxisSize.min, // Ensures that the Column takes only as much space as needed
-          children: [
-            const SizedBox(height: 64),
-            welcomeSplash(context),
-            const SizedBox(height: 64),
-            emailField(),
-            const SizedBox(height: 16),
-            passwordField(),
-            const SizedBox(height: 16),
-            signInUpButtons(),
-          ],
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            mainAxisSize:
+                MainAxisSize
+                    .min, // Ensures that the Column takes only as much space as needed
+            children: [
+              const SizedBox(height: 64),
+              welcomeSplash(context),
+              const SizedBox(height: 64),
+              emailField(),
+              const SizedBox(height: 16),
+              passwordField(),
+              const SizedBox(height: 16),
+              signInUpButtons(),
+            ],
+          ),
         ),
       ),
-    ),
-  );
-}
-
+    );
+  }
 }

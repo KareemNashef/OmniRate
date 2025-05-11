@@ -1,0 +1,20 @@
+Why did the Flutter dev break up with the widget? It was too stateless.
+I tried to write a romance app in Flutter… But my relationships kept rebuilding.
+Why don’t Flutter devs use elevators? Because they prefer ListView.builder to go up and down.
+How many Flutter devs does it take to change a lightbulb? None. They just hot reload.
+My Flutter app crashed. Turns out it was too full of OverflowBoxes.
+Flutter dating app idea: Swipe right to Navigator.push, swipe left to pop().
+Flutter: where “keys” don’t unlock doors, but they fix your UI bugs.
+I named my child Scaffold, because it holds everything together.
+Tried writing poetry in Flutter, but it all got clipped in a SizedBox.
+Flutter devs don’t go on vacations. They just use Future.delayed.
+Why did the widget go to therapy? It had too much inherited trauma.
+I wrote a Flutter app about pizza. It always ends in a `Navigator.pop()`.
+Why don’t Flutter devs do stand-up comedy? Because they prefer `Column`.
+Tried to fix my layout... Ended up in a Stack overflow.
+What's a Flutter dev’s favorite drink? A hot reload.
+Why did the Dart function apply for a job? It wanted more `context`.
+When life gives you errors, just `try`, `catch`, and `finally` move on.
+I asked my widget if it was okay. It said, “I’m stateless inside.”
+Flutter devs don't get lost. They use `Navigator.pushNamed`.
+I tried adding a button to my app. But it kept getting `GestureDetector` issues.

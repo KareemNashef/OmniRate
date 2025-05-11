@@ -1,6 +1,7 @@
 // Flutter imports
 import 'package:flutter/material.dart';
 import 'package:omnirate/Movies/movie_entry.dart';
+import 'package:flutter/services.dart';
 
 // Local imports
 import 'package:omnirate/Settings/settings_theme.dart';
@@ -29,9 +30,53 @@ class _SettingsPageState extends State<SettingsPage> {
   Widget bigTitle(String title) {
     return Padding(
       padding: const EdgeInsets.all(8.0),
-      child: Text(
-        title,
-        style: const TextStyle(fontSize: 40, fontWeight: FontWeight.bold),
+      child: Row(
+        children: [
+          Text(
+            title,
+            style: const TextStyle(fontSize: 40, fontWeight: FontWeight.bold),
+          ),
+
+          Spacer(),
+
+          // Easter egg
+          StatefulBuilder(
+            builder: (context, setState) {
+              final controller = AnimationController(
+                vsync: Scaffold.of(context),
+                duration: Duration(milliseconds: 600),
+              );
+              final animation = Tween(begin: 0.0, end: 1.0).animate(
+                CurvedAnimation(parent: controller, curve: Curves.easeInOut),
+              );
+
+              return GestureDetector(
+                onTap: () async {
+                  controller.forward(from: 0);
+                  final lines = await rootBundle.loadString(
+                    'assets/settings/egg.txt',
+                  );
+                  final jokes = lines.split('\n')
+                    ..removeWhere((l) => l.trim().isEmpty);
+                  final joke = (jokes..shuffle()).first;
+
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(joke),
+                      behavior: SnackBarBehavior.floating,
+                      duration: Duration(seconds: 4),
+                    ),
+                  );
+                },
+                child: RotationTransition(
+                  turns: animation,
+                  child: Image.asset('assets/settings/egg.png', height: 80),
+                ),
+              );
+            },
+          ),
+          SizedBox(width: 16),
+        ],
       ),
     );
   }
@@ -146,36 +191,16 @@ class _SettingsPageState extends State<SettingsPage> {
           ),
 
           // List entry - Debug 1
-          listTileEntry(
-            Icons.info,
-            "Debug",
-            "stuff",
-            GameEntry(),
-          ),
+          listTileEntry(Icons.info, "Debug", "stuff", GameEntry()),
 
           // List entry - Debug 2
-          listTileEntry(
-            Icons.info,
-            "Debug 2",
-            "stuff",
-            MovieEntry(),
-          ),
+          listTileEntry(Icons.info, "Debug 2", "stuff", MovieEntry()),
 
           // List entry - Debug 3
-          listTileEntry(
-            Icons.info,
-            "Debug 3",
-            "stuff",
-            ShowEntry(),
-          ),
+          listTileEntry(Icons.info, "Debug 3", "stuff", ShowEntry()),
 
-                    // List entry - Debug 4
-          listTileEntry(
-            Icons.info,
-            "Debug 4",
-            "stuff",
-            LoginPage(),
-          ),
+          // List entry - Debug 4
+          listTileEntry(Icons.info, "Debug 4", "stuff", LoginPage()),
         ],
       ),
     );
