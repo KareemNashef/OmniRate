@@ -8,9 +8,9 @@ The app’s core features include a unified content management system that track
 
 # Additional features that enhance the user experience
 
-1.Favorites List: Save your favorite stores, games, movies, and shows for quick access later.
-2.Content Ratings: View ratings for each episode, game, or movie to make informed viewing choices.
-3.Customizable Themes: Personalize the app’s color scheme to match your style.
-4.Cross-Content Recommendations: Receive suggestions based on your activity across all content types – games, movies, and shows.
-5.Episode Tracking: Keep track of watched episodes and easily navigate to the next one.
+1.Favorites List: Save your favorite stores, games, movies, and shows for quick access later.⋅⋅
+2.Content Ratings: View ratings for each episode, game, or movie to make informed viewing choices.⋅⋅
+3.Customizable Themes: Personalize the app’s color scheme to match your style.⋅⋅
+4.Cross-Content Recommendations: Receive suggestions based on your activity across all content types – games, movies, and shows.⋅⋅
+5.Episode Tracking: Keep track of watched episodes and easily navigate to the next one.⋅⋅
 
