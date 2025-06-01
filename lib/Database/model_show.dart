@@ -1,4 +1,8 @@
+// ========== Show entry model ==========
+
 class Show {
+  // ===== Class variables =====
+
   // Main data
   final String name;
   final String thumbnailUrl;
@@ -13,7 +17,7 @@ class Show {
   final List<String> genres;
   final String overview;
 
-  // Extra data
+  // Media specific data
   final List<String> seasonsNames;
   final List<String> seasonsThumbnailsUrls;
   final List<String> seasonsAirDates;
@@ -24,6 +28,9 @@ class Show {
   String status;
   String userRating;
 
+  // ===== Class methods =====
+
+  // Constructor
   Show({
     required this.name,
     required this.thumbnailUrl,
@@ -47,6 +54,7 @@ class Show {
     this.userRating = 'N/A',
   });
 
+  // Convert to map
   Map<String, dynamic> toMap() => {
     'name': name,
     'thumbnailUrl': thumbnailUrl,
@@ -70,6 +78,7 @@ class Show {
     'userRating': userRating,
   };
 
+  // Convert from map
   factory Show.fromMap(Map<String, dynamic> map) => Show(
     name: map['name'],
     thumbnailUrl: map['thumbnailUrl'],
