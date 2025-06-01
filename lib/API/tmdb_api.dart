@@ -1,12 +1,14 @@
 // ==================== TMDB API - Shows And Movies ==================== //
 // Documentation: https://developer.themoviedb.org/docs/getting-started
 // Call testing: https://www.postman.com/
+// API Key: b0660f1133aa5458af9be7244a2988ee
 
 // Flutter imports
 // ...
 
 // Local imports
-// ...
+import 'package:omnirate/Database/model_movie.dart';
+import 'package:omnirate/Database/model_show.dart';
 
 // ========== Helper Consts ==========
 
@@ -18,74 +20,52 @@
 
 // Func: getShowEntry
 // Input: Show name
-// Output for now: This list
-// String name;
-// String thumbnailUrl;
-// String rating;
-// String releaseStatus;
-// String firstAir;
-// String lastAir;
-// String episodesNum;
-// String seasonsNum;
-// List<String> genres;
-// String overview;
-// List<String> seasonsNames;
-// List<String> seasonsThumbnailsUrls;
-// List<String> seasonsAirDates;
-// List<String> seasonsEpisodeCounts;
-// List<String> seasonsOvervies;
-List<String> getShowEntry(String inName) {}
+// Output: Show object
+Show getShowEntry(String inName) {}
 
 // Func: getFilteredShows
 // Input: List<String> genres, String category, String minRating
-// Output: List<String> showsList - Sized to 20;
-List<String> getFilteredShows(List<String> inGenres, String inCategory, String inMinRating) {}
+// Output: List<Show> showsList - Sized to 20;
+List<Show> getFilteredShows(List<String> inGenres, String inCategory, String inMinRating) {}
 
 // Func: getRecentShows
 // Input: None
-// Output: List<String> showsList - Sized to 10;
-List<String> getRecentShows() {}
+// Output: List<Show> showsList - Sized to 10;
+List<Show> getRecentShows() {}
 
 // Func: getTrendingShows
 // Input: None
-// Output: List<String> showsList - Sized to 10;
-List<String> getTrendingShows() {}
+// Output: List<Show> showsList - Sized to 10;
+List<Show> getTrendingShows() {}
 
 // Func: getTopShows
 // Input: None
-// Output: List<String> showsList - Sized to 10;
-List<String> getTopShows() {}
+// Output: List<Show> showsList - Sized to 10;
+List<Show> getTopShows() {}
 
 // ========== Main Functions - Movies ==========
 
 // Func: getMovieEntry
 // Input: Movie name
-// Output for now: This list
-// String name;
-// String thumbnailUrl;
-// String rating;
-// List<String> genres;
-// String overview;
-// String budget;
-// String revenue;
-List<String> getMovieEntry(String inName) {}
+// Output: Movie object
+Movie getMovieEntry(String inName) {}
 
 // Func: getFilteredMovies
 // Input: List<String> genres, String category, String minRating
-// Output: List<String> moviesList - Sized to 20;
-List<String> getFilteredMovies(List<String> inGenres, String inCategory, String inMinRating) {}
+// Output: List<Movie> moviesList - Sized to 20;
+List<Movie> getFilteredMovies(List<String> inGenres, String inCategory, String inMinRating) {}
 
 // Func: getRecentMovies
 // Input: None
-// Output: List<String> moviesList - Sized to 10;
-List<String> getRecentMovies() {}
+// Output: List<Movie> moviesList - Sized to 10;
+List<Movie> getRecentMovies() {}
 
 // Func: getTrendingMovies
 // Input: None
-// Output: List<String> moviesList - Sized to 10;
-List<String> getTrendingMovies() {}
+// Output: List<Movie> moviesList - Sized to 10;
+List<Movie> getTrendingMovies() {}
 
 // Func: getTopMovies
 // Input: None
-// Output: List<String> moviesList - Sized to 10;
-List<String> getTopMovies() {}
+// Output: List<Movie> moviesList - Sized to 10;
+List<Movie> getTopMovies() {}
