@@ -103,27 +103,34 @@ class ThemeSettingsPage extends StatelessWidget {
   // App color selection bar
   Widget colorSelectionBar(context) {
     Widget colorButton(BuildContext context, Color color) {
-      return OutlinedButton(
-        style: OutlinedButton.styleFrom(
-          fixedSize: const Size(350, 50),
-          shape: RoundedRectangleBorder(
+      final bool isSelected = context.watch<ThemeProvider>().mainColor == color;
+      return GestureDetector(
+        onTap: () {
+          context.read<ThemeProvider>().setMainColor(color);
+        },
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          width: 280,
+          height: 50,
+          decoration: BoxDecoration(
+            color: color,
             borderRadius: BorderRadius.circular(12),
-          ),
-          backgroundColor: color,
-          side: BorderSide(
-            color:
-                context.watch<ThemeProvider>().mainColor == color
-                    ? Theme.of(context).colorScheme.primary
-                    : Colors.transparent,
-            width: 6,
+            border: Border.all(
+              color: isSelected ? Colors.white : Colors.transparent,
+              width: 4,
+            ),
+            boxShadow:
+                isSelected
+                    ? [
+                      BoxShadow(
+                        color: color.withAlpha(128),
+                        blurRadius: 12,
+                        spreadRadius: 2,
+                      ),
+                    ]
+                    : null,
           ),
         ),
-        onPressed: () {
-          context.read<ThemeProvider>().setMainColor(
-            color,
-          ); // Use context.read to update the color
-        },
-        child: const SizedBox.shrink(),
       );
     }
 

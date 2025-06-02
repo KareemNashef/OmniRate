@@ -51,9 +51,8 @@ class GamesMainPageState extends MainPageBaseState {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             SizedBox(height: 20),
-            searchBar(),
+            searchBar("Games"),
             mainCarousel(selectedPaths3, selectedGames3),
-            discoverButtons("Discover New Games", "Games"),
             blankCarousel("Recent Releases", selectedPaths1, selectedGames1),
             blankCarousel("Trending", selectedPaths2, selectedGames2),
             blankCarousel("Top Rated", selectedPaths3, selectedGames3),

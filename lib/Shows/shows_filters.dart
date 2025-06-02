@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:omnirate/BaseClasses/base_filter.dart';
 
 class ShowsFilterPage extends BaseFilterPage {
-  const ShowsFilterPage({Key? key}) : super(key: key);
+  const ShowsFilterPage({super.key});
 
   @override
   State<ShowsFilterPage> createState() => _ShowsFilterPageState();

@@ -16,20 +16,20 @@ class AnimatedBottomBar extends StatefulWidget {
   // ===== Constructor ===== //
 
   const AnimatedBottomBar({
-    Key? key,
+    super.key,
     required this.items,
     this.initialIndex = 0,
     required this.onTabSelected,
     this.animationDuration = const Duration(milliseconds: 300),
     this.animationCurve = Curves.easeOutBack,
     this.iconSize = 24.0,
-  }) : super(key: key);
+  });
 
   @override
-  _AnimatedBottomBarState createState() => _AnimatedBottomBarState();
+  AnimatedBottomBarState createState() => AnimatedBottomBarState();
 }
 
-class _AnimatedBottomBarState extends State<AnimatedBottomBar> {
+class AnimatedBottomBarState extends State<AnimatedBottomBar> {
   // ===== Class Variables ===== //
 
   late int _selectedIndex;
@@ -124,7 +124,7 @@ class _AnimatedBottomBarState extends State<AnimatedBottomBar> {
           borderRadius: BorderRadius.circular(12.0),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.1),
+              color: Color.fromRGBO(0, 0, 0, 0.1),
               blurRadius: 8.0,
               offset: const Offset(0, 2),
             ),

@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 // ========== Base Filter Page ========== //
 
 abstract class BaseFilterPage extends StatefulWidget {
-  const BaseFilterPage({Key? key}) : super(key: key);
+  const BaseFilterPage({super.key});
 }
 
 abstract class BaseFilterPageState<T extends BaseFilterPage> extends State<T> {
@@ -136,10 +136,10 @@ abstract class BaseFilterPageState<T extends BaseFilterPage> extends State<T> {
             _selectedGenreIds = {};
           });
         },
-        child: const Text('Reset Filters'),
         style: ElevatedButton.styleFrom(
           minimumSize: const Size(double.infinity, 50),
         ),
+        child: const Text('Reset Filters'),
       ),
     );
   }
@@ -160,12 +160,12 @@ abstract class BaseFilterPageState<T extends BaseFilterPage> extends State<T> {
           // Close the bottom sheet and return the filters
           Navigator.pop(context, filters);
         },
-        child: const Text('Apply Filters'),
         style: ElevatedButton.styleFrom(
           minimumSize: const Size(double.infinity, 50),
           backgroundColor: Theme.of(context).colorScheme.primary,
           foregroundColor: Theme.of(context).colorScheme.onPrimary,
         ),
+        child: const Text('Apply Filters'),
       ),
     );
   }

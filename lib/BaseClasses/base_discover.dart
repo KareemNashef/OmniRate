@@ -13,7 +13,7 @@ class DiscoverPageBase extends StatefulWidget {
   final String inType;
 
   // Constructor with required parameters
-  const DiscoverPageBase({Key? key, required this.inType}) : super(key: key);
+  const DiscoverPageBase({super.key, required this.inType});
 
   @override
   State<DiscoverPageBase> createState() => DiscoverPageBaseState();
@@ -140,7 +140,7 @@ class DiscoverPageBaseState extends State<DiscoverPageBase> {
         title: Column(
           children: [
             Text(
-              "Discover",
+              "Advanced Search",
               textAlign: TextAlign.center,
               style: TextStyle(
                 color: Theme.of(context).colorScheme.primary,

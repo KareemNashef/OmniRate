@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:omnirate/BaseClasses/base_filter.dart';
 
 class GamesFilterPage extends BaseFilterPage {
-  const GamesFilterPage({Key? key}) : super(key: key);
+  const GamesFilterPage({super.key});
 
   @override
   State<GamesFilterPage> createState() => _GamesFilterPageState();

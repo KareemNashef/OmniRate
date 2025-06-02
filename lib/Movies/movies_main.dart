@@ -51,9 +51,8 @@ class MoviesMainPageState extends MainPageBaseState {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             SizedBox(height: 20),
-            searchBar(),
+            searchBar("Movies"),
             mainCarousel(selectedPaths3, selectedMovies3),
-            discoverButtons("Discover New Movies", "Movies"),
             blankCarousel("Recent Releases", selectedPaths1, selectedMovies1),
             blankCarousel("Trending", selectedPaths2, selectedMovies2),
             blankCarousel("Top Rated", selectedPaths3, selectedMovies3),

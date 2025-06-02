@@ -54,9 +54,8 @@ class ShowsMainPageState extends MainPageBaseState {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             SizedBox(height: 20),
-            searchBar(),
+            searchBar("Shows"),
             mainCarousel(selectedPaths3, selectedShows3),
-            discoverButtons("Discover New Shows", "Shows"),
             blankCarousel("Recent Releases", selectedPaths1, selectedShows1),
             blankCarousel("Trending", selectedPaths2, selectedShows2),
             blankCarousel("Top Rated", selectedPaths3, selectedShows3),

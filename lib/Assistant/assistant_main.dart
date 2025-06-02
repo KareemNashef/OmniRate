@@ -51,7 +51,7 @@ class AssistantMainPageState extends MainPageBaseState {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             SizedBox(height: 20),
-            searchBar(),
+            // searchBar(),
             //mainCarousel(),
             // discoverButtons(),
             blankCarousel("Recommended Games",  selectedGamesPaths, selectedGames),

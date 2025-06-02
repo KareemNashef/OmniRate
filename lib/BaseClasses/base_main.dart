@@ -2,7 +2,6 @@
 import 'package:flutter/material.dart';
 
 // Local imports
-import 'package:omnirate/Settings/settings_main.dart';
 import 'package:omnirate/BaseClasses/base_discover.dart';
 
 // ========== Main page base ========== //
@@ -16,47 +15,96 @@ class MainPageBase extends StatefulWidget {
 class MainPageBaseState extends State<MainPageBase> {
   // ===== Class Widgets ===== //
 
-  // Search bar
-  Widget searchBar() {
+  // Search Bar
+  Widget searchBar(String inType) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 4.0),
-      child: Row(
-        children: [
-          // Search bar
-          Expanded(
-            child: TextField(
-              decoration: InputDecoration(
-                hintText: 'Search...',
-                prefixIcon: Icon(Icons.search),
-                border: OutlineInputBorder(
+      child: TextField(
+        decoration: InputDecoration(
+          // Search Text
+          hintText: 'Search...',
+
+          // Search Icon
+          prefixIcon: Icon(Icons.search),
+
+          // Filter
+          suffixIcon: Padding(
+            padding: const EdgeInsets.only(right: 4),
+            child: InkWell(
+              onTap: () {
+                // Open the discover page
+                Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (context) {
+                      return DiscoverPageBase(inType: inType);
+                    },
+                  ),
+                );
+              },
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.surfaceContainer,
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: Colors.grey),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text('Filter'),
+                    SizedBox(width: 8),
+                    Container(
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.primaryContainer,
+                        shape: BoxShape.circle,
+                      ),
+                      padding: EdgeInsets.all(6),
+                      child: Icon(Icons.tune, size: 16),
+                    ),
+                  ],
                 ),
               ),
             ),
           ),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(color: Colors.grey),
+          ),
+        ),
+      ),
+    );
+  }
 
-          SizedBox(width: 8),
-
-          // Settings button
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              shape: const CircleBorder(),
-              padding: const EdgeInsets.all(12),
-            ),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const SettingsPage()),
-              );
-            },
-            child: Icon(
-              Icons.settings,
-              color: Theme.of(context).colorScheme.primary,
-              size: 32,
+  // Advanced Search
+  Widget advancedSearch(String inTitle, String inType) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8),
+      child: SizedBox(
+        width: double.infinity,
+        child: ElevatedButton.icon(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+            foregroundColor: Theme.of(context).colorScheme.onPrimaryContainer,
+            padding: EdgeInsets.symmetric(vertical: 8),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
             ),
           ),
-        ],
+          onPressed: () {
+            // Open the discover page
+            Navigator.of(context).push(
+              MaterialPageRoute<void>(
+                builder: (context) {
+                  return DiscoverPageBase(inType: inType);
+                },
+              ),
+            );
+          },
+          icon: Icon(Icons.tune),
+          label: Text(
+            "Advanced Search",
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+          ),
+        ),
       ),
     );
   }
@@ -139,42 +187,6 @@ class MainPageBaseState extends State<MainPageBase> {
             ),
           );
         },
-      ),
-    );
-  }
-
-  // Genres button
-  Widget discoverButtons(String inTitle, String inType) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8),
-      child: SizedBox(
-        width: 200,
-        child: ElevatedButton.icon(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Theme.of(context).colorScheme.primaryContainer,
-            foregroundColor: Theme.of(context).colorScheme.onPrimaryContainer,
-            padding: EdgeInsets.symmetric(vertical: 14),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-          ),
-          onPressed: () {
-              // Open the discover page
-              Navigator.of(context).push(
-                MaterialPageRoute<void>(
-                  builder: (context) {
-                    return DiscoverPageBase(inType: inType);
-                  },
-                ),
-              );
-
-          },
-          icon: Icon(Icons.travel_explore),
-          label: Text(
-            inTitle,
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-          ),
-        ),
       ),
     );
   }

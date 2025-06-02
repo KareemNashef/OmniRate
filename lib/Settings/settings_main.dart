@@ -6,10 +6,9 @@ import 'package:flutter/services.dart';
 // Local imports
 import 'package:omnirate/Settings/settings_theme.dart';
 
-import 'package:omnirate/BaseClasses/base_discover.dart';
 import 'package:omnirate/Games/game_entry.dart';
 import 'package:omnirate/Shows/show_entry.dart';
-import 'package:omnirate/Main/login_page.dart';
+import 'package:omnirate/Main/welcome_page.dart';
 
 // Settings page main
 class SettingsPage extends StatefulWidget {
@@ -56,6 +55,8 @@ class _SettingsPageState extends State<SettingsPage> {
                   final lines = await rootBundle.loadString(
                     'assets/settings/egg.txt',
                   );
+                  if (!context.mounted) return;
+
                   final jokes = lines.split('\n')
                     ..removeWhere((l) => l.trim().isEmpty);
                   final joke = (jokes..shuffle()).first;
@@ -199,8 +200,8 @@ class _SettingsPageState extends State<SettingsPage> {
           // List entry - Debug 3
           listTileEntry(Icons.info, "Debug 3", "stuff", ShowEntry()),
 
-          // List entry - Debug 4
-          listTileEntry(Icons.info, "Debug 4", "stuff", LoginPage()),
+          // List entry - Debug 7
+          listTileEntry(Icons.info, "Debug 7", "stuff", WelcomePage()),
         ],
       ),
     );

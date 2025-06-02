@@ -6,7 +6,6 @@ import 'package:omnirate/Games/games_main.dart';
 import 'package:omnirate/Shows/shows_main.dart';
 import 'package:omnirate/Home/home_main.dart';
 import 'package:omnirate/Movies/movies_main.dart';
-import 'package:omnirate/Assistant/assistant_main.dart';
 import 'package:omnirate/Main/animated_bar.dart';
 
 // ========== Main page ========== //
@@ -21,14 +20,14 @@ class MainPageState extends State<MainPage> {
   // ===== Class Variables ===== //
 
   // Index of the currently selected page
-  int _currentIndex = 2;
+  int _currentIndex = 3;
 
   // Instances of the main pages
   final GamesMainPage _playMainPage = GamesMainPage();
   final ShowsMainPage _showsMainPage = ShowsMainPage();
   final HomeMainPage _homeMainPage = HomeMainPage();
   final MoviesMainPage _moviesMainPage = MoviesMainPage();
-  final AssistantMainPage _assistantMainPage = AssistantMainPage();
+  // final AssistantMainPage _assistantMainPage = AssistantMainPage();
 
   // ===== Class Widgets ===== //
 
@@ -60,11 +59,11 @@ class MainPageState extends State<MainPage> {
       case 1:
         return _showsMainPage;
       case 2:
-        return _homeMainPage;
-      case 3:
         return _moviesMainPage;
-      case 4:
-        return _assistantMainPage;
+      case 3:
+        return _homeMainPage;
+      // case 4:
+      //   return _assistantMainPage;
       default:
         return _homeMainPage;
     }
@@ -76,9 +75,9 @@ class MainPageState extends State<MainPage> {
       items: const [
         AnimatedBottomBarItem(icon: Icons.gamepad, title: 'Games'),
         AnimatedBottomBarItem(icon: Icons.tv, title: 'Shows'),
-        AnimatedBottomBarItem(icon: Icons.home, title: 'Home'),
         AnimatedBottomBarItem(icon: Icons.movie, title: 'Movies'),
-        AnimatedBottomBarItem(icon: Icons.assistant, title: 'Assistant'),
+        AnimatedBottomBarItem(icon: Icons.home, title: 'Home'),
+        // AnimatedBottomBarItem(icon: Icons.assistant, title: 'Assistant'),
       ],
       initialIndex: _currentIndex,
       onTabSelected: (index) {
