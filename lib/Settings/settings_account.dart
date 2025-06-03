@@ -10,7 +10,7 @@ import 'package:omnirate/Shared/user_data.dart';
 // ========== Account settings page ========== //
 
 class AccountSettingsPage extends StatefulWidget {
-  const AccountSettingsPage({Key? key}) : super(key: key);
+  const AccountSettingsPage({super.key});
 
   @override
   State<AccountSettingsPage> createState() => _AccountSettingsPageState();
@@ -24,7 +24,6 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
 
   // Controllers
   final _usernameController = TextEditingController();
-  final _currentPasswordController = TextEditingController();
   final _newPasswordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
 
@@ -34,7 +33,6 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
   bool _isLoadingSignOut = false;
 
   // Obscure
-  bool _obscureCurrentPassword = true;
   bool _obscureNewPassword = true;
   bool _obscureConfirmPassword = true;
 
@@ -63,25 +61,28 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
   }
 
   Future<void> _changeUsername() async {
+    // Check if user data is loaded
     if (_userData == null) {
       _showSnackBar('User data not loaded', isError: true);
       return;
     }
 
+    // Check if the input is valid
     if (_usernameController.text.trim().isEmpty) {
       _showSnackBar('Username cannot be empty', isError: true);
       return;
     }
-
     if (_usernameController.text.trim() == _userData!.userName) {
       _showSnackBar('Username is the same as current', isError: true);
       return;
     }
 
+    // Show loading indicator
     setState(() {
       _isLoadingUsername = true;
     });
 
+    // Attempt to change username
     try {
       await _firebaseService.changeUsername(_usernameController.text.trim());
       _showSnackBar('Username updated successfully');
@@ -94,6 +95,7 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
     } catch (e) {
       _showSnackBar('Failed to update username: $e', isError: true);
     } finally {
+      // Hide loading indicator
       setState(() {
         _isLoadingUsername = false;
       });
@@ -101,35 +103,36 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
   }
 
   Future<void> _changePassword() async {
+    // Check if the input is valid
     if (_newPasswordController.text.isEmpty ||
         _confirmPasswordController.text.isEmpty) {
       _showSnackBar('Please fill in all password fields', isError: true);
       return;
     }
-
     if (_newPasswordController.text != _confirmPasswordController.text) {
       _showSnackBar('New passwords do not match', isError: true);
       return;
     }
-
     if (_newPasswordController.text.length < 6) {
       _showSnackBar('Password must be at least 6 characters', isError: true);
       return;
     }
 
+    // Show loading indicator
     setState(() {
       _isLoadingPassword = true;
     });
 
+    // Attempt to change password
     try {
       await _firebaseService.changePassword(_newPasswordController.text);
       _showSnackBar('Password updated successfully');
-      _currentPasswordController.clear();
       _newPasswordController.clear();
       _confirmPasswordController.clear();
     } catch (e) {
       _showSnackBar('Failed to update password: $e', isError: true);
     } finally {
+      // Hide loading indicator
       setState(() {
         _isLoadingPassword = false;
       });
@@ -137,25 +140,30 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
   }
 
   Future<void> _signOut() async {
+    // Confirm sign out
     final shouldSignOut = await _showSignOutDialog();
     if (!shouldSignOut) return;
 
+    // Show loading indicator
     setState(() {
       _isLoadingSignOut = true;
     });
 
+    // Attempt to sign out
     try {
       await _firebaseService.signOut();
       if (mounted) {
+        // Navigate to welcome page
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (_) => WelcomePage()),
-        ); // Adjust route as needed
+        );
       }
     } catch (e) {
       _showSnackBar('Failed to sign out: $e', isError: true);
     } finally {
       if (mounted) {
+        // Hide loading indicator
         setState(() {
           _isLoadingSignOut = false;
         });
@@ -201,11 +209,26 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
   @override
   void dispose() {
     _usernameController.dispose();
-    _currentPasswordController.dispose();
     _newPasswordController.dispose();
     _confirmPasswordController.dispose();
     super.dispose();
   }
+
+  // ===== Class Widgets ===== //
+
+  Widget _buildSectionHeader(String title) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8.0),
+      child: Text(
+        title,
+        style: Theme.of(
+          context,
+        ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+      ),
+    );
+  }
+
+  // ===== Build Method ===== //
 
   @override
   Widget build(BuildContext context) {
@@ -393,18 +416,6 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
             const SizedBox(height: 32),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildSectionHeader(String title) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8.0),
-      child: Text(
-        title,
-        style: Theme.of(
-          context,
-        ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
       ),
     );
   }

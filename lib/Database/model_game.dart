@@ -1,27 +1,55 @@
+// Flutter imports
+import 'package:hive/hive.dart';
+
+// Code generation for Hive
+part 'model_game.g.dart';
+
 // ========== Game entry model ==========
 
+@HiveType(typeId: 4)
 class Game {
   // ===== Class variables =====
 
   // Main data
+  @HiveField(0)
   final String name;
+  
+  @HiveField(1)
   final String thumbnailUrl;
-  final String rating;
+  
+  @HiveField(2)
+  final double rating;
 
   // Additional info
+  @HiveField(3)
   final String releaseDate;
+  
+  @HiveField(4)
   final String developer;
+  
+  @HiveField(5)
   final List<String> genres;
+  
+  @HiveField(6)
   final String overview;
 
   // Media specific data
+  @HiveField(7)
   final String timeHaste;
+  
+  @HiveField(8)
   final String timeNormal;
+  
+  @HiveField(9)
   final String timeComplete;
 
   // User's data
+  @HiveField(10)
   String status;
-  String userRating;
+  
+  @HiveField(11)
+  double userRating;
+
 
   // ===== Class methods =====
 
@@ -29,7 +57,7 @@ class Game {
   Game({
     required this.name,
     required this.thumbnailUrl,
-    this.rating = 'N/A',
+    this.rating = 0.0,
 
     this.releaseDate = 'N/A',
     this.developer = 'N/A',
@@ -41,7 +69,7 @@ class Game {
     this.timeComplete = 'N/A',
 
     this.status = 'N/A',
-    this.userRating = 'N/A',
+    this.userRating = 0.0,
   });
 
   // Convert to map

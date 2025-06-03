@@ -1,5 +1,5 @@
 // Flutter imports
-import 'package:sqflite/sqflite.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
 // Local imports
 import 'package:omnirate/Database/model_game.dart';
@@ -12,71 +12,155 @@ import 'package:omnirate/Database/model_show.dart';
 // input: game name
 // output: game object
 // Searches the database for the game. if it is not found, look it up using the API
-Game getGame(String inName) {}
+Future<Game?> getGame(String inName) async {
+  final game = await HiveHelper.getGameByName(inName);
+  if (game != null) {
+    return game;
+  }
+
+  // TODO: Add API call here to fetch game data
+  // Game? apiGame = await fetchGameFromAPI(inName);
+  // if (apiGame != null) {
+  //   await HiveHelper.insertGame(apiGame);
+  //   return apiGame;
+  // }
+
+  return null;
+}
 
 // getShow
 // input: show name
 // output: show object
 // Searches the database for the show. if it is not found, look it up using the API
-Show getShow(String inName) {}
+Future<Show?> getShow(String inName) async {
+  final show = await HiveHelper.getShowByName(inName);
+  if (show != null) {
+    return show;
+  }
+
+  // TODO: Add API call here to fetch show data
+  // Show? apiShow = await fetchShowFromAPI(inName);
+  // if (apiShow != null) {
+  //   await HiveHelper.insertShow(apiShow);
+  //   return apiShow;
+  // }
+
+  return null;
+}
 
 // getMovie
 // input: movie name
 // output: movie object
 // Searches the database for the movie. if it is not found, look it up using the API
-Movie getMovie(String inName) {}
+Future<Movie?> getMovie(String inName) async {
+  final movie = await HiveHelper.getMovieByName(inName);
+  if (movie != null) {
+    return movie;
+  }
 
-// ========== Database helper ========== //
+  // TODO: Add API call here to fetch movie data
+  // Movie? apiMovie = await fetchMovieFromAPI(inName);
+  // if (apiMovie != null) {
+  //   await HiveHelper.insertMovie(apiMovie);
+  //   return apiMovie;
+  // }
 
-class DatabaseHelper {
+  return null;
+}
 
+// ========== Hive Database Helper ========== //
+
+class HiveHelper {
   // ===== Class variables =====
 
-  // Database instance
-  static Database? _database;
+  // Box names
+  static const String boxGames = 'games_box';
+  static const String boxMovies = 'movies_box';
+  static const String boxShows = 'shows_box';
 
-  // Table names
-  static const String tableGames = 'games';
-  static const String tableMovies = 'movies';
-  static const String tableShows = 'shows';
+  // ===== Initialization =====
 
-  // ===== Class methods =====
+  /// Initialize Hive database
+  static Future<void> init() async {
+    await Hive.initFlutter();
 
-  // Singleton pattern to get the database instance
-  // ...
+    // Register adapters
+    Hive.registerAdapter(GameAdapter());
+    Hive.registerAdapter(MovieAdapter());
+    Hive.registerAdapter(ShowAdapter());
+
+    // Open boxes
+    await Hive.openBox<Game>(boxGames);
+    await Hive.openBox<Movie>(boxMovies);
+    await Hive.openBox<Show>(boxShows);
+  }
+
+  // Close all boxes
+  static Future<void> close() async {
+    await Hive.close();
+  }
+
+  // Clear all data (for testing or reset purposes)
+  static Future<void> clearAllData() async {
+    await Hive.box<Game>(boxGames).clear();
+    await Hive.box<Movie>(boxMovies).clear();
+    await Hive.box<Show>(boxShows).clear();
+  }
 
   // ========== Game Methods ========== //
 
   // Insert a game into the database
-  static Future<void> insertGame(Game inGame) {}
+  static Future<void> insertGame(Game game) async {
+    final box = Hive.box<Game>(boxGames);
+    await box.put(game.name.toLowerCase(), game);
+  }
 
   // Get a game by its name
-  static Future<Game?> getGameByName(String inName) {}
+  static Future<Game?> getGameByName(String name) async {
+    final box = Hive.box<Game>(boxGames);
+    return box.get(name.toLowerCase());
+  }
 
   // Update a game
-  static Future<int> updateGame(Game inGame) {}
+  static Future<void> updateGame(Game game) async {
+    await insertGame(game);
+  }
 
   // ========== Show Methods ========== //
 
   // Insert a show into the database
-  static Future<void> insertShow(Show show) {}
+  static Future<void> insertShow(Show show) async {
+    final box = Hive.box<Show>(boxShows);
+    await box.put(show.name.toLowerCase(), show);
+  }
 
   // Get a show by its name
-  static Future<Show?> getShowByName(String inName) {}
+  static Future<Show?> getShowByName(String name) async {
+    final box = Hive.box<Show>(boxShows);
+    return box.get(name.toLowerCase());
+  }
 
   // Update a show
-  static Future<int> updateShow(Show inMovie) {}
-  
+  static Future<void> updateShow(Show show) async {
+    await insertShow(show);
+  }
+
   // ========== Movie Methods ========== //
 
   // Insert a movie into the database
-  static Future<void> insertMovie(Movie inMovie) {}
+  static Future<void> insertMovie(Movie movie) async {
+    final box = Hive.box<Movie>(boxMovies);
+    await box.put(movie.name.toLowerCase(), movie);
+  }
 
   // Get a movie by its name
-  static Future<Movie?> getMovieByName(String inName) {}
+  static Future<Movie?> getMovieByName(String name) async {
+    final box = Hive.box<Movie>(boxMovies);
+    return box.get(name.toLowerCase());
+  }
 
   // Update a movie
-  static Future<int> updateMovie(Movie inMovie) {}
-
-
+  static Future<void> updateMovie(Movie movie) async {
+    await insertMovie(movie);
+  }
 }

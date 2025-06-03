@@ -1,25 +1,48 @@
+// Flutter imports
+import 'package:hive/hive.dart';
+
+// Code generation for Hive
+part 'model_movie.g.dart';
+
 // ========== Movie entry model ==========
 
+@HiveType(typeId: 2)
 class Movie {
   // ===== Class variables =====
 
   // Main data
+  @HiveField(0)
   final String name;
+
+  @HiveField(1)
   final String thumbnailUrl;
-  final String rating;
+
+  @HiveField(2)
+  final double rating;
 
   // Additional info
+  @HiveField(3)
   final String releaseStatus;
+
+  @HiveField(4)
   final List<String> genres;
+
+  @HiveField(5)
   final String overview;
 
   // Media specific data
+  @HiveField(6)
   final String budget;
+
+  @HiveField(7)
   final String revenue;
 
   // User's data
+  @HiveField(8)
   String status;
-  String userRating;
+
+  @HiveField(9)
+  double userRating;
 
   // ===== Class methods =====
 
@@ -27,7 +50,7 @@ class Movie {
   Movie({
     required this.name,
     required this.thumbnailUrl,
-    this.rating = 'N/A',
+    this.rating = 0.0,
 
     this.releaseStatus = 'N/A',
     this.genres = const [],
@@ -37,7 +60,7 @@ class Movie {
     this.revenue = 'N/A',
 
     this.status = 'N/A',
-    this.userRating = 'N/A',
+    this.userRating = 0.0,
   });
 
   // Convert to map

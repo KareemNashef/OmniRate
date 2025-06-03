@@ -167,6 +167,7 @@ class WelcomePageState extends State<WelcomePage>
         }
       }
 
+      if (!mounted) return;
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text(message)));
@@ -197,14 +198,9 @@ class WelcomePageState extends State<WelcomePage>
       final password = _passwordController.text.trim();
       final username = _usernameController.text.trim();
 
-      // TODO
-      if (email == "ASS") {
-        await _setSeenWelcome();
-        _navigateToState(WelcomeState.themeSelection);
-      }
-
       // Check if any of the fields are empty
       if (email.isEmpty || password.isEmpty || username.isEmpty) {
+        if (!mounted) return;
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(SnackBar(content: Text('Please fill in all fields')));
@@ -252,6 +248,7 @@ class WelcomePageState extends State<WelcomePage>
         }
       }
 
+      if (!mounted) return;
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text(message)));

@@ -11,6 +11,7 @@ import 'package:omnirate/Main/main_page.dart';
 import 'package:omnirate/Shared/providers.dart';
 import 'package:omnirate/Main/welcome_page.dart';
 import 'package:omnirate/Shared/user_data.dart';
+import 'package:omnirate/Database/database_helper.dart';
 
 
 void main() async {
@@ -22,6 +23,7 @@ void main() async {
   await Hive.initFlutter();
   Hive.registerAdapter(UserDataAdapter());
   await Hive.openBox<UserData>('userBox');
+  await HiveHelper.init();
 
   // Navigation bar color
   SystemChrome.setSystemUIOverlayStyle(
