@@ -39,10 +39,20 @@ Map<String, int> genreToIDMap = {
   "MOBA": 36,
 };
 
+
 // ========== Helper Function ==========
-Future<List<Game>> _fetchGames(String query, {int limit = 10}) async {
+Future<String> fetchReleaseDate(int gameId) async {
+  const String url = 'https://api.igdb.com/v4/release_dates';
+
+  final query = '''
+    fields human;
+    where game = $gameId;
+    sort date asc;
+    limit 1;
+  ''';
+
   final response = await http.post(
-    Uri.parse(igdbUrl),
+    Uri.parse(url),
     headers: {
       'Client-ID': clientId,
       'Authorization': 'Bearer $bearerToken',
@@ -53,11 +63,163 @@ Future<List<Game>> _fetchGames(String query, {int limit = 10}) async {
 
   if (response.statusCode == 200) {
     final List<dynamic> data = jsonDecode(response.body);
-    return data.map((json) => Game.fromMap(json)).toList();
+    if (data.isNotEmpty && data[0]['human'] != null) {
+      return data[0]['human'];
+    }
+  }
+
+  return 'N/A';
+}
+
+Future<String> fetchCoverUrl(int coverId) async {
+  final query = '''
+    fields url;
+    where id = $coverId;
+    limit 1;
+  ''';
+
+  final response = await http.post(
+    Uri.parse('https://api.igdb.com/v4/covers'),
+    headers: {
+      'Client-ID': clientId,
+      'Authorization': 'Bearer $bearerToken',
+      'Accept': 'application/json',
+    },
+    body: query,
+  );
+
+  if (response.statusCode == 200) {
+    final List<dynamic> data = jsonDecode(response.body);
+    if (data.isNotEmpty) {
+      return data[0]['url'] ?? '';
+    }
+  }
+
+  return 'N/A';
+}
+
+Future<Map<String, String>> fetchGameTime(int gameId) async {
+  const String gameTimeUrl = 'https://api.igdb.com/v4/game_time_to_beats';
+
+  final query = '''
+    fields hastily, normally, completely;
+    where game = $gameId;
+    limit 1;
+  ''';
+
+  final response = await http.post(
+    Uri.parse(gameTimeUrl),
+    headers: {
+      'Client-ID': clientId,
+      'Authorization': 'Bearer $bearerToken',
+      'Accept': 'application/json',
+    },
+    body: query,
+  );
+
+  if (response.statusCode == 200) {
+    final data = jsonDecode(response.body);
+
+    if (data.isEmpty) {
+      return {
+        'timeHaste': 'N/A',
+        'timeNormal': 'N/A',
+        'timeComplete': 'N/A',
+      };
+    }
+
+    final raw = data[0];
+
+    return {
+      'timeHaste': (raw['hastily'] ?? 'N/A').toString(),
+      'timeNormal': (raw['normally'] ?? 'N/A').toString(),
+      'timeComplete': (raw['completely'] ?? 'N/A').toString(),
+    };
   } else {
-    throw Exception('Failed to load games');
+    throw Exception('Failed to fetch game time data');
   }
 }
+
+Future<String> fetchCompanyNamesFromInvolved(List<int> involvedCompanyIds) async {
+  // Step 1: Get company IDs from involved_companies
+  final involvedResponse = await http.post(
+    Uri.parse('https://api.igdb.com/v4/involved_companies'),
+    headers: {
+      'Client-ID': clientId,
+      'Authorization': 'Bearer $bearerToken',
+      'Accept': 'application/json',
+    },
+    body: '''
+      fields company;
+      where id = (${involvedCompanyIds.join(',')});
+    ''',
+  );
+
+  if (involvedResponse.statusCode != 200) {
+    throw Exception('Failed to fetch involved company data');
+  }
+
+  final List<dynamic> involvedData = jsonDecode(involvedResponse.body);
+  final List<int> companyIds = involvedData
+      .map<int>((e) => e['company'] as int)
+      .whereType<int>()
+      .toList();
+
+  if (companyIds.isEmpty) return 'N/A';
+
+  // Step 2: Get company names
+  final companiesResponse = await http.post(
+    Uri.parse('https://api.igdb.com/v4/companies'),
+    headers: {
+      'Client-ID': clientId,
+      'Authorization': 'Bearer $bearerToken',
+      'Accept': 'application/json',
+    },
+    body: '''
+      fields name;
+      where id = (${companyIds.join(',')});
+    ''',
+  );
+
+  if (companiesResponse.statusCode != 200) {
+    throw Exception('Failed to fetch company names');
+  }
+
+  final List<dynamic> companiesData = jsonDecode(companiesResponse.body);
+  final names = companiesData.map((e) => e['name'].toString()).toList();
+
+  return names.join(', ');
+}
+
+Future<String> fetchFirstScreenshotUrl(List<int> screenshotIds) async {
+  if (screenshotIds.isEmpty) return 'N/A';
+
+  final int firstId = screenshotIds.first;
+
+  final response = await http.post(
+    Uri.parse('https://api.igdb.com/v4/screenshots'),
+    headers: {
+      'Client-ID': clientId,
+      'Authorization': 'Bearer $bearerToken',
+      'Accept': 'application/json',
+    },
+    body: '''
+      fields url;
+      where id = $firstId;
+      limit 1;
+    ''',
+  );
+
+  if (response.statusCode == 200) {
+    final List<dynamic> data = jsonDecode(response.body);
+    if (data.isNotEmpty && data[0]['url'] != null) {
+      return data[0]['url'].toString().replaceAll('t_thumb', 't_screenshot_big');
+    }
+  }
+
+  return 'N/A';
+}
+
 
 // ========== Main Functions ==========
 
@@ -65,74 +227,139 @@ Future<List<Game>> _fetchGames(String query, {int limit = 10}) async {
 // Input: Game name
 // Output: Game object
 Future<Game?> getGameEntry(String inName) async {
-  final query = '''
-    fields name,cover.url,genres.name,rating,summary;
-    where name ~ *"$inName"*;
-    limit 1;
-  ''';
-  final games = await _fetchGames(query, limit: 1);
-  return games.isNotEmpty ? games.first : null;
+  try {
+    // Step 1: Fetch basic game info
+    final gameResponse = await http.post(
+      Uri.parse('https://api.igdb.com/v4/games'),
+      headers: {
+        'Client-ID': clientId,
+        'Authorization': 'Bearer $bearerToken',
+        'Accept': 'application/json',
+      },
+      body: '''
+        fields name,cover,rating,first_release_date,genres.name,summary,involved_companies,screenshots;
+        where name ~ *"$inName"*;
+        limit 1;
+      ''',
+    );
+
+    if (gameResponse.statusCode != 200) throw Exception("Game fetch failed");
+    final gameData = jsonDecode(gameResponse.body);
+    if (gameData.isEmpty) return null;
+    final game = gameData[0];
+
+    final int gameId = game['id'];
+    final String name = game['name'] ?? 'N/A';
+    final String rating = game['rating'] != null
+        ? double.parse(game['rating'].toString()).toStringAsFixed(1)
+        : 'N/A';
+    final List<String> genres = (game['genres'] as List<dynamic>?)
+            ?.map((g) => g['name'].toString())
+            .toList() ??
+        [];
+
+    final String overview = game['summary'] ?? 'N/A';
+
+    // Step 2: Fetch cover image
+    final String thumbnailUrl = await fetchCoverUrl(game['cover']);
+
+    // Step 3: Fetch release date
+    final String releaseDate = await fetchReleaseDate(gameId);
+
+    // Step 4: Fetch play times
+    final timeMap = await fetchGameTime(gameId);
+    final String timeHaste = timeMap['timeHaste'] ?? 'N/A';
+    final String timeNormal = timeMap['timeNormal'] ?? 'N/A';
+    final String timeComplete = timeMap['timeComplete'] ?? 'N/A';
+
+    // Step 5: Fetch developer name(s)
+    String developer = 'N/A';
+    if (game['involved_companies'] != null) {
+      final List<int> involvedCompanyIds =
+          List<int>.from(game['involved_companies']);
+      developer = await fetchCompanyNamesFromInvolved(involvedCompanyIds);
+    }
+
+    String screenshotUrl = 'N/A';
+    if (game['screenshots'] != null) {
+      final List<int> screenshotIds = List<int>.from(game['screenshots']);
+      screenshotUrl = await fetchFirstScreenshotUrl(screenshotIds);
+    }
+
+    // Step 6: Construct and return Game object
+    return Game(
+      name: name,
+      thumbnailUrl: thumbnailUrl,
+      rating: rating,
+      releaseDate: releaseDate,
+      developer: developer,
+      genres: genres,
+      overview: overview,
+      timeHaste: timeHaste,
+      timeNormal: timeNormal,
+      timeComplete: timeComplete,
+    );
+  } catch (e) {
+    print('Error fetching game data: $e');
+    return null;
+  }
 }
+
+
 
 // Func: getFilteredGames
 // Input: List<String> genres, String category, String minRating
 // Output: List<Game> gamesList - Sized to 20;
-Future<List<Game>> getFilteredGames(
-  List<String> inGenres,
-  String inCategory,
-  String inMinRating,
-) async {
-  // Build genre filter
-  final genreIds =
-      inGenres.map((g) => genreToIDMap[g]).whereType<int>().toList();
-  final genreFilter =
-      genreIds.isNotEmpty ? 'genres = (${genreIds.join(",")});' : '';
-  final categoryFilter = inCategory.isNotEmpty ? 'category = $inCategory;' : '';
-  final ratingFilter = inMinRating.isNotEmpty ? 'rating >= $inMinRating;' : '';
+Future<List<Game>> getFilteredGames(List<String> inGenres, String inCategory, String inMinRating) async {
+  final genreIds = inGenres.map((g) => genreToIDMap[g]).whereType<int>().toList();
+  final minRatingDouble = double.tryParse(inMinRating) ?? 0.0;
 
-  final query = '''
-    fields name,cover.url,genres.name,rating,summary;
-    $genreFilter
-    $categoryFilter
-    $ratingFilter
+  final genreQuery = genreIds.isNotEmpty ? "genres = (${genreIds.join(',')}) &" : "";
+
+  final body = '''
+    fields name,cover,rating,first_release_date,genres.name,summary,involved_companies,screenshots;
+    where $genreQuery rating >= $minRatingDouble;
+    sort rating desc;
     limit 20;
   ''';
-  return await _fetchGames(query, limit: 20);
+
+  final response = await http.post(
+    Uri.parse(igdbUrl),
+    headers: {
+      'Client-ID': clientId,
+      'Authorization': 'Bearer $bearerToken',
+      'Accept': 'application/json',
+    },
+    body: body,
+  );
+
+  if (response.statusCode == 200) {
+    final List<dynamic> data = jsonDecode(response.body);
+    return Future.wait(data.map((gameData) async => await convertGameFromData(gameData)));
+  }
+
+  return [];
 }
+
 
 // Func: getRecentGames
 // Input: None
 // Output: List<Game> gamesList - Sized to 10;
 Future<List<Game>> getRecentGames() async {
-  final query = '''
-    fields name,cover.url,genres.name,rating,summary,first_release_date;
-    sort first_release_date desc;
-    limit 10;
-  ''';
-  return await _fetchGames(query, limit: 10);
+
 }
 
 // Func: getTrendingGames
 // Input: None
 // Output: List<Game> gamesList - Sized to 10;
 Future<List<Game>> getTrendingGames() async {
-  final query = '''
-    fields name,cover.url,genres.name,rating,summary,popularity;
-    sort popularity desc;
-    limit 10;
-  ''';
-  return await _fetchGames(query, limit: 10);
+
 }
 
 // Func: getTopGames
 // Input: None
 // Output: List<Game> gamesList - Sized to 10;
 Future<List<Game>> getTopGames() async {
-  final query = '''
-    fields name,cover.url,genres.name,rating,summary;
-    sort rating desc;
-    where rating != null;
-    limit 10;
-  ''';
-  return await _fetchGames(query, limit: 10);
+
 }
+
