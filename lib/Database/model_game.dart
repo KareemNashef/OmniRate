@@ -13,43 +13,45 @@ class Game {
   // Main data
   @HiveField(0)
   final String name;
-  
+
   @HiveField(1)
   final String thumbnailUrl;
-  
+
+  @HiveField(12)
+  final String artworkUrl;
+
   @HiveField(2)
   final double rating;
 
   // Additional info
   @HiveField(3)
   final String releaseDate;
-  
+
   @HiveField(4)
   final String developer;
-  
+
   @HiveField(5)
   final List<String> genres;
-  
+
   @HiveField(6)
   final String overview;
 
   // Media specific data
   @HiveField(7)
   final String timeHaste;
-  
+
   @HiveField(8)
   final String timeNormal;
-  
+
   @HiveField(9)
   final String timeComplete;
 
   // User's data
   @HiveField(10)
   String status;
-  
+
   @HiveField(11)
   double userRating;
-
 
   // ===== Class methods =====
 
@@ -57,6 +59,7 @@ class Game {
   Game({
     required this.name,
     required this.thumbnailUrl,
+    this.artworkUrl = '',
     this.rating = 0.0,
 
     this.releaseDate = 'N/A',
@@ -76,6 +79,7 @@ class Game {
   Map<String, dynamic> toMap() => {
     'name': name,
     'thumbnailUrl': thumbnailUrl,
+    'artworkUrl': artworkUrl,
     'rating': rating,
 
     'releaseDate': releaseDate,
@@ -95,6 +99,7 @@ class Game {
   factory Game.fromMap(Map<String, dynamic> map) => Game(
     name: map['name'],
     thumbnailUrl: map['thumbnailUrl'],
+    artworkUrl: map['artworkUrl'],
     rating: map['rating'],
 
     releaseDate: map['releaseDate'],
@@ -109,4 +114,23 @@ class Game {
     status: map['status'],
     userRating: map['userRating'],
   );
+
+  @override
+  String toString() {
+    return '''
+Name: $name
+Thumbnail: $thumbnailUrl
+Artwork: $artworkUrl
+Rating: $rating
+Release Date: $releaseDate
+Developer: $developer
+Genres: ${genres.join(', ')}
+Overview: $overview
+Time (Haste): $timeHaste
+Time (Normal): $timeNormal
+Time (Complete): $timeComplete
+Status: $status
+User Rating: $userRating
+''';
+  }
 }

@@ -19,6 +19,7 @@ class GameAdapter extends TypeAdapter<Game> {
     return Game(
       name: fields[0] as String,
       thumbnailUrl: fields[1] as String,
+      artworkUrl: fields[12] as String,
       rating: fields[2] as double,
       releaseDate: fields[3] as String,
       developer: fields[4] as String,
@@ -35,11 +36,13 @@ class GameAdapter extends TypeAdapter<Game> {
   @override
   void write(BinaryWriter writer, Game obj) {
     writer
-      ..writeByte(12)
+      ..writeByte(13)
       ..writeByte(0)
       ..write(obj.name)
       ..writeByte(1)
       ..write(obj.thumbnailUrl)
+      ..writeByte(12)
+      ..write(obj.artworkUrl)
       ..writeByte(2)
       ..write(obj.rating)
       ..writeByte(3)

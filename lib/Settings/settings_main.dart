@@ -246,10 +246,27 @@ class DebugPage extends StatelessWidget {
         child: ListView(
           children: [
             ElevatedButton(
-              onPressed: () {
-                // TODO: Call test function 1
-                getGameEntry("The Legend of Zelda: Breath of the Wild");
-                debugPrint('Test 1 triggered');
+              onPressed: () async {
+                
+final game = await getGameEntry("The Legend of Zelda: Breath of the Wild");
+
+if (context.mounted && game != null) {
+showDialog(
+  context: context,
+  builder: (context) => AlertDialog(
+    title: Text(game.name),
+    content: SingleChildScrollView(
+      child: Text(game.toString()),
+    ),
+    actions: [
+      TextButton(
+        onPressed: () => Navigator.pop(context),
+        child: Text('Close'),
+      ),
+    ],
+  ),
+);
+}
               },
               child: const Text('Run Test 1'),
             ),
