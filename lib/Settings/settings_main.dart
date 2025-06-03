@@ -5,7 +5,7 @@ import 'package:flutter/services.dart';
 
 // Local imports
 import 'package:omnirate/Settings/settings_theme.dart';
-
+import 'package:omnirate/Settings/settings_account.dart';
 import 'package:omnirate/Games/game_entry.dart';
 import 'package:omnirate/Shows/show_entry.dart';
 import 'package:omnirate/Main/welcome_page.dart';
@@ -180,7 +180,7 @@ class _SettingsPageState extends State<SettingsPage> {
             Icons.manage_accounts,
             "Account",
             "Change your account settings",
-            Temp(),
+            AccountSettingsPage(),
           ),
 
           // List entry - Theme settings page

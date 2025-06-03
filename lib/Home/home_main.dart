@@ -7,6 +7,7 @@ import 'package:omnirate/BaseClasses/base_main.dart';
 import 'package:omnirate/BaseClasses/base_list.dart';
 import 'package:omnirate/Settings/settings_main.dart';
 import 'package:omnirate/Shared/utils.dart';
+import 'package:omnirate/Shared/list_use.dart';
 
 // ========== Home main page ========== //
 
@@ -28,34 +29,19 @@ class HomeMainPageState extends MainPageBaseState {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           // Welcome Text
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Username',
+          FutureBuilder<String?>(
+            future: getUsername(),
+            builder: (context, snapshot) {
+              final name = snapshot.data ?? 'User';
+              return Text(
+                'Hello $name!',
                 style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
                   color: Theme.of(context).colorScheme.primary,
                 ),
-              ),
-              Text(
-                'Hours Played: X',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Theme.of(context).colorScheme.secondary,
-                ),
-              ),
-              Text(
-                'Hours Watched: X',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Theme.of(context).colorScheme.secondary,
-                ),
-              ),
-            ],
+              );
+            },
           ),
 
           // Settings
@@ -207,17 +193,17 @@ class HomeMainPageState extends MainPageBaseState {
             listsButtons(),
             SizedBox(height: 8),
             blankCarousel(
-              "Continue Playing",
+              "Ongoing Games",
               selectedGamesPaths,
               selectedGames,
             ),
             blankCarousel(
-              "Continue Watching Shows",
+              "Ongoing Shows",
               selectedShowsPaths,
               selectedShows,
             ),
             blankCarousel(
-              "Continue Watching Movies",
+              "Ongoing Movies",
               selectedMoviesPaths,
               selectedMovies,
             ),

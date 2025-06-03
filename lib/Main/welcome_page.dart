@@ -1,6 +1,7 @@
 // Flutter imports
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:hive/hive.dart';
 import 'dart:async';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:provider/provider.dart';
@@ -10,6 +11,7 @@ import 'package:omnirate/Shared/firebase_service.dart';
 import 'package:omnirate/Shared/utils.dart';
 import 'package:omnirate/Main/main_page.dart';
 import 'package:omnirate/Shared/providers.dart';
+import 'package:omnirate/Shared/user_data.dart';
 
 // ========== Helper Vars ========== //
 
@@ -134,8 +136,14 @@ class WelcomePageState extends State<WelcomePage>
       final firebaseService = FirebaseService();
       final user = await firebaseService.signIn(email, password);
 
-      // If successful, navigate to the main page
+      // If successful, load user data and navigate to the main page
       if (user != null) {
+        final data = await firebaseService.loadUserData();
+        if (data != null) {
+          final box = await Hive.openBox<UserData>('userBox');
+          await box.put('user', data);
+        }
+
         await _setSeenWelcome();
         _goToMainPage();
       }
@@ -176,11 +184,6 @@ class WelcomePageState extends State<WelcomePage>
     _navigateToState(WelcomeState.onboarding);
   }
 
-  void _handleSkip() async {
-    await _setSeenWelcome();
-    _goToMainPage();
-  }
-
   void _handleOnboardingComplete() async {
     // Show loading indicator
     if (_isSigningUp) return;
@@ -213,14 +216,20 @@ class WelcomePageState extends State<WelcomePage>
       final user = await firebaseService.signUp(email, password, username);
 
       if (user != null) {
-        // Save user preferences
-        final preferences = {
-          'gameGenres': _selectedGameGenres.join(','),
-          'showGenres': _selectedShowGenres.join(','),
-          'movieGenres': _selectedMovieGenres.join(','),
-        };
+        // Save user data to Hive
+        final box = await Hive.openBox<UserData>('userBox');
+        final userData = UserData(
+          userName: username,
+          email: email,
+          listGames: {},
+          listShows: {},
+          listMovies: {},
+        );
+        await box.put('user', userData);
 
-        await firebaseService.saveList('preferences', preferences);
+        // Save user data to Firestore
+        await firebaseService.saveUserData(userData);
+
         _navigateToState(WelcomeState.themeSelection);
       }
     }
@@ -531,19 +540,6 @@ class WelcomePageState extends State<WelcomePage>
                   ),
                 ),
               ],
-            ),
-
-            // Skip button
-            SizedBox(
-              width: double.infinity,
-              child: TextButton(
-                style: TextButton.styleFrom(
-                  foregroundColor: Colors.white70,
-                  padding: const EdgeInsets.all(16),
-                ),
-                onPressed: _handleSkip,
-                child: const Text('Skip for now'),
-              ),
             ),
           ],
         ),

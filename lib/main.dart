@@ -4,16 +4,24 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
 // Local imports
 import 'package:omnirate/Main/main_page.dart';
 import 'package:omnirate/Shared/providers.dart';
 import 'package:omnirate/Main/welcome_page.dart';
+import 'package:omnirate/Shared/user_data.dart';
+
 
 void main() async {
   // Firebase initialization
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
+
+  // Hive initialization
+  await Hive.initFlutter();
+  Hive.registerAdapter(UserDataAdapter());
+  await Hive.openBox<UserData>('userBox');
 
   // Navigation bar color
   SystemChrome.setSystemUIOverlayStyle(
