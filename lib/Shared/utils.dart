@@ -185,7 +185,6 @@ class ExpandableTextState extends State<ExpandableText> {
 
   @override
   Widget build(BuildContext context) {
-    final textStyle = TextStyle(fontSize: 16);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -193,6 +192,10 @@ class ExpandableTextState extends State<ExpandableText> {
         RichText(
           textAlign: TextAlign.justify,
           text: TextSpan(
+                style: TextStyle(
+      fontSize: 16,
+      color: Theme.of(context).colorScheme.onBackground,
+    ),
             children: [
               TextSpan(
                 text: widget.label,
@@ -206,7 +209,7 @@ class ExpandableTextState extends State<ExpandableText> {
                     expanded || widget.content.length <= 120
                         ? widget.content
                         : '${widget.content.substring(0, 120)}...',
-                style: textStyle,
+                style: TextStyle(fontSize: 16),
               ),
             ],
           ),

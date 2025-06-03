@@ -55,10 +55,10 @@ class ShowsMainPageState extends MainPageBaseState {
           children: [
             SizedBox(height: 20),
             searchBar("Shows"),
-            mainCarousel(selectedPaths3, selectedShows3),
-            blankCarousel("Recent Releases", selectedPaths1, selectedShows1),
-            blankCarousel("Trending", selectedPaths2, selectedShows2),
-            blankCarousel("Top Rated", selectedPaths3, selectedShows3),
+            mainCarousel("Shows",selectedPaths3, selectedShows3),
+            blankCarousel("Shows", "Recent Releases", selectedPaths1, selectedShows1),
+            blankCarousel("Shows","Trending", selectedPaths2, selectedShows2),
+            blankCarousel("Shows","Top Rated", selectedPaths3, selectedShows3),
             
             // Padding
             SizedBox(height: 64),

@@ -181,7 +181,6 @@ class HomeMainPageState extends MainPageBaseState {
           children: [
             SizedBox(height: 20),
             welcomeText(),
-            SizedBox(height: 8),
             Text(
               "My Lists",
               style: TextStyle(
@@ -192,17 +191,18 @@ class HomeMainPageState extends MainPageBaseState {
             ),
             listsButtons(),
             SizedBox(height: 8),
-            blankCarousel(
+            blankCarousel("Games",
               "Ongoing Games",
               selectedGamesPaths,
               selectedGames,
             ),
-            blankCarousel(
+            blankCarousel("Shows",
               "Ongoing Shows",
               selectedShowsPaths,
               selectedShows,
             ),
             blankCarousel(
+              "Movies",
               "Ongoing Movies",
               selectedMoviesPaths,
               selectedMovies,

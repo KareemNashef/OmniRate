@@ -52,10 +52,15 @@ class GamesMainPageState extends MainPageBaseState {
           children: [
             SizedBox(height: 20),
             searchBar("Games"),
-            mainCarousel(selectedPaths3, selectedGames3),
-            blankCarousel("Recent Releases", selectedPaths1, selectedGames1),
-            blankCarousel("Trending", selectedPaths2, selectedGames2),
-            blankCarousel("Top Rated", selectedPaths3, selectedGames3),
+            mainCarousel("Games", selectedPaths3, selectedGames3),
+            blankCarousel(
+              "Games",
+              "Recent Releases",
+              selectedPaths1,
+              selectedGames1,
+            ),
+            blankCarousel("Games", "Trending", selectedPaths2, selectedGames2),
+            blankCarousel("Games", "Top Rated", selectedPaths3, selectedGames3),
 
             // Padding
             SizedBox(height: 64),

@@ -52,10 +52,10 @@ class MoviesMainPageState extends MainPageBaseState {
           children: [
             SizedBox(height: 20),
             searchBar("Movies"),
-            mainCarousel(selectedPaths3, selectedMovies3),
-            blankCarousel("Recent Releases", selectedPaths1, selectedMovies1),
-            blankCarousel("Trending", selectedPaths2, selectedMovies2),
-            blankCarousel("Top Rated", selectedPaths3, selectedMovies3),
+            mainCarousel("Movies",selectedPaths3, selectedMovies3),
+            blankCarousel("Movies","Recent Releases", selectedPaths1, selectedMovies1),
+            blankCarousel("Movies","Trending", selectedPaths2, selectedMovies2),
+            blankCarousel("Movies","Top Rated", selectedPaths3, selectedMovies3),
 
             // Padding
             SizedBox(height: 64),

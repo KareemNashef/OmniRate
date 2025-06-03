@@ -1,6 +1,10 @@
 // Flutter imports
 import 'package:flutter/material.dart';
 
+// Local imports
+import 'package:omnirate/BaseClasses/Assets/animated_entry.dart';
+import 'package:omnirate/BaseClasses/Assets/add_modal.dart';
+
 // ========== Entry page ========== //
 
 class EntryBase extends StatefulWidget {
@@ -15,74 +19,10 @@ class EntryBaseState extends State<EntryBase> {
 
   // Entry main
   Widget entryMain(String inTitle, String inPath, String inRating) {
-    return SizedBox(
-      height: 290,
-      child: Card(
-        color: Theme.of(context).colorScheme.surfaceContainer,
-        elevation: 4,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            // Thumbnail
-            Container(
-              width: 135,
-              height: 240,
-              decoration: BoxDecoration(
-                image: DecorationImage(
-                  image: AssetImage(inPath),
-                  fit: BoxFit.cover,
-                ),
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
-
-            // Padding
-            SizedBox(width: 10),
-            // Title and rating
-            SizedBox(
-              width: 180,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  // Title
-                  Text(
-                    inTitle,
-                    maxLines: 3,
-                    textAlign: TextAlign.center,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Theme.of(context).colorScheme.primary,
-                    ),
-                  ),
-
-                  // Padding
-                  SizedBox(height: 8),
-
-                  // Rating
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.star, size: 16, color: Colors.amber),
-                      SizedBox(width: 4),
-                      Text(
-                        inRating,
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: Theme.of(context).colorScheme.secondary,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
+    return AnimatedBackgroundCard(
+      inTitle: inTitle,
+      inPath: inPath,
+      inRating: inRating,
     );
   }
 
@@ -101,13 +41,43 @@ class EntryBaseState extends State<EntryBase> {
               borderRadius: BorderRadius.circular(16),
             ),
           ),
-          onPressed: () {},
+          onPressed:
+              () => showModalBottomSheet(
+                context: context,
+                isScrollControlled: true,
+                backgroundColor: Colors.transparent,
+                builder:
+                    (context) => AddToListModal(
+                      onAdd: (list, rating) => _addToList(list, rating),
+                    ),
+              ),
           icon: Icon(Icons.playlist_add),
           label: Text(
             "Add to My List",
             style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
           ),
         ),
+      ),
+    );
+  }
+
+  // ===== Class Functions ===== //
+
+  // Function to handle adding to list
+  void _addToList(String listType, double rating) {
+    // Implement your logic here
+    print('Adding to $listType with rating: $rating');
+
+    // Example: You might want to call an API, update local storage, etc.
+    // showSnackBar or show success message
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          rating > 0
+              ? 'Added to $listType with ${rating.toStringAsFixed(1)}/10 rating!'
+              : 'Added to $listType!',
+        ),
+        backgroundColor: Theme.of(context).colorScheme.primary,
       ),
     );
   }

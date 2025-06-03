@@ -3,6 +3,9 @@ import 'package:flutter/material.dart';
 
 // Local imports
 import 'package:omnirate/BaseClasses/base_discover.dart';
+import 'package:omnirate/Games/game_entry.dart';
+import 'package:omnirate/Shows/show_entry.dart';
+import 'package:omnirate/Movies/movie_entry.dart';
 
 // ========== Main page base ========== //
 class MainPageBase extends StatefulWidget {
@@ -110,131 +113,48 @@ class MainPageBaseState extends State<MainPageBase> {
   }
 
   // Main Carousel
-  Widget mainCarousel(List<String> inPaths, List<String> inTitles) {
+  Widget mainCarousel(
+    String inType,
+    List<String> inPaths,
+    List<String> inTitles,
+  ) {
     return SizedBox(
       height: 290,
       child: PageView.builder(
         itemCount: inTitles.length,
         controller: PageController(viewportFraction: 1),
         itemBuilder: (context, index) {
-          return Card(
-            color: Theme.of(context).colorScheme.surfaceContainer,
-            elevation: 4,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                // Thumbnail
-                Container(
-                  width: 135,
-                  height: 240,
-                  decoration: BoxDecoration(
-                    image: DecorationImage(
-                      image: AssetImage(inPaths[index]),
-                      fit: BoxFit.cover,
-                    ),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-
-                // Padding
-                SizedBox(width: 10),
-
-                // Title and rating
-                SizedBox(
-                  width: 180,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      // Title
-                      Text(
-                        inTitles[index],
-                        maxLines: 3,
-                        textAlign: TextAlign.center,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: Theme.of(context).colorScheme.primary,
-                        ),
-                      ),
-
-                      // Padding
-                      SizedBox(height: 8),
-
-                      // Rating
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.star, size: 16, color: Colors.amber),
-                          SizedBox(width: 4),
-                          Text(
-                            '8.5',
-                            style: TextStyle(
-                              fontSize: 16,
-                              color: Theme.of(context).colorScheme.secondary,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          );
-        },
-      ),
-    );
-  }
-
-  // Blank Carousel
-  Widget blankCarousel(
-    String inTitle,
-    List<String> inPaths,
-    List<String> inTitles,
-  ) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Title
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8),
-          child: Text(
-            inTitle,
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: Theme.of(context).colorScheme.primary,
-            ),
-          ),
-        ),
-
-        // Padding
-        SizedBox(height: 8),
-
-        // Carousel
-        SizedBox(
-          height: 230,
-          child: PageView.builder(
-            itemCount: inPaths.length,
-            padEnds: false,
-            controller: PageController(viewportFraction: 0.3),
-            itemBuilder: (context, index) {
-              return Column(
-                mainAxisAlignment:
-                    MainAxisAlignment.start, // Align the items at the top
-                crossAxisAlignment:
-                    CrossAxisAlignment
-                        .center, // Center the children horizontally
+          return GestureDetector(
+            onTap: () {
+              Widget page;
+              switch (inType) {
+                case "Games":
+                  page = GameEntry();
+                  break;
+                case "Shows":
+                  page = ShowEntry();
+                  break;
+                case "Movies":
+                  page = MovieEntry();
+                  break;
+                default:
+                  return;
+              }
+              Navigator.push(context, MaterialPageRoute(builder: (_) => page));
+            },
+            child: Card(
+              color: Theme.of(context).colorScheme.surfaceContainer,
+              elevation: 4,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   // Thumbnail
                   Container(
-                    width: 90,
-                    height: 160,
+                    width: 135,
+                    height: 240,
                     decoration: BoxDecoration(
                       image: DecorationImage(
                         image: AssetImage(inPaths[index]),
@@ -245,28 +165,167 @@ class MainPageBaseState extends State<MainPageBase> {
                   ),
 
                   // Padding
-                  SizedBox(height: 8),
+                  SizedBox(width: 10),
 
-                  // Title - It is now horizontally centered
-                  Text(
-                    inTitles[index],
-                    maxLines: 3,
-                    textAlign:
-                        TextAlign
-                            .center, // Centers the text within the text widget
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Theme.of(context).colorScheme.secondary,
+                  // Title and rating
+                  SizedBox(
+                    width: 180,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        // Title
+                        Text(
+                          inTitles[index],
+                          maxLines: 3,
+                          textAlign: TextAlign.center,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
+                        ),
+
+                        // Padding
+                        SizedBox(height: 8),
+
+                        // Rating
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.star, size: 16, color: Colors.amber),
+                            SizedBox(width: 4),
+                            Text(
+                              '8.5',
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: Theme.of(context).colorScheme.secondary,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
                   ),
                 ],
-              );
-            },
-          ),
-        ),
-      ],
+              ),
+            ),
+          );
+        },
+      ),
     );
   }
+
+  // Blank Carousel
+Widget blankCarousel(
+  String inType,
+  String inTitle,
+  List<String> inPaths,
+  List<String> inTitles,
+) {
+  String emptyMessage;
+  switch (inType) {
+    case "Games":
+      emptyMessage = "Time to pick up a new game!";
+      break;
+    case "Shows":
+      emptyMessage = "Catch up on some shows!";
+      break;
+    case "Movies":
+      emptyMessage = "Grab some popcorn — find a movie!";
+      break;
+    default:
+      emptyMessage = "Nothing here yet!";
+  }
+
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8),
+        child: Text(
+          inTitle,
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            color: Theme.of(context).colorScheme.primary,
+          ),
+        ),
+      ),
+      SizedBox(height: 8),
+      SizedBox(
+        height: 230,
+        child: (inPaths.isEmpty || inTitles.isEmpty)
+            ? Center(
+                child: Text(
+                  emptyMessage,
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Theme.of(context).colorScheme.secondary,
+                  ),
+                ),
+              )
+            : PageView.builder(
+                itemCount: inPaths.length,
+                padEnds: false,
+                controller: PageController(viewportFraction: 0.3),
+                itemBuilder: (context, index) {
+                  return GestureDetector(
+                    onTap: () {
+                      Widget page;
+                      switch (inType) {
+                        case "Games":
+                          page = GameEntry();
+                          break;
+                        case "Shows":
+                          page = ShowEntry();
+                          break;
+                        case "Movies":
+                          page = MovieEntry();
+                          break;
+                        default:
+                          return;
+                      }
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => page),
+                      );
+                    },
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Container(
+                          width: 90,
+                          height: 160,
+                          decoration: BoxDecoration(
+                            image: DecorationImage(
+                              image: AssetImage(inPaths[index]),
+                              fit: BoxFit.cover,
+                            ),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        SizedBox(height: 8),
+                        Text(
+                          inTitles[index],
+                          maxLines: 3,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Theme.of(context).colorScheme.secondary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+      ),
+    ],
+  );
+}
 
   // ===== Build Method ===== //
 
