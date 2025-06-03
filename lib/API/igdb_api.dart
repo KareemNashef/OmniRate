@@ -39,7 +39,6 @@ Map<String, int> genreToIDMap = {
   "MOBA": 36,
 };
 
-
 // ========== Helper Function ==========
 Future<List<Game>> _fetchGames(String query, {int limit = 10}) async {
   final response = await http.post(
@@ -75,14 +74,19 @@ Future<Game?> getGameEntry(String inName) async {
   return games.isNotEmpty ? games.first : null;
 }
 
-
 // Func: getFilteredGames
 // Input: List<String> genres, String category, String minRating
 // Output: List<Game> gamesList - Sized to 20;
-Future<List<Game>> getFilteredGames(List<String> inGenres, String inCategory, String inMinRating) async {
+Future<List<Game>> getFilteredGames(
+  List<String> inGenres,
+  String inCategory,
+  String inMinRating,
+) async {
   // Build genre filter
-  final genreIds = inGenres.map((g) => genreToIDMap[g]).whereType<int>().toList();
-  final genreFilter = genreIds.isNotEmpty ? 'genres = (${genreIds.join(",")});' : '';
+  final genreIds =
+      inGenres.map((g) => genreToIDMap[g]).whereType<int>().toList();
+  final genreFilter =
+      genreIds.isNotEmpty ? 'genres = (${genreIds.join(",")});' : '';
   final categoryFilter = inCategory.isNotEmpty ? 'category = $inCategory;' : '';
   final ratingFilter = inMinRating.isNotEmpty ? 'rating >= $inMinRating;' : '';
 
@@ -132,4 +136,3 @@ Future<List<Game>> getTopGames() async {
   ''';
   return await _fetchGames(query, limit: 10);
 }
-

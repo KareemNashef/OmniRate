@@ -10,6 +10,8 @@ import 'package:omnirate/Games/game_entry.dart';
 import 'package:omnirate/Shows/show_entry.dart';
 import 'package:omnirate/Main/welcome_page.dart';
 
+import 'package:omnirate/API/igdb_api.dart';
+
 // Settings page main
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -200,6 +202,9 @@ class _SettingsPageState extends State<SettingsPage> {
           // List entry - Debug 3
           listTileEntry(Icons.info, "Debug 3", "stuff", ShowEntry()),
 
+          // List entry - Debug 4
+          listTileEntry(Icons.info, "Debug 4", "stuff", DebugPage()), 
+
           // List entry - Debug 7
           listTileEntry(Icons.info, "Debug 7", "stuff", WelcomePage()),
         ],
@@ -219,6 +224,43 @@ class Temp extends StatelessWidget {
         child: Text(
           "This page is under construction.",
           style: TextStyle(fontSize: 18, color: Colors.grey),
+        ),
+      ),
+    );
+  }
+}
+
+
+
+// TODO
+
+class DebugPage extends StatelessWidget {
+  const DebugPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Debug Tools')),
+      body: Padding(
+        padding: const EdgeInsets.all(16),
+        child: ListView(
+          children: [
+            ElevatedButton(
+              onPressed: () {
+                // TODO: Call test function 1
+                getGameEntry("The Legend of Zelda: Breath of the Wild");
+                debugPrint('Test 1 triggered');
+              },
+              child: const Text('Run Test 1'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                // TODO: Call test function 2
+                debugPrint('Test 2 triggered');
+              },
+              child: const Text('Run Test 2'),
+            ),
+          ],
         ),
       ),
     );
