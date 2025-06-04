@@ -191,8 +191,7 @@ Future<Map<String, String>> _processAndCacheGameList(
       if (rawGameData['id'] != null) {
         // Ensure it has an ID for further processing
         gamesToProcessFromApi.add(rawGameData);
-      } else {
-      }
+      } else {}
     }
   }
 
@@ -641,9 +640,27 @@ Future<Game?> getGameEntry(String inName) async {
   }
 }
 
+Future<Map<String, String>> searchGamesByName(String name) async {
+  final query = '''
+  fields $_commonGameListFields;
+  search "$name";
+  where rating_count > 10;
+  limit 10;
+''';
+
+  final response = await postRequest(gamesUrl, query);
+
+  if (response.statusCode == 200) {
+    final List<dynamic> data = jsonDecode(response.body);
+    return await _processAndCacheGameList(data);
+  } else {
+    throw Exception("Failed to search games by name");
+  }
+}
+
 Future<Map<String, String>> getFilteredGames(
   List<String> inGenresNames,
-  String inCategory,
+  String inCategoryId, // Changed from inCategory to inCategoryId
   String inMinRating,
 ) async {
   // Convert genre names to IDs
@@ -654,10 +671,13 @@ Future<Map<String, String>> getFilteredGames(
               (genre) => genre['name'] == name,
               orElse: () => {},
             );
-            return match['id'] ?? '';
+            // Convert the ID to string, handle null case
+            final id = match['id'];
+            return id != null ? id.toString() : '';
           })
-          .where((id) => id.isNotEmpty)
-          .cast<String>()
+          .where(
+            (id) => id.isNotEmpty,
+          ) // Now this will work because id is a String
           .toList();
 
   String genreFilter = '';
@@ -665,11 +685,14 @@ Future<Map<String, String>> getFilteredGames(
     genreFilter = 'genres = (${inGenresIDs.join(',')}) & ';
   }
 
+  // Parse category ID directly since we're now passing the ID
+  final categoryId = int.parse(inCategoryId);
+
   final query = '''
   fields $_commonGameListFields;
-  where ${genreFilter}category = ${int.parse(inCategory)} & rating >= ${double.parse(inMinRating)} & rating_count > 10; // Added rating_count
+  where ${genreFilter}category = $categoryId & rating >= ${(double.parse(inMinRating) * 10).toInt()} & rating_count > 10;
   sort rating desc;
-  limit 20;
+  limit 60;
 ''';
 
   final response = await postRequest(gamesUrl, query);
@@ -755,12 +778,12 @@ Future<Map<String, String>> getLatestGames() async {
   }
 }
 
-Future<Map<String, String>> getTopGames() async {
+Future<Map<String, String>> getTopGames({String limit = "10"}) async {
   final query = '''
     fields $_commonGameListFields;
     where rating_count > 100 & category = 0;
     sort rating desc;
-    limit 10;
+    limit $limit;
   ''';
   final response = await postRequest(gamesUrl, query);
   if (response.statusCode == 200) {

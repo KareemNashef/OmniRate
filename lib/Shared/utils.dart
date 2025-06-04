@@ -126,6 +126,12 @@ final List<Map<String, dynamic>> genresGames = [
     {"id": 35, "name": "Card & Board Game"},
   ];
 
+  final List<Map<String, dynamic>> categoriesGames = [
+    {"id": 0, "name": "Base Game"},
+    {"id": 1, "name": "DLC"},
+    {"id": 2, "name": "Expansion"},
+  ];
+
   final List<Map<String, dynamic>> genresShows = [
     {"id": 10759, "name": "Action & Adventure"},
     {"id": 16, "name": "Animation"},

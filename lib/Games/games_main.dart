@@ -44,8 +44,9 @@ class GamesMainPageState extends MainPageBaseState {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            SizedBox(height: 20),
+            SizedBox(height: 40),
             searchBar("Games"),
+            SizedBox(height: 20),
             FutureBuilder<Map<String, String>>(
               future: futurePopular,
               builder: (context, snapshot) {

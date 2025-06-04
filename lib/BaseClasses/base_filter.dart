@@ -144,18 +144,59 @@ abstract class BaseFilterPageState<T extends BaseFilterPage> extends State<T> {
     );
   }
 
-  // Apply button
+  // Apply button - now returns genre names instead of just filter data
   Widget applyButton() {
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: ElevatedButton(
         onPressed: () {
-          // Get the selected filters
+          // Debug: Print what we have before conversion
+          print('Selected genre IDs: $_selectedGenreIds');
+          print('Available genres: $genres');
+          print('Selected category ID: $_selectedCategoryId');
+          print('Available categories: $categories');
+          
+          // Convert selected genre IDs to genre names
+          List<String> selectedGenreNames = [];
+          for (int genreId in _selectedGenreIds) {
+            try {
+              final genre = genres.firstWhere(
+                (g) => g['id'] == genreId,
+                orElse: () => {'id': -1, 'name': ''},
+              );
+              if (genre['name'] != null && genre['name'].toString().isNotEmpty) {
+                selectedGenreNames.add(genre['name'].toString());
+              }
+            } catch (e) {
+              print('Error processing genre ID $genreId: $e');
+            }
+          }
+          
+          // Get selected category name
+          String selectedCategoryName = 'Base Game'; // Default fallback
+          try {
+            final selectedCategory = categories.firstWhere(
+              (category) => category['id'] == _selectedCategoryId,
+              orElse: () => {'id': 0, 'name': 'Base Game'},
+            );
+            if (selectedCategory['name'] != null) {
+              selectedCategoryName = selectedCategory['name'].toString();
+            }
+          } catch (e) {
+            print('Error processing category ID $_selectedCategoryId: $e');
+          }
+          
+          // Create the filters map
           final Map<String, dynamic> filters = {
-            'categories': _selectedCategoryId,
-            'genres': _selectedGenreIds.toList(),
-            'rating': _ratingValue,
+            'genreNames': selectedGenreNames,
+            'categoryId': _selectedCategoryId.toString(), // Pass ID as string
+            'minRating': (_ratingValue / 10).toStringAsFixed(1),
           };
+          
+          // Debug: Print what we're returning
+          print('Returning filters: $filters');
+          print('Genre names type: ${selectedGenreNames.runtimeType}');
+          print('Category name type: ${selectedCategoryName.runtimeType}');
           
           // Close the bottom sheet and return the filters
           Navigator.pop(context, filters);
