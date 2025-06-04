@@ -335,17 +335,17 @@ Future<Game?> getGameEntry(String inName) async {
 // }
 
 
-// Func: getRecentGames
+// Func: getUpcomingGames
 // Input: None
 // Output: List<Game> gamesList - Sized to 10;
-// Future<List<Game>> getRecentGames() async {
+// Future<List<Game>> getUpcomingGames() async {
 // 
 // }
 
-// Func: getTrendingGames
+// Func: getLatestGames
 // Input: None
 // Output: List<Game> gamesList - Sized to 10;
-// Future<List<Game>> getTrendingGames() async {
+// Future<List<Game>> getLatestGames() async {
 // 
 // }
 

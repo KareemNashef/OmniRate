@@ -16,6 +16,9 @@ class Show {
   
   @HiveField(1)
   final String thumbnailUrl;
+
+  @HiveField(17)
+  final String backdropUrl;
   
   @HiveField(2)
   final double rating;
@@ -71,6 +74,7 @@ class Show {
   Show({
     required this.name,
     required this.thumbnailUrl,
+    this.backdropUrl = '',
     this.rating = 0.0,
 
     this.releaseStatus = 'N/A',
@@ -95,6 +99,7 @@ class Show {
   Map<String, dynamic> toMap() => {
     'name': name,
     'thumbnailUrl': thumbnailUrl,
+    'backdropUrl': backdropUrl,
     'rating': rating,
 
     'releaseDate': releaseStatus,
@@ -119,6 +124,7 @@ class Show {
   factory Show.fromMap(Map<String, dynamic> map) => Show(
         name: map['name'],
         thumbnailUrl: map['thumbnailUrl'],
+        backdropUrl: map['backdropUrl'],
         rating: map['rating'],
         releaseStatus: map['releaseStatus'],
         firstAir: map['firstAir'],

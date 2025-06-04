@@ -19,6 +19,7 @@ class ShowAdapter extends TypeAdapter<Show> {
     return Show(
       name: fields[0] as String,
       thumbnailUrl: fields[1] as String,
+      backdropUrl: fields[17] as String,
       rating: fields[2] as double,
       releaseStatus: fields[3] as String,
       firstAir: fields[4] as String,
@@ -40,11 +41,13 @@ class ShowAdapter extends TypeAdapter<Show> {
   @override
   void write(BinaryWriter writer, Show obj) {
     writer
-      ..writeByte(17)
+      ..writeByte(18)
       ..writeByte(0)
       ..write(obj.name)
       ..writeByte(1)
       ..write(obj.thumbnailUrl)
+      ..writeByte(17)
+      ..write(obj.backdropUrl)
       ..writeByte(2)
       ..write(obj.rating)
       ..writeByte(3)

@@ -17,6 +17,9 @@ class Movie {
   @HiveField(1)
   final String thumbnailUrl;
 
+  @HiveField(10)
+  final String backdropUrl;
+
   @HiveField(2)
   final double rating;
 
@@ -50,6 +53,7 @@ class Movie {
   Movie({
     required this.name,
     required this.thumbnailUrl,
+    this.backdropUrl = '',
     this.rating = 0.0,
 
     this.releaseStatus = 'N/A',
@@ -67,6 +71,7 @@ class Movie {
   Map<String, dynamic> toMap() => {
     'name': name,
     'thumbnailUrl': thumbnailUrl,
+    'backdropUrl': backdropUrl,
     'rating': rating,
 
     'releaseDate': releaseStatus,
@@ -84,6 +89,7 @@ class Movie {
   factory Movie.fromMap(Map<String, dynamic> map) => Movie(
     name: map['name'],
     thumbnailUrl: map['thumbnailUrl'],
+    backdropUrl: map['backdropUrl'],
     rating: map['rating'],
 
     releaseStatus: map['releaseDate'],

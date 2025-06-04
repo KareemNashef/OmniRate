@@ -19,6 +19,7 @@ class MovieAdapter extends TypeAdapter<Movie> {
     return Movie(
       name: fields[0] as String,
       thumbnailUrl: fields[1] as String,
+      backdropUrl: fields[10] as String,
       rating: fields[2] as double,
       releaseStatus: fields[3] as String,
       genres: (fields[4] as List).cast<String>(),
@@ -33,11 +34,13 @@ class MovieAdapter extends TypeAdapter<Movie> {
   @override
   void write(BinaryWriter writer, Movie obj) {
     writer
-      ..writeByte(10)
+      ..writeByte(11)
       ..writeByte(0)
       ..write(obj.name)
       ..writeByte(1)
       ..write(obj.thumbnailUrl)
+      ..writeByte(10)
+      ..write(obj.backdropUrl)
       ..writeByte(2)
       ..write(obj.rating)
       ..writeByte(3)

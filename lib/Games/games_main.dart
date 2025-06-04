@@ -55,11 +55,11 @@ class GamesMainPageState extends MainPageBaseState {
             mainCarousel("Games", selectedPaths3, selectedGames3),
             blankCarousel(
               "Games",
-              "Recent Releases",
+              "Upcoming Releases",
               selectedPaths1,
               selectedGames1,
             ),
-            blankCarousel("Games", "Trending", selectedPaths2, selectedGames2),
+            blankCarousel("Games", "Latest", selectedPaths2, selectedGames2),
             blankCarousel("Games", "Top Rated", selectedPaths3, selectedGames3),
 
             // Padding
