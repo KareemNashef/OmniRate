@@ -8,7 +8,11 @@ import 'package:omnirate/BaseClasses/Assets/add_modal.dart';
 // ========== Entry page ========== //
 
 class EntryBase extends StatefulWidget {
-  const EntryBase({super.key});
+
+final String inTitle;
+
+
+  const EntryBase({super.key, this.inTitle = 'N/A'});
 
   @override
   EntryBaseState createState() => EntryBaseState();
@@ -18,11 +22,12 @@ class EntryBaseState extends State<EntryBase> {
   // ===== Class Widgets ===== //
 
   // Entry main
-  Widget entryMain(String inTitle, String inPath, String inRating) {
+  Widget entryMain(String inTitle, String inPath, String inRating, {String inArtwork = 'N/A'}) {
     return AnimatedBackgroundCard(
       inTitle: inTitle,
       inPath: inPath,
       inRating: inRating,
+      inArtwork: inArtwork,
     );
   }
 
@@ -65,8 +70,7 @@ class EntryBaseState extends State<EntryBase> {
 
   // Function to handle adding to list
   void _addToList(String listType, double rating) {
-    // Implement your logic here
-    print('Adding to $listType with rating: $rating');
+    // TODO
 
     // Example: You might want to call an API, update local storage, etc.
     // showSnackBar or show success message

@@ -6,20 +6,22 @@ import 'package:flutter/material.dart';
 class AnimatedBackgroundCard extends StatefulWidget {
   final String inTitle;
   final String inPath;
+  final String inArtwork;
   final String inRating;
 
   const AnimatedBackgroundCard({
-    Key? key,
+    super.key,
     required this.inTitle,
     required this.inPath,
+    this.inArtwork = "N/A",
     required this.inRating,
-  }) : super(key: key);
+  });
 
   @override
-  _AnimatedBackgroundCardState createState() => _AnimatedBackgroundCardState();
+  AnimatedBackgroundCardState createState() => AnimatedBackgroundCardState();
 }
 
-class _AnimatedBackgroundCardState extends State<AnimatedBackgroundCard>
+class AnimatedBackgroundCardState extends State<AnimatedBackgroundCard>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _animation;
@@ -71,15 +73,17 @@ class _AnimatedBackgroundCardState extends State<AnimatedBackgroundCard>
                     offset: Offset(_animation.value * 50, 0), // Reduced scroll distance
                     child: Container(
                       decoration: BoxDecoration(
-                        image: DecorationImage(
-                          image: AssetImage('assets/Debug/Games/test.webp'),
-                          fit: BoxFit.cover,
-                        ),
+                        image: widget.inArtwork == 'N/A'
+    ? null
+    : DecorationImage(
+        image: NetworkImage(widget.inArtwork),
+        fit: BoxFit.cover,
+      ),
                       ),
                       child: BackdropFilter(
                         filter: ImageFilter.blur(sigmaX: 2.0, sigmaY: 2.0),
                         child: Container(
-                          color: Colors.black.withOpacity(0.0),
+                          color: Colors.transparent,
                         ),
                       ),
                     ),
@@ -89,7 +93,7 @@ class _AnimatedBackgroundCardState extends State<AnimatedBackgroundCard>
                 // Content overlay
                 Container(
                   decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.surfaceContainer.withOpacity(0.8),
+                    color: Theme.of(context).colorScheme.surfaceContainer.withValues(alpha: 0.8),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Row(
@@ -100,10 +104,14 @@ class _AnimatedBackgroundCardState extends State<AnimatedBackgroundCard>
                         width: 135,
                         height: 240,
                         decoration: BoxDecoration(
-                          image: DecorationImage(
-                            image: AssetImage(inPath),
-                            fit: BoxFit.cover,
-                          ),
+image: DecorationImage(
+  image: NetworkImage(
+    inPath.startsWith('file')
+      ? 'https://www.igdb.com/assets/no_cover_show-ef1e36c00e101c2fb23d15bb80edd9667bbf604a12fc0267a66033afea320c65.png'
+      : inPath,
+  ),
+  fit: BoxFit.cover,
+), // TODO
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),

@@ -6,11 +6,12 @@ import 'package:flutter/services.dart';
 // Local imports
 import 'package:omnirate/Settings/settings_theme.dart';
 import 'package:omnirate/Settings/settings_account.dart';
-import 'package:omnirate/Games/game_entry.dart';
 import 'package:omnirate/Shows/show_entry.dart';
 import 'package:omnirate/Main/welcome_page.dart';
 
 import 'package:omnirate/API/igdb_api.dart';
+
+import 'package:omnirate/Database/database_helper.dart';
 
 // Settings page main
 class SettingsPage extends StatefulWidget {
@@ -194,7 +195,7 @@ class _SettingsPageState extends State<SettingsPage> {
           ),
 
           // List entry - Debug 1
-          listTileEntry(Icons.info, "Debug", "stuff", GameEntry()),
+          // listTileEntry(Icons.info, "Debug", "stuff", GameEntry()),
 
           // List entry - Debug 2
           listTileEntry(Icons.info, "Debug 2", "stuff", MovieEntry()),
@@ -203,7 +204,7 @@ class _SettingsPageState extends State<SettingsPage> {
           listTileEntry(Icons.info, "Debug 3", "stuff", ShowEntry()),
 
           // List entry - Debug 4
-          listTileEntry(Icons.info, "Debug 4", "stuff", DebugPage()), 
+          listTileEntry(Icons.info, "Debug 4", "stuff", DebugPage()),
 
           // List entry - Debug 7
           listTileEntry(Icons.info, "Debug 7", "stuff", WelcomePage()),
@@ -230,8 +231,6 @@ class Temp extends StatelessWidget {
   }
 }
 
-
-
 // TODO
 
 class DebugPage extends StatelessWidget {
@@ -247,36 +246,83 @@ class DebugPage extends StatelessWidget {
           children: [
             ElevatedButton(
               onPressed: () async {
-                
-final game = await getGameEntry("The Legend of Zelda: Breath of the Wild");
+                final game = await getGame(
+                  "The Legend of Zelda: Breath of the Wild",
+                );
 
-if (context.mounted && game != null) {
-showDialog(
-  context: context,
-  builder: (context) => AlertDialog(
-    title: Text(game.name),
-    content: SingleChildScrollView(
-      child: Text(game.toString()),
-    ),
-    actions: [
-      TextButton(
-        onPressed: () => Navigator.pop(context),
-        child: Text('Close'),
-      ),
-    ],
-  ),
-);
-}
+                if (context.mounted && game != null) {
+                  showDialog(
+                    context: context,
+                    builder:
+                        (context) => AlertDialog(
+                          title: Text(game.name),
+                          content: SingleChildScrollView(
+                            child: Text(game.toString()),
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(context),
+                              child: Text('Close'),
+                            ),
+                          ],
+                        ),
+                  );
+                }
               },
               child: const Text('Run Test 1'),
             ),
             ElevatedButton(
-              onPressed: () {
+              onPressed: () async {
+                Map<String, String> inList = await getPopularGames();
+
+                if (context.mounted) {
+                  showDialog(
+                    context: context,
+                    builder:
+                        (context) => AlertDialog(
+                          title: Text("Test"),
+                          content: SingleChildScrollView(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children:
+                                  inList.entries.map((entry) {
+                                    return Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(entry.key),
+                                        SizedBox(height: 8),
+                                        Image.network(entry.value),
+                                        SizedBox(height: 16),
+                                      ],
+                                    );
+                                  }).toList(),
+                            ),
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(context),
+                              child: Text('Close'),
+                            ),
+                          ],
+                        ),
+                  );
+                }
                 // TODO: Call test function 2
                 debugPrint('Test 2 triggered');
               },
               child: const Text('Run Test 2'),
             ),
+
+            ElevatedButton(
+              onPressed: () async {
+                // TODO: Call test function 3
+                await HiveHelper.clearAllData();
+                debugPrint('Test 3 triggered');
+              },
+              child: const Text('Run Test 3'),
+            ),
+            
           ],
         ),
       ),

@@ -2,6 +2,7 @@
 import 'package:hive_flutter/hive_flutter.dart';
 
 // Local imports
+import 'package:omnirate/API/igdb_api.dart';
 import 'package:omnirate/Database/model_game.dart';
 import 'package:omnirate/Database/model_movie.dart';
 import 'package:omnirate/Database/model_show.dart';
@@ -13,17 +14,20 @@ import 'package:omnirate/Database/model_show.dart';
 // output: game object
 // Searches the database for the game. if it is not found, look it up using the API
 Future<Game?> getGame(String inName) async {
+  // Search the database
   final game = await HiveHelper.getGameByName(inName);
   if (game != null) {
     return game;
   }
 
-  // TODO: Add API call here to fetch game data
-  // Game? apiGame = await fetchGameFromAPI(inName);
-  // if (apiGame != null) {
-  //   await HiveHelper.insertGame(apiGame);
-  //   return apiGame;
-  // }
+  // Look it up using the API
+  Game? apiGame = await getGameEntry(inName);
+
+  // Add the game to the database
+  if (apiGame != null) {
+    await HiveHelper.insertGame(apiGame);
+    return apiGame;
+  }
 
   return null;
 }

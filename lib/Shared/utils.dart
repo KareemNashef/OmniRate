@@ -194,7 +194,7 @@ class ExpandableTextState extends State<ExpandableText> {
           text: TextSpan(
                 style: TextStyle(
       fontSize: 16,
-      color: Theme.of(context).colorScheme.onBackground,
+      color: Theme.of(context).colorScheme.onSurface,
     ),
             children: [
               TextSpan(
