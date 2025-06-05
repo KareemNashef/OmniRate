@@ -8,7 +8,7 @@ import 'package:omnirate/Shared/utils.dart';
 // ========== Game entry page ========== //
 
 class ShowEntry extends EntryBase {
-  const ShowEntry({super.key});
+  const ShowEntry({super.key, required super.inEntry});
 
   @override
   ShowEntryState createState() => ShowEntryState();
@@ -438,7 +438,7 @@ class ShowEntryState extends EntryBaseState {
           child: Column(
             children: [
               // Entry
-              entryMain("Breaking Bad", "assets/Debug/Shows/9.webp", "8.9"),
+              // entryMain("Breaking Bad", "assets/Debug/Shows/9.webp", "8.9"),
 
               // Padding
               const SizedBox(height: 8),

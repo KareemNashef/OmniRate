@@ -1,9 +1,11 @@
 // Flutter imports
 import 'package:flutter/material.dart';
+import 'package:omnirate/API/tmdb_api.dart';
 import 'dart:math';
 
 // Local imports
 import 'package:omnirate/BaseClasses/base_main.dart';
+import 'package:omnirate/Database/model_movie.dart';
 import 'package:omnirate/Shared/utils.dart';
 
 // ========== Movies main page ========== //
@@ -16,49 +18,160 @@ class MoviesMainPage extends MainPageBase {
 }
 
 class MoviesMainPageState extends MainPageBaseState {
+  // ===== Class variables ===== //
+
+  late Future<List<Movie>> futurePopular;
+  late Future<List<Movie>> futureUpcoming;
+  late Future<List<Movie>> futureNowPlaying;
+  late Future<List<Movie>> futureTopRated;
+
+  // ===== Class Initialization ===== //
+
+  @override
+  void initState() {
+    super.initState();
+    futurePopular = getPopularMovies();
+    futureUpcoming = getUpcomingMovies();
+    futureNowPlaying = getNowPlayingMovies();
+    futureTopRated = getTopRatedMovies();
+  }
+
   // ===== Build Method ===== //
 
   @override
   Widget build(BuildContext context) {
-    // ===== UI SPRINT ===== //
-
-    final random = Random();
-    final allIndices = List<int>.generate(moviesList.length, (i) => i)
-      ..shuffle(random);
-
-    final selectedMovies1 =
-        allIndices.sublist(0, 4).map((i) => moviesList[i]).toList();
-    final selectedPaths1 =
-        allIndices.sublist(0, 4).map((i) => moviesPaths[i]).toList();
-
-    final selectedMovies2 =
-        allIndices.sublist(4, 8).map((i) => moviesList[i]).toList();
-    final selectedPaths2 =
-        allIndices.sublist(4, 8).map((i) => moviesPaths[i]).toList();
-
-    final selectedMovies3 =
-        allIndices.sublist(8, 12).map((i) => moviesList[i]).toList();
-    final selectedPaths3 =
-        allIndices.sublist(8, 12).map((i) => moviesPaths[i]).toList();
-
-    // ===== UI SPRINT ===== //
-
     return SingleChildScrollView(
       child: Padding(
         padding: const EdgeInsets.all(8.0),
         child: Column(
-          spacing: 12,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            SizedBox(height: 20),
+            // Padding
+            SizedBox(height: 40),
+
+            // Search Bar
             searchBar("Movies"),
-            mainCarousel("Movies",selectedPaths3, selectedMovies3),
-            blankCarousel("Movies","Upcoming Releases", selectedPaths1, selectedMovies1),
-            blankCarousel("Movies","Latest", selectedPaths2, selectedMovies2),
-            blankCarousel("Movies","Top Rated", selectedPaths3, selectedMovies3),
 
             // Padding
+            SizedBox(height: 20),
+
+            // Main Carousel
+            FutureBuilder<List<Movie>>(
+              future: futurePopular,
+              builder: (context, snapshot) {
+                if (!snapshot.hasData) {
+                  return SizedBox(
+                    height: 290,
+                    child: Center(child: CircularProgressIndicator()),
+                  );
+                }
+
+                return mainCarousel("Movies", snapshot.data!);
+              },
+            ),
+
+            // Padding
+            const SizedBox(height: 16),
+
+            // Upcoming
+            FutureBuilder<List<Movie>>(
+              future: futureUpcoming,
+              builder: (context, snapshot) {
+                if (!snapshot.hasData) {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                        child: Text(
+                          "Coming Soon",
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: 8),
+                      SizedBox(
+                        height: 230,
+                        child: Center(child: CircularProgressIndicator()),
+                      ),
+                    ],
+                  );
+                }
+                return blankCarousel("Movies", "Upcoming", snapshot.data!);
+              },
+            ),
+
+            // Now Playing
+            FutureBuilder<List<Movie>>(
+              future: futureNowPlaying,
+              builder: (context, snapshot) {
+                if (!snapshot.hasData) {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                        child: Text(
+                          "Recently Released",
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: 8),
+                      SizedBox(
+                        height: 230,
+                        child: Center(child: CircularProgressIndicator()),
+                      ),
+                    ],
+                  );
+                }
+                return blankCarousel(
+                  "Movies",
+                  "Now Playing",
+                  snapshot.data!,
+                );
+              },
+            ),
+            
+            // Top Rated
+            FutureBuilder<List<Movie>>(
+              future: futureTopRated,
+              builder: (context, snapshot) {
+                if (!snapshot.hasData) {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                        child: Text(
+                          "Top Rated",
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: 8),
+                      SizedBox(
+                        height: 230,
+                        child: Center(child: CircularProgressIndicator()),
+                      ),
+                    ],
+                  );
+                }
+                return blankCarousel("Movies", "Top Rated", snapshot.data!);
+              },
+            ),
+
             SizedBox(height: 64),
+
           ],
         ),
       ),

@@ -1,5 +1,7 @@
 // Flutter imports
 import 'package:flutter/material.dart';
+import 'package:omnirate/API/tmdb_api.dart';
+import 'package:omnirate/Database/model_movie.dart';
 import 'package:omnirate/Movies/movie_entry.dart';
 import 'package:flutter/services.dart';
 
@@ -197,12 +199,6 @@ class _SettingsPageState extends State<SettingsPage> {
           // List entry - Debug 1
           // listTileEntry(Icons.info, "Debug", "stuff", GameEntry()),
 
-          // List entry - Debug 2
-          listTileEntry(Icons.info, "Debug 2", "stuff", MovieEntry()),
-
-          // List entry - Debug 3
-          listTileEntry(Icons.info, "Debug 3", "stuff", ShowEntry()),
-
           // List entry - Debug 4
           listTileEntry(Icons.info, "Debug 4", "stuff", DebugPage()),
 
@@ -246,18 +242,16 @@ class DebugPage extends StatelessWidget {
           children: [
             ElevatedButton(
               onPressed: () async {
-                final game = await getGame(
-                  "The Legend of Zelda: Breath of the Wild",
-                );
+                final movie = await getMovieEntry("Sinners");
 
-                if (context.mounted && game != null) {
+                if (context.mounted && movie != null) {
                   showDialog(
                     context: context,
                     builder:
                         (context) => AlertDialog(
-                          title: Text(game.name),
+                          title: Text(movie.name),
                           content: SingleChildScrollView(
-                            child: Text(game.toString()),
+                            child: Text(movie.toString()),
                           ),
                           actions: [
                             TextButton(
@@ -273,7 +267,7 @@ class DebugPage extends StatelessWidget {
             ),
             ElevatedButton(
               onPressed: () async {
-                Map<String, String> inList = await getPopularGames();
+                List<Movie> inList = await searchMoviesByName("Sinners");
 
                 if (context.mounted) {
                   showDialog(
@@ -285,14 +279,14 @@ class DebugPage extends StatelessWidget {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children:
-                                  inList.entries.map((entry) {
+                                  inList.map((entry) {
                                     return Column(
                                       crossAxisAlignment:
                                           CrossAxisAlignment.start,
                                       children: [
-                                        Text(entry.key),
+                                        Text(entry.name),
                                         SizedBox(height: 8),
-                                        Image.network(entry.value),
+                                        Image.network(entry.thumbnailUrl),
                                         SizedBox(height: 16),
                                       ],
                                     );
@@ -322,7 +316,6 @@ class DebugPage extends StatelessWidget {
               },
               child: const Text('Run Test 3'),
             ),
-            
           ],
         ),
       ),

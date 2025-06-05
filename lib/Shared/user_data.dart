@@ -15,11 +15,11 @@ class UserData {
 
   // User lists
   @HiveField(2)
-  Map<String, MediaEntry> listGames;
+  Map<String, UserMediaEntry> listGames;
   @HiveField(3)
-  Map<String, MediaEntry> listShows;
+  Map<String, UserMediaEntry> listShows;
   @HiveField(4)
-  Map<String, MediaEntry> listMovies;
+  Map<String, UserMediaEntry> listMovies;
 
   // Constructor
   UserData({
@@ -45,19 +45,19 @@ class UserData {
     listGames:
         (map['listGames'] as Map?)?.map(
           (k, v) =>
-              MapEntry(k, MediaEntry.fromMap(Map<String, dynamic>.from(v))),
+              MapEntry(k, UserMediaEntry.fromMap(Map<String, dynamic>.from(v))),
         ) ??
         {},
     listShows:
         (map['listShows'] as Map?)?.map(
           (k, v) =>
-              MapEntry(k, MediaEntry.fromMap(Map<String, dynamic>.from(v))),
+              MapEntry(k, UserMediaEntry.fromMap(Map<String, dynamic>.from(v))),
         ) ??
         {},
     listMovies:
         (map['listMovies'] as Map?)?.map(
           (k, v) =>
-              MapEntry(k, MediaEntry.fromMap(Map<String, dynamic>.from(v))),
+              MapEntry(k, UserMediaEntry.fromMap(Map<String, dynamic>.from(v))),
         ) ??
         {},
     email: map['email'] ?? '',
@@ -72,7 +72,7 @@ class UserData {
 
 // Media entry class
 @HiveType(typeId: 1)
-class MediaEntry {
+class UserMediaEntry {
   // Media details
   @HiveField(0)
   String name;
@@ -82,7 +82,7 @@ class MediaEntry {
   String status;
 
   // Constructor
-  MediaEntry({required this.name, required this.rating, required this.status});
+  UserMediaEntry({required this.name, required this.rating, required this.status});
 
   // Convert to map
   Map<String, dynamic> toMap() => {
@@ -92,7 +92,7 @@ class MediaEntry {
   };
 
   // Convert from map
-  factory MediaEntry.fromMap(Map<String, dynamic> map) => MediaEntry(
+  factory UserMediaEntry.fromMap(Map<String, dynamic> map) => UserMediaEntry(
     name: map['name'] ?? '',
     rating: (map['rating'] ?? 0).toDouble(),
     status: map['status'] ?? '',

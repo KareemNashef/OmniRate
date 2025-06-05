@@ -1,20 +1,16 @@
 // Flutter imports
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:omnirate/Database/model_entry.dart';
+import 'package:omnirate/Database/model_game.dart';
 
 
 class AnimatedBackgroundCard extends StatefulWidget {
-  final String inTitle;
-  final String inPath;
-  final String inArtwork;
-  final String inRating;
+  final MediaEntry inEntry;
 
   const AnimatedBackgroundCard({
     super.key,
-    required this.inTitle,
-    required this.inPath,
-    this.inArtwork = "N/A",
-    required this.inRating,
+    required this.inEntry,
   });
 
   @override
@@ -51,7 +47,7 @@ class AnimatedBackgroundCardState extends State<AnimatedBackgroundCard>
     super.dispose();
   }
 
-  Widget entryMain(String inTitle, String inPath, String inRating) {
+  Widget entryMain() {
     return SizedBox(
       height: 290,
       child: AnimatedBuilder(
@@ -73,10 +69,10 @@ class AnimatedBackgroundCardState extends State<AnimatedBackgroundCard>
                     offset: Offset(_animation.value * 50, 0), // Reduced scroll distance
                     child: Container(
                       decoration: BoxDecoration(
-                        image: widget.inArtwork == 'N/A'
+                        image: widget.inEntry.artworkUrl == 'N/A'
     ? null
     : DecorationImage(
-        image: NetworkImage(widget.inArtwork),
+        image: NetworkImage(widget.inEntry.artworkUrl),
         fit: BoxFit.cover,
       ),
                       ),
@@ -106,9 +102,7 @@ class AnimatedBackgroundCardState extends State<AnimatedBackgroundCard>
                         decoration: BoxDecoration(
 image: DecorationImage(
   image: NetworkImage(
-    inPath.startsWith('file')
-      ? 'https://www.igdb.com/assets/no_cover_show-ef1e36c00e101c2fb23d15bb80edd9667bbf604a12fc0267a66033afea320c65.png'
-      : inPath,
+    widget.inEntry.thumbnailUrl,
   ),
   fit: BoxFit.cover,
 ), // TODO
@@ -127,7 +121,7 @@ image: DecorationImage(
                           children: [
                             // Title
                             Text(
-                              inTitle,
+                              widget.inEntry.name,
                               maxLines: 3,
                               textAlign: TextAlign.center,
                               overflow: TextOverflow.ellipsis,
@@ -148,7 +142,7 @@ image: DecorationImage(
                                 Icon(Icons.star, size: 16, color: Colors.amber),
                                 SizedBox(width: 4),
                                 Text(
-                                  inRating,
+                                  widget.inEntry.rating.toString(),
                                   style: TextStyle(
                                     fontSize: 16,
                                     color: Theme.of(context).colorScheme.secondary,
@@ -172,6 +166,6 @@ image: DecorationImage(
 
   @override
   Widget build(BuildContext context) {
-    return entryMain(widget.inTitle, widget.inPath, widget.inRating);
+    return entryMain();
   }
 }

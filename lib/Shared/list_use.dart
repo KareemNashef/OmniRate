@@ -16,7 +16,7 @@ Future<void> addMediaEntry(String mediaType, String mediaName, double mediaRatin
   if (userData == null) throw Exception('No user data found');
 
   // Add media entry
-  final entry = MediaEntry(name: mediaName, rating: mediaRating, status: mediaStatus);
+  final entry = UserMediaEntry(name: mediaName, rating: mediaRating, status: mediaStatus);
 
   switch (mediaType) {
     case 'Game':
@@ -38,14 +38,14 @@ Future<void> addMediaEntry(String mediaType, String mediaName, double mediaRatin
 }
 
 // Get a list of media entries by status
-Future<List<MediaEntry>> getMediaByStatus(String mediaType, String mediaStatus) async {
+Future<List<UserMediaEntry>> getMediaByStatus(String mediaType, String mediaStatus) async {
 
   // Get user data
   final box = await Hive.openBox<UserData>('userBox');
   final userData = box.get('user');
   if (userData == null) return [];
 
-  Map<String, MediaEntry> list;
+  Map<String, UserMediaEntry> list;
 
   switch (mediaType) {
     case 'Game':

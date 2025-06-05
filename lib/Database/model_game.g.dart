@@ -28,15 +28,13 @@ class GameAdapter extends TypeAdapter<Game> {
       timeHaste: fields[7] as String,
       timeNormal: fields[8] as String,
       timeComplete: fields[9] as String,
-      status: fields[10] as String,
-      userRating: fields[11] as double,
     );
   }
 
   @override
   void write(BinaryWriter writer, Game obj) {
     writer
-      ..writeByte(13)
+      ..writeByte(11)
       ..writeByte(0)
       ..write(obj.name)
       ..writeByte(1)
@@ -58,11 +56,7 @@ class GameAdapter extends TypeAdapter<Game> {
       ..writeByte(8)
       ..write(obj.timeNormal)
       ..writeByte(9)
-      ..write(obj.timeComplete)
-      ..writeByte(10)
-      ..write(obj.status)
-      ..writeByte(11)
-      ..write(obj.userRating);
+      ..write(obj.timeComplete);
   }
 
   @override

@@ -1,5 +1,6 @@
 // Flutter imports
 import 'package:flutter/material.dart';
+import 'package:omnirate/Database/model_game.dart';
 import 'package:omnirate/Games/game_entry.dart';
 
 // Local imports
@@ -14,7 +15,7 @@ import 'package:omnirate/Shows/shows_filters.dart';
 class DiscoverPageBase extends StatefulWidget {
   final String inType;
   // Add the function as a parameter
-  final Future<Map<String, String>> Function(List<String>, String, String)? getFilteredItems;
+  final Future<List<Game>> Function(List<String>, String, String)? getFilteredItems;
 
   // Constructor with required parameters
   const DiscoverPageBase({
@@ -30,7 +31,7 @@ class DiscoverPageBase extends StatefulWidget {
 class DiscoverPageBaseState extends State<DiscoverPageBase> {
   // ===== Class Variables ===== //
 
-  Map<String, String> displayItems = {}; // title -> thumbnail URL
+  List<Game> displayItems = [];
   bool isLoading = false;
   String? errorMessage;
 
@@ -130,9 +131,6 @@ class DiscoverPageBaseState extends State<DiscoverPageBase> {
       );
     }
 
-    final titles = displayItems.keys.toList();
-    final thumbnails = displayItems.values.toList();
-
     return GridView.builder(
       shrinkWrap: true,
       physics: NeverScrollableScrollPhysics(),
@@ -143,7 +141,7 @@ class DiscoverPageBaseState extends State<DiscoverPageBase> {
         mainAxisSpacing: 16,
         childAspectRatio: 100 / 200, // Thumbnail height + spacing
       ),
-      itemCount: titles.length,
+      itemCount: displayItems.length,
       itemBuilder: (context, index) {
         return Column(
           mainAxisAlignment: MainAxisAlignment.start,
@@ -154,13 +152,13 @@ class DiscoverPageBaseState extends State<DiscoverPageBase> {
                           Widget page;
                           switch (widget.inType) {
                             case "Games":
-                              page = GameEntry(inTitle: titles[index]);
+                              page = GameEntry(inEntry: displayItems[index]);
                               break;
                             case "Shows":
-                              page = ShowEntry();
+                              page = ShowEntry(inEntry: displayItems[index]);
                               break;
                             case "Movies":
-                              page = MovieEntry();
+                              page = MovieEntry(inEntry: displayItems[index]);
                               break;
                             default:
                               return;
@@ -180,7 +178,7 @@ class DiscoverPageBaseState extends State<DiscoverPageBase> {
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(12),
                   child: Image.network(
-                    thumbnails[index],
+                    displayItems[index].thumbnailUrl,
                     fit: BoxFit.cover,
                     loadingBuilder: (context, child, loadingProgress) {
                       if (loadingProgress == null) return child;
@@ -212,7 +210,7 @@ class DiscoverPageBaseState extends State<DiscoverPageBase> {
             ),
             const SizedBox(height: 8),
             Text(
-              titles[index],
+              displayItems[index].name,
               maxLines: 3,
               textAlign: TextAlign.center,
               overflow: TextOverflow.ellipsis,

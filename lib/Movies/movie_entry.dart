@@ -3,12 +3,13 @@ import 'package:flutter/material.dart';
 
 // Local imports
 import 'package:omnirate/BaseClasses/base_entry.dart';
+import 'package:omnirate/Database/model_movie.dart';
 import 'package:omnirate/Shared/utils.dart';
 
 // ========== Game entry page ========== //
 
 class MovieEntry extends EntryBase {
-  const MovieEntry({super.key});
+  const MovieEntry({super.key, required super.inEntry});
 
   @override
   MovieEntryState createState() => MovieEntryState();
@@ -18,11 +19,7 @@ class MovieEntryState extends EntryBaseState {
   // ===== Class Widgets ===== //
 
   // Movie info
-  Widget movieInfo(
-    String inReleaseStatus,
-    String inGenres,
-    String inOverview,
-  ) {
+  Widget movieInfo() {
     return Card(
       color: Theme.of(context).colorScheme.surfaceContainer,
       elevation: 4,
@@ -38,13 +35,16 @@ class MovieEntryState extends EntryBaseState {
               TextSpan(
                 children: [
                   TextSpan(
-                    text: 'Status: ',
+                    text: 'Release Date: ',
                     style: TextStyle(
                       color: Theme.of(context).colorScheme.primary,
                       fontSize: 16,
                     ),
                   ),
-                  TextSpan(text: inReleaseStatus, style: TextStyle(fontSize: 16)),
+                  TextSpan(
+                    text: (widget.inEntry as Movie).releaseStatus,
+                    style: TextStyle(fontSize: 16),
+                  ),
                 ],
               ),
             ),
@@ -66,7 +66,10 @@ class MovieEntryState extends EntryBaseState {
                       fontSize: 16,
                     ),
                   ),
-                  TextSpan(text: inGenres, style: TextStyle(fontSize: 16)),
+                  TextSpan(
+                    text: (widget.inEntry as Movie).genres.join(', '),
+                    style: TextStyle(fontSize: 16),
+                  ),
                 ],
               ),
             ),
@@ -78,7 +81,10 @@ class MovieEntryState extends EntryBaseState {
             ),
 
             // Story with Read More toggle
-            ExpandableText(label: 'Story: ', content: inOverview),
+            ExpandableText(
+              label: 'Story: ',
+              content: (widget.inEntry as Movie).overview,
+            ),
           ],
         ),
       ),
@@ -86,7 +92,7 @@ class MovieEntryState extends EntryBaseState {
   }
 
   // Budget and revenue
-  Widget budgetAndRevenue(String inBudget, String inRevenue) {
+  Widget budgetAndRevenue() {
     Widget buildCard(String label, String time) {
       return Expanded(
         child: Card(
@@ -118,9 +124,9 @@ class MovieEntryState extends EntryBaseState {
 
     return Row(
       children: [
-        buildCard('Budget', inBudget),
+        buildCard('Budget', (widget.inEntry as Movie).budget),
         SizedBox(width: 8),
-        buildCard('Revenue', inRevenue),
+        buildCard('Revenue', (widget.inEntry as Movie).revenue),
       ],
     );
   }
@@ -195,11 +201,7 @@ class MovieEntryState extends EntryBaseState {
           child: Column(
             children: [
               // Entry
-              entryMain(
-                "A Minecraft Movie",
-                "assets/Debug/Movies/7.webp",
-                "6.1",
-              ),
+              entryMain(),
 
               // Padding
               const SizedBox(height: 8),
@@ -210,24 +212,14 @@ class MovieEntryState extends EntryBaseState {
               // Padding
               const SizedBox(height: 8),
 
-              // Budget and revenue
-              budgetAndRevenue("\$150M", "\$874M"),
+              // Budget and revenue || Removed for now TODO
+              // budgetAndRevenue(),
 
               // Padding
               const SizedBox(height: 8),
 
               // Game info
-              movieInfo(
-                "Released",
-                "Family, Comedy, Adventure, Fantasy",
-                "Four misfits find themselves struggling with ordinary problems when they are suddenly pulled through a mysterious portal into the Overworld: a bizarre, cubic wonderland that thrives on imagination. To get back home, they'll have to master this world while embarking on a magical quest with an unexpected, expert crafter, Steve.",
-              ),
-
-              // Padding
-              const SizedBox(height: 8),
-
-              // Related media
-              relatedMedia(),
+              movieInfo(),
             ],
           ),
         ),

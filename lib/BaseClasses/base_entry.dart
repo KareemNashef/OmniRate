@@ -4,31 +4,27 @@ import 'package:flutter/material.dart';
 // Local imports
 import 'package:omnirate/BaseClasses/Assets/animated_entry.dart';
 import 'package:omnirate/BaseClasses/Assets/add_modal.dart';
+import 'package:omnirate/Database/model_entry.dart';
+import 'package:omnirate/Database/model_game.dart';
 
 // ========== Entry page ========== //
 
-class EntryBase extends StatefulWidget {
+abstract class EntryBase<T extends MediaEntry> extends StatefulWidget {
+  final T inEntry;
 
-final String inTitle;
-
-
-  const EntryBase({super.key, this.inTitle = 'N/A'});
-
-  @override
-  EntryBaseState createState() => EntryBaseState();
+  const EntryBase({super.key, required this.inEntry});
 }
 
-class EntryBaseState extends State<EntryBase> {
+abstract class EntryBaseState<T extends MediaEntry, W extends EntryBase<T>>
+    extends State<W> {
+
+      T get entry => widget.inEntry as T;
+      
   // ===== Class Widgets ===== //
 
   // Entry main
-  Widget entryMain(String inTitle, String inPath, String inRating, {String inArtwork = 'N/A'}) {
-    return AnimatedBackgroundCard(
-      inTitle: inTitle,
-      inPath: inPath,
-      inRating: inRating,
-      inArtwork: inArtwork,
-    );
+  Widget entryMain() {
+    return AnimatedBackgroundCard(inEntry: widget.inEntry);
   }
 
   // Add to list button

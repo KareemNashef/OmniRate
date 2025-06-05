@@ -19,9 +19,9 @@ class UserDataAdapter extends TypeAdapter<UserData> {
     return UserData(
       userName: fields[0] as String,
       email: fields[1] as String,
-      listGames: (fields[2] as Map).cast<String, MediaEntry>(),
-      listShows: (fields[3] as Map).cast<String, MediaEntry>(),
-      listMovies: (fields[4] as Map).cast<String, MediaEntry>(),
+      listGames: (fields[2] as Map).cast<String, UserMediaEntry>(),
+      listShows: (fields[3] as Map).cast<String, UserMediaEntry>(),
+      listMovies: (fields[4] as Map).cast<String, UserMediaEntry>(),
     );
   }
 
@@ -52,17 +52,17 @@ class UserDataAdapter extends TypeAdapter<UserData> {
           typeId == other.typeId;
 }
 
-class MediaEntryAdapter extends TypeAdapter<MediaEntry> {
+class MediaEntryAdapter extends TypeAdapter<UserMediaEntry> {
   @override
   final int typeId = 1;
 
   @override
-  MediaEntry read(BinaryReader reader) {
+  UserMediaEntry read(BinaryReader reader) {
     final numOfFields = reader.readByte();
     final fields = <int, dynamic>{
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
-    return MediaEntry(
+    return UserMediaEntry(
       name: fields[0] as String,
       rating: fields[1] as double,
       status: fields[2] as String,
@@ -70,7 +70,7 @@ class MediaEntryAdapter extends TypeAdapter<MediaEntry> {
   }
 
   @override
-  void write(BinaryWriter writer, MediaEntry obj) {
+  void write(BinaryWriter writer, UserMediaEntry obj) {
     writer
       ..writeByte(3)
       ..writeByte(0)

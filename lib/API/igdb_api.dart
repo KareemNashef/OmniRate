@@ -163,17 +163,16 @@ String _formatTimestampToDate(int? timestamp) {
 }
 
 // Process and cache game list
-Future<Map<String, String>> _processAndCacheGameList(
+Future<List<Game>> _processAndCacheGameList(
   List<dynamic> rawGamesData,
 ) async {
-  // Initialize map
-  Map<String, String> nameToThumbnailMap = {};
-  if (rawGamesData.isEmpty) return nameToThumbnailMap;
+  // Initialize list
+  List<Game> readyGamesList = [];
+  if (rawGamesData.isEmpty) return readyGamesList;
 
   // Initialize lists
   List<Game> gamesToCacheEventually = []; // Games fetched from API to be cached
-  List<dynamic> gamesToProcessFromApi =
-      []; // Raw game data for games NOT found in cache
+  List<dynamic> gamesToProcessFromApi = []; // Raw game data for games NOT found in cache
 
   // Step 1: Check if game is in cache
   for (var rawGameData in rawGamesData) {
@@ -185,7 +184,7 @@ Future<Map<String, String>> _processAndCacheGameList(
     Game? existingGame = await HiveHelper.getGameByName(name);
     if (existingGame != null) {
       // Game found in cache, use its data directly
-      nameToThumbnailMap[existingGame.name] = existingGame.thumbnailUrl;
+      readyGamesList.add(existingGame);
     } else {
       // Game not in cache, add its raw data to the list for API processing
       if (rawGameData['id'] != null) {
@@ -197,7 +196,7 @@ Future<Map<String, String>> _processAndCacheGameList(
 
   // If all games were found in cache, we're done with API calls for this list
   if (gamesToProcessFromApi.isEmpty) {
-    return nameToThumbnailMap;
+    return readyGamesList;
   }
 
   // Step 2: Batch fetch game data from API
@@ -300,9 +299,12 @@ Future<Map<String, String>> _processAndCacheGameList(
       timeNormal: times['timeNormal']!,
       timeComplete: times['timeComplete']!,
     );
+
+    // Add game to cache list
     gamesToCacheEventually.add(game);
-    nameToThumbnailMap[game.name] =
-        game.thumbnailUrl; // Also add to the return map
+
+    // Add game to ready list
+    readyGamesList.add(game);
   }
 
   // ----- Step 4: Cache all newly fetched games -----
@@ -310,7 +312,7 @@ Future<Map<String, String>> _processAndCacheGameList(
     await HiveHelper.insertGame(game);
   }
 
-  return nameToThumbnailMap;
+  return readyGamesList;
 }
 // ========== Batch Fetch Functions ========== //
 
@@ -640,7 +642,7 @@ Future<Game?> getGameEntry(String inName) async {
   }
 }
 
-Future<Map<String, String>> searchGamesByName(String name) async {
+Future<List<Game>> searchGamesByName(String name) async {
   final query = '''
   fields $_commonGameListFields;
   search "$name";
@@ -658,7 +660,7 @@ Future<Map<String, String>> searchGamesByName(String name) async {
   }
 }
 
-Future<Map<String, String>> getFilteredGames(
+Future<List<Game>> getFilteredGames(
   List<String> inGenresNames,
   String inCategoryId, // Changed from inCategory to inCategoryId
   String inMinRating,
@@ -705,7 +707,7 @@ Future<Map<String, String>> getFilteredGames(
   }
 }
 
-Future<Map<String, String>> getPopularGames() async {
+Future<List<Game>> getDiscoverGames() async {
   // 1. Get popular game IDs
   final popularQuery = '''
     fields game_id, value;
@@ -723,7 +725,7 @@ Future<Map<String, String>> getPopularGames() async {
   final List<int> gameIds =
       popData.map((e) => e['game_id'] as int?).whereType<int>().toList();
 
-  if (gameIds.isEmpty) return {};
+  if (gameIds.isEmpty) return [];
 
   // 2. Fetch full game details for these IDs
   final gamesQuery = '''
@@ -739,13 +741,13 @@ Future<Map<String, String>> getPopularGames() async {
   return await _processAndCacheGameList(gamesData);
 }
 
-Future<Map<String, String>> getUpcomingGames() async {
+Future<List<Game>> getComingSoonGames() async {
   // Get today's date
   final today = DateTime.now().toUtc().millisecondsSinceEpoch ~/ 1000;
 
   final query = '''
     fields $_commonGameListFields;
-    where first_release_date > $today & category = 0;
+    where first_release_date > $today & category = 0 & cover != null;
     sort first_release_date asc;
     limit 10;
   ''';
@@ -759,13 +761,13 @@ Future<Map<String, String>> getUpcomingGames() async {
   }
 }
 
-Future<Map<String, String>> getLatestGames() async {
+Future<List<Game>> getRecentlyReleasedGames() async {
   // Get today's date
   final today = DateTime.now().toUtc().millisecondsSinceEpoch ~/ 1000;
 
   final query = '''
     fields $_commonGameListFields;
-    where first_release_date != null & first_release_date < $today & category = 0;
+    where first_release_date != null & first_release_date < $today & category = 0 & cover != null;
     sort first_release_date desc;
     limit 10;
   ''';
@@ -778,10 +780,10 @@ Future<Map<String, String>> getLatestGames() async {
   }
 }
 
-Future<Map<String, String>> getTopGames({String limit = "10"}) async {
+Future<List<Game>> getTopRatedGames({String limit = "10"}) async {
   final query = '''
     fields $_commonGameListFields;
-    where rating_count > 100 & category = 0;
+    where rating_count > 100 & category = 0 & cover != null;
     sort rating desc;
     limit $limit;
   ''';

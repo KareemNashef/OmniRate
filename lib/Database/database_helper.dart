@@ -3,6 +3,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 
 // Local imports
 import 'package:omnirate/API/igdb_api.dart';
+import 'package:omnirate/API/tmdb_api.dart';
 import 'package:omnirate/Database/model_game.dart';
 import 'package:omnirate/Database/model_movie.dart';
 import 'package:omnirate/Database/model_show.dart';
@@ -37,18 +38,25 @@ Future<Game?> getGame(String inName) async {
 // output: show object
 // Searches the database for the show. if it is not found, look it up using the API
 Future<Show?> getShow(String inName) async {
+  // 1. Check the local Hive database first
   final show = await HiveHelper.getShowByName(inName);
   if (show != null) {
+    print("Found '${inName}' in cache.");
     return show;
   }
 
-  // TODO: Add API call here to fetch show data
-  // Show? apiShow = await fetchShowFromAPI(inName);
-  // if (apiShow != null) {
-  //   await HiveHelper.insertShow(apiShow);
-  //   return apiShow;
-  // }
+  // 2. If not found in cache, fetch from the API
+  print("'${inName}' not in cache. Fetching from API...");
+  final apiShow = await getShowEntry(inName);
 
+  // 3. If the API call was successful, save the result to Hive
+  if (apiShow != null) {
+    print("Saving '${apiShow.name}' to cache.");
+    await HiveHelper.insertShow(apiShow);
+    return apiShow;
+  }
+
+  // 4. Return null if not found in cache or API
   return null;
 }
 
@@ -57,18 +65,25 @@ Future<Show?> getShow(String inName) async {
 // output: movie object
 // Searches the database for the movie. if it is not found, look it up using the API
 Future<Movie?> getMovie(String inName) async {
+  // 1. Check the local Hive database first
   final movie = await HiveHelper.getMovieByName(inName);
   if (movie != null) {
+    print("Found '${inName}' in cache.");
     return movie;
   }
 
-  // TODO: Add API call here to fetch movie data
-  // Movie? apiMovie = await fetchMovieFromAPI(inName);
-  // if (apiMovie != null) {
-  //   await HiveHelper.insertMovie(apiMovie);
-  //   return apiMovie;
-  // }
+  // 2. If not found in cache, fetch from the API
+  print("'${inName}' not in cache. Fetching from API...");
+  final apiMovie = await getMovieEntry(inName);
+  
+  // 3. If the API call was successful, save the result to Hive
+  if (apiMovie != null) {
+    print("Saving '${apiMovie.name}' to cache.");
+    await HiveHelper.insertMovie(apiMovie);
+    return apiMovie;
+  }
 
+  // 4. Return null if not found in cache or API
   return null;
 }
 

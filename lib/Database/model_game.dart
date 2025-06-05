@@ -1,13 +1,17 @@
 // Flutter imports
 import 'package:hive/hive.dart';
 
+// Local imports
+import 'package:omnirate/Database/model_entry.dart';
+
 // Code generation for Hive
 part 'model_game.g.dart';
+
 
 // ========== Game entry model ==========
 
 @HiveType(typeId: 4)
-class Game {
+class Game implements MediaEntry{
   // ===== Class variables =====
 
   // Main data
@@ -46,12 +50,11 @@ class Game {
   @HiveField(9)
   final String timeComplete;
 
-  // User's data
-  @HiveField(10)
-  String status;
+  // ===== MediaEntry Implementation =====
 
-  @HiveField(11)
-  double userRating;
+  @override
+  MediaType get mediaType => MediaType.game;
+
 
   // ===== Class methods =====
 
@@ -70,9 +73,6 @@ class Game {
     this.timeHaste = 'N/A',
     this.timeNormal = 'N/A',
     this.timeComplete = 'N/A',
-
-    this.status = 'N/A',
-    this.userRating = 0.0,
   });
 
   // Convert to map
@@ -90,9 +90,6 @@ class Game {
     'timeHaste': timeHaste,
     'timeNormal': timeNormal,
     'timeComplete': timeComplete,
-
-    'status': status,
-    'userRating': userRating,
   };
 
   // Convert from map
@@ -110,9 +107,6 @@ class Game {
     timeHaste: map['timeHaste'],
     timeNormal: map['timeNormal'],
     timeComplete: map['timeComplete'],
-
-    status: map['status'],
-    userRating: map['userRating'],
   );
 
   @override
@@ -129,8 +123,6 @@ Overview: $overview
 Time (Haste): $timeHaste
 Time (Normal): $timeNormal
 Time (Complete): $timeComplete
-Status: $status
-User Rating: $userRating
 ''';
   }
 }
