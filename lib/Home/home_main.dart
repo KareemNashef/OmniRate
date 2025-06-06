@@ -5,7 +5,12 @@ import 'dart:math';
 // Local imports
 import 'package:omnirate/BaseClasses/base_main.dart';
 import 'package:omnirate/BaseClasses/base_list.dart';
+import 'package:omnirate/Database/database_helper.dart';
+import 'package:omnirate/Database/model_game.dart';
+import 'package:omnirate/Database/model_movie.dart';
+import 'package:omnirate/Database/model_show.dart';
 import 'package:omnirate/Settings/settings_main.dart';
+import 'package:omnirate/Shared/user_data.dart';
 import 'package:omnirate/Shared/utils.dart';
 import 'package:omnirate/Shared/list_use.dart';
 
@@ -19,6 +24,52 @@ class HomeMainPage extends MainPageBase {
 }
 
 class HomeMainPageState extends MainPageBaseState {
+  // ===== Class variables ===== //
+
+  late Future<List<UserMediaEntry>> futureGames;
+  late Future<List<UserMediaEntry>> futureShows;
+  late Future<List<UserMediaEntry>> futureMovies;
+
+  List<Game> ongoingGames = [];
+  List<Show> ongoingShows = [];
+  List<Movie> ongoingMovies = [];
+
+  bool mediaLoaded = false;
+
+  // ===== Class Initialization ===== //
+
+  @override
+  void initState() {
+    super.initState();
+    futureGames = getMediaByStatus("Games", "Current");
+    futureShows = getMediaByStatus("Shows", "Current");
+    futureMovies = getMediaByStatus("Movies", "Current");
+
+  _initOngoingMedia();
+  }
+
+  void _initOngoingMedia() async {
+    final games = await futureGames;
+    final shows = await futureShows;
+    final movies = await futureMovies;
+
+    ongoingGames =
+        (await Future.wait(
+          games.map((e) => getGame(e.name)),
+        )).whereType<Game>().toList();
+    ongoingShows =
+        (await Future.wait(
+          shows.map((e) => getShow(e.name)),
+        )).whereType<Show>().toList();
+    ongoingMovies =
+        (await Future.wait(
+          movies.map((e) => getMovie(e.name)),
+        )).whereType<Movie>().toList();
+
+    mediaLoaded = true;
+    setState(() {});
+  }
+
   // ===== Class Widgets ===== //
 
   // Welcome Text
@@ -151,26 +202,27 @@ class HomeMainPageState extends MainPageBaseState {
 
   @override
   Widget build(BuildContext context) {
-    // ===== UI SPRINT ===== //
 
-    final random = Random();
-    final indices = <int>{};
-
-    // Pick 4 unique random indices
-    while (indices.length < 3) {
-      indices.add(random.nextInt(gamesList.length));
-    }
-
-    final selectedGames = indices.map((i) => gamesList[i]).toList();
-    final selectedGamesPaths = indices.map((i) => gamesPaths[i]).toList();
-
-    final selectedShows = indices.map((i) => showsList[i]).toList();
-    final selectedShowsPaths = indices.map((i) => showsPaths[i]).toList();
-
-    final selectedMovies = indices.map((i) => moviesList[i]).toList();
-    final selectedMoviesPaths = indices.map((i) => moviesPaths[i]).toList();
-
-    // ===== UI SPRINT ===== //
+      if (!mediaLoaded) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          CircularProgressIndicator(
+            color: Theme.of(context).colorScheme.primary,
+          ),
+          const SizedBox(height: 16),
+          Text(
+            "Loading your media...",
+            style: TextStyle(
+              fontSize: 16,
+              color: Theme.of(context).colorScheme.onSurface,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
     return SingleChildScrollView(
       child: Padding(
@@ -191,22 +243,24 @@ class HomeMainPageState extends MainPageBaseState {
             ),
             listsButtons(),
             SizedBox(height: 8),
-            // blankCarousel("Games",
-            //   "Ongoing Games",
-            //   selectedGamesPaths,
-            //   selectedGames,
-            // ),
-            // blankCarousel("Shows",
-            //   "Ongoing Shows",
-            //   selectedShowsPaths,
-            //   selectedShows,
-            // ),
-            // blankCarousel(
-            //   "Movies",
-            //   "Ongoing Movies",
-            //   selectedMoviesPaths,
-            //   selectedMovies,
-            // ),
+
+            // Ongoing Games
+            blankCarousel(
+              "Games",
+              "Ongoing Games",
+              ongoingGames,),
+
+            // Ongoing Shows
+            blankCarousel(
+              "Shows",
+              "Ongoing Shows",
+              ongoingShows,),
+
+            // Ongoing Movies
+            blankCarousel(
+              "Movies",
+              "Ongoing Movies",
+              ongoingMovies,),
 
             // Padding
             SizedBox(height: 64),

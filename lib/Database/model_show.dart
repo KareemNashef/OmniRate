@@ -64,6 +64,9 @@ class Show implements MediaEntry{
   @HiveField(14)
   final List<String> seasonsOverviews;
 
+  @HiveField(15)
+  final List<String> seasonsRatings;
+
   // ===== MediaEntry Implementation =====
 
   @override
@@ -92,6 +95,7 @@ class Show implements MediaEntry{
     this.seasonsAirDates = const [],
     this.seasonsEpisodeCounts = const [],
     this.seasonsOverviews = const [],
+    this.seasonsRatings = const [],
   });
 
   // Convert to map
@@ -114,6 +118,7 @@ class Show implements MediaEntry{
     'seasonsAirDates': seasonsAirDates.join(','),
     'seasonsEpisodeCounts': seasonsEpisodeCounts.join(','),
     'seasonsOverviews': seasonsOverviews.join(','),
+    'seasonsRatings': seasonsRatings.join(','),
   };
 
   // Convert from map
@@ -138,5 +143,6 @@ class Show implements MediaEntry{
             .map((e) => int.tryParse(e) ?? 0)
             .toList(),
     seasonsOverviews: (map['seasonsOverviews'] as String).split(','),
+    seasonsRatings: (map['seasonsRatings'] as String).split(','),
   );
 }

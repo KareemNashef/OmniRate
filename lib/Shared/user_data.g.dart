@@ -52,7 +52,7 @@ class UserDataAdapter extends TypeAdapter<UserData> {
           typeId == other.typeId;
 }
 
-class MediaEntryAdapter extends TypeAdapter<UserMediaEntry> {
+class UserMediaEntryAdapter extends TypeAdapter<UserMediaEntry> {
   @override
   final int typeId = 1;
 
@@ -87,7 +87,7 @@ class MediaEntryAdapter extends TypeAdapter<UserMediaEntry> {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is MediaEntryAdapter &&
+      other is UserMediaEntryAdapter &&
           runtimeType == other.runtimeType &&
           typeId == other.typeId;
 }

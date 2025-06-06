@@ -59,54 +59,48 @@ List<String> _mapGenreIdsToNames(List<dynamic> genreIds, String type) {
 
 // Creates a Show object from a JSON map.
 Show _showFromJson(Map<String, dynamic> json) {
-  return Show(
-    name: json['name'] ?? 'N/A',
-    thumbnailUrl:
-        json['poster_path'] != null
-            ? '$_imageBaseUrl${json['poster_path']}'
-            : '',
-    artworkUrl:
-        json['backdrop_path'] != null
-            ? '$_imageBaseUrl${json['backdrop_path']}'
-            : '',
-    rating: (json['vote_average'] ?? 0.0).toDouble(),
-    overview: json['overview'] ?? 'No overview available.',
-    genres:
-        json['genres'] != null
-            ? List<String>.from(json['genres'].map((g) => g['name']))
-            : _mapGenreIdsToNames(json['genre_ids'] ?? [], 'tv'),
-    releaseStatus: json['status'] ?? 'N/A',
-    firstAir: json['first_air_date'] ?? 'N/A',
-    lastAir: json['last_air_date'] ?? 'N/A',
-    episodesNum: json['number_of_episodes'] ?? 0,
-    seasonsNum: json['number_of_seasons'] ?? 0,
-    seasonsNames:
-        json['seasons']?.map<String>((s) => s['name'].toString()).toList() ??
-        [],
-    seasonsThumbnailsUrls:
-        json['seasons']
-            ?.map<String>(
-              (s) =>
-                  s['poster_path'] != null
-                      ? '$_imageBaseUrl${s['poster_path']}'
-                      : '',
-            )
-            .toList() ??
-        [],
-    seasonsAirDates:
-        json['seasons']
-            ?.map<String>((s) => s['air_date']?.toString() ?? 'N/A')
-            .toList() ??
-        [],
-    seasonsEpisodeCounts:
-        json['seasons']?.map<int>((s) => s['episode_count'] as int).toList() ??
-        [],
-    seasonsOverviews:
-        json['seasons']
-            ?.map<String>((s) => s['overview']?.toString() ?? 'N/A')
-            .toList() ??
-        [],
-  );
+final filteredSeasons = (json['seasons'] as List?)
+    ?.where((s) => s['season_number'] != 0)
+    .toList() ?? [];
+
+return Show(
+  name: json['name'] ?? 'N/A',
+  thumbnailUrl: json['poster_path'] != null
+      ? '$_imageBaseUrl${json['poster_path']}'
+      : '',
+  artworkUrl: json['backdrop_path'] != null
+      ? '$_imageBaseUrl${json['backdrop_path']}'
+      : '',
+  rating: (json['vote_average'] ?? 0.0).toDouble(),
+  overview: json['overview'] ?? 'No overview available.',
+  genres: json['genres'] != null
+      ? List<String>.from(json['genres'].map((g) => g['name']))
+      : _mapGenreIdsToNames(json['genre_ids'] ?? [], 'tv'),
+  releaseStatus: json['status'] ?? 'N/A',
+  firstAir: json['first_air_date'] ?? 'N/A',
+  lastAir: json['last_air_date'] ?? 'N/A',
+  episodesNum: json['number_of_episodes'] ?? 0,
+  seasonsNum: json['number_of_seasons'] ?? 0,
+  seasonsNames:
+      filteredSeasons.map<String>((s) => s['name'].toString()).toList(),
+  seasonsThumbnailsUrls: filteredSeasons
+      .map<String>((s) => s['poster_path'] != null
+          ? '$_imageBaseUrl${s['poster_path']}'
+          : '')
+      .toList(),
+  seasonsAirDates: filteredSeasons
+      .map<String>((s) => s['air_date']?.toString() ?? 'N/A')
+      .toList(),
+  seasonsEpisodeCounts: filteredSeasons
+      .map<int>((s) => s['episode_count'] as int)
+      .toList(),
+  seasonsOverviews: filteredSeasons
+      .map<String>((s) => s['overview']?.toString() ?? 'N/A')
+      .toList(),
+  seasonsRatings: filteredSeasons
+      .map<String>((s) => (s['vote_average'].toString()))
+      .toList(),
+);
 }
 
 // Creates a Movie object from a JSON map (from TMDB API).
@@ -150,6 +144,24 @@ Future<Show?> getShowEntry(String inName) async {
   } catch (e) {
     print('Error in getShowEntry: $e');
     return null;
+  }
+}
+
+Future<List<Show>> searchShowsByName(
+  String query,
+) async {
+  try {
+    final searchData = await _get('/search/tv', params: {'query': query});
+    final results = searchData['results'] as List;
+
+    return results
+        .where((json) => json['poster_path'] != null)
+        .take(10)
+        .map((json) => _showFromJson(json))
+        .toList();
+  } catch (e) {
+    print('Error in searchShows: $e');
+    return [];
   }
 }
 

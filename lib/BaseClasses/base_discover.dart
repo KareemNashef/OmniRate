@@ -1,6 +1,9 @@
 // Flutter imports
 import 'package:flutter/material.dart';
+import 'package:omnirate/Database/model_entry.dart';
 import 'package:omnirate/Database/model_game.dart';
+import 'package:omnirate/Database/model_movie.dart';
+import 'package:omnirate/Database/model_show.dart';
 import 'package:omnirate/Games/game_entry.dart';
 
 // Local imports
@@ -15,7 +18,7 @@ import 'package:omnirate/Shows/shows_filters.dart';
 class DiscoverPageBase extends StatefulWidget {
   final String inType;
   // Add the function as a parameter
-  final Future<List<Game>> Function(List<String>, String, String)? getFilteredItems;
+  final Future<List<MediaEntry>> Function(List<String>, String, String)? getFilteredItems;
 
   // Constructor with required parameters
   const DiscoverPageBase({
@@ -31,7 +34,7 @@ class DiscoverPageBase extends StatefulWidget {
 class DiscoverPageBaseState extends State<DiscoverPageBase> {
   // ===== Class Variables ===== //
 
-  List<Game> displayItems = [];
+  List<MediaEntry> displayItems = [];
   bool isLoading = false;
   String? errorMessage;
 
@@ -152,13 +155,13 @@ class DiscoverPageBaseState extends State<DiscoverPageBase> {
                           Widget page;
                           switch (widget.inType) {
                             case "Games":
-                              page = GameEntry(inEntry: displayItems[index]);
+                              page = GameEntry(inEntry: displayItems[index] as Game);
                               break;
                             case "Shows":
-                              page = ShowEntry(inEntry: displayItems[index]);
+                              page = ShowEntry(inEntry: displayItems[index] as Show);
                               break;
                             case "Movies":
-                              page = MovieEntry(inEntry: displayItems[index]);
+                              page = MovieEntry(inEntry: displayItems[index] as Movie);
                               break;
                             default:
                               return;

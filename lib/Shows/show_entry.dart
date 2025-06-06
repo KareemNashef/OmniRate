@@ -1,8 +1,11 @@
 // Flutter imports
+import 'package:animations/animations.dart';
 import 'package:flutter/material.dart';
 
 // Local imports
 import 'package:omnirate/BaseClasses/base_entry.dart';
+import 'package:omnirate/Database/database_helper.dart';
+import 'package:omnirate/Database/model_show.dart';
 import 'package:omnirate/Shared/utils.dart';
 
 // ========== Game entry page ========== //
@@ -15,18 +18,31 @@ class ShowEntry extends EntryBase {
 }
 
 class ShowEntryState extends EntryBaseState {
+  // ===== Class Variables ===== //
+
+  late Show currentShow;
+  bool isLoaded = false;
+
+  // ===== Class Initialization ===== //
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final show = await getShow(widget.inEntry.name);
+      if (show != null) {
+        setState(() {
+          currentShow = show;
+          isLoaded = true;
+        });
+      }
+    });
+  }
+
   // ===== Class Widgets ===== //
 
   // Show info
-  Widget showInfo(
-    String inReleaseStatus,
-    String inFirstAir,
-    String inLastAir,
-    String inEpisodesNum,
-    String inSeasonsNum,
-    String inGenres,
-    String inOverview,
-  ) {
+  Widget showInfo() {
     return Card(
       color: Theme.of(context).colorScheme.surfaceContainer,
       elevation: 4,
@@ -49,7 +65,7 @@ class ShowEntryState extends EntryBaseState {
                     ),
                   ),
                   TextSpan(
-                    text: inReleaseStatus,
+                    text: currentShow.releaseStatus,
                     style: TextStyle(fontSize: 16),
                   ),
                 ],
@@ -73,7 +89,10 @@ class ShowEntryState extends EntryBaseState {
                       fontSize: 16,
                     ),
                   ),
-                  TextSpan(text: inFirstAir, style: TextStyle(fontSize: 16)),
+                  TextSpan(
+                    text: currentShow.firstAir,
+                    style: TextStyle(fontSize: 16),
+                  ),
                 ],
               ),
             ),
@@ -95,7 +114,10 @@ class ShowEntryState extends EntryBaseState {
                       fontSize: 16,
                     ),
                   ),
-                  TextSpan(text: inLastAir, style: TextStyle(fontSize: 16)),
+                  TextSpan(
+                    text: currentShow.lastAir,
+                    style: TextStyle(fontSize: 16),
+                  ),
                 ],
               ),
             ),
@@ -111,13 +133,16 @@ class ShowEntryState extends EntryBaseState {
               TextSpan(
                 children: [
                   TextSpan(
-                    text: 'Number of episodes: ',
+                    text: 'Total number of episodes: ',
                     style: TextStyle(
                       color: Theme.of(context).colorScheme.primary,
                       fontSize: 16,
                     ),
                   ),
-                  TextSpan(text: inEpisodesNum, style: TextStyle(fontSize: 16)),
+                  TextSpan(
+                    text: currentShow.episodesNum.toString(),
+                    style: TextStyle(fontSize: 16),
+                  ),
                 ],
               ),
             ),
@@ -139,7 +164,10 @@ class ShowEntryState extends EntryBaseState {
                       fontSize: 16,
                     ),
                   ),
-                  TextSpan(text: inSeasonsNum, style: TextStyle(fontSize: 16)),
+                  TextSpan(
+                    text: (currentShow.seasonsEpisodeCounts.length).toString(),
+                    style: TextStyle(fontSize: 16),
+                  ),
                 ],
               ),
             ),
@@ -161,7 +189,10 @@ class ShowEntryState extends EntryBaseState {
                       fontSize: 16,
                     ),
                   ),
-                  TextSpan(text: inGenres, style: TextStyle(fontSize: 16)),
+                  TextSpan(
+                    text: currentShow.genres.join(', '),
+                    style: TextStyle(fontSize: 16),
+                  ),
                 ],
               ),
             ),
@@ -173,7 +204,7 @@ class ShowEntryState extends EntryBaseState {
             ),
 
             // Story with Read More toggle
-            ExpandableText(label: 'Story: ', content: inOverview),
+            ExpandableText(label: 'Story: ', content: currentShow.overview),
           ],
         ),
       ),
@@ -181,13 +212,12 @@ class ShowEntryState extends EntryBaseState {
   }
 
   // Show info
-  Widget seasonInfo({
-    String inName = "Season 3",
-    String inAirDate = "2010-03-21",
-    String inEpisodeCount = "13",
-    String inOverview =
-        "Walt continues to battle dueling identities: a desperate husband and father trying to provide for his family, and a newly appointed key player in the Albuquerque drug trade. As the danger around him escalates, Walt is now entrenched in the complex worlds of an angst-ridden family on the verge of dissolution, and the ruthless and unrelenting drug cartel.",
-  }) {
+  Widget seasonInfo(
+    String inName,
+    String inAirDate,
+    String inEpisodeCount,
+    String inOverview,
+  ) {
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
@@ -280,14 +310,14 @@ class ShowEntryState extends EntryBaseState {
     );
   }
 
-  // Related Media
-  Widget showSeasons(List<String> inPaths, List<String> inRatings) {
+  // Available Seasons
+  Widget showSeasons() {
     return Card(
       color: Theme.of(context).colorScheme.surfaceContainer,
       elevation: 4,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Container(
-        width: double.infinity, // Set width to fill the available space
+        width: double.infinity,
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -295,21 +325,28 @@ class ShowEntryState extends EntryBaseState {
             Text("Available Seasons:", style: TextStyle(fontSize: 16)),
             SizedBox(height: 8),
 
-            GestureDetector(
-              onTap: () {
-                showModalBottomSheet(
-                  context: context,
-                  builder: (context) => seasonInfo(),
-                );
-              },
-              child: SizedBox(
-                height: 220,
-                child: PageView.builder(
-                  itemCount: inPaths.length,
-                  padEnds: false,
-                  controller: PageController(viewportFraction: 0.3),
-                  itemBuilder: (context, index) {
-                    return Column(
+            SizedBox(
+              height: 220,
+              child: PageView.builder(
+                itemCount: currentShow.seasonsNum,
+                padEnds: false,
+                controller: PageController(viewportFraction: 0.3),
+                itemBuilder: (context, index) {
+                  return GestureDetector(
+                    onTap: () {
+                      showModalBottomSheet(
+                        context: context,
+                        builder:
+                            (context) => seasonInfo(
+                              currentShow.seasonsNames[index],
+                              currentShow.seasonsAirDates[index],
+                              currentShow.seasonsEpisodeCounts[index]
+                                  .toString(),
+                              currentShow.seasonsOverviews[index],
+                            ),
+                      );
+                    },
+                    child: Column(
                       children: [
                         // Thumbnail
                         Container(
@@ -317,7 +354,9 @@ class ShowEntryState extends EntryBaseState {
                           height: 160,
                           decoration: BoxDecoration(
                             image: DecorationImage(
-                              image: AssetImage(inPaths[index]),
+                              image: NetworkImage(
+                                currentShow.seasonsThumbnailsUrls[index],
+                              ),
                               fit: BoxFit.cover,
                             ),
                             borderRadius: BorderRadius.circular(12),
@@ -345,7 +384,10 @@ class ShowEntryState extends EntryBaseState {
                                 Icon(Icons.star, size: 16, color: Colors.amber),
                                 SizedBox(width: 4),
                                 Text(
-                                  inRatings[index],
+                                  currentShow.seasonsRatings[index].toString() == "0.0"
+                                      ? "N/A"
+                                      : currentShow.seasonsRatings[index]
+                                          .toString(),
                                   style: TextStyle(
                                     fontSize: 16,
                                     color:
@@ -357,66 +399,7 @@ class ShowEntryState extends EntryBaseState {
                           ],
                         ),
                       ],
-                    );
-                  },
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  // Related Media
-  Widget relatedMedia() {
-    return Card(
-      color: Theme.of(context).colorScheme.surfaceContainer,
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Container(
-        width: double.infinity, // Set width to fill the available space
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text("Related Media:", style: TextStyle(fontSize: 16)),
-            SizedBox(height: 8),
-
-            SizedBox(
-              height: 200,
-              child: PageView.builder(
-                itemCount: 5,
-                padEnds: false,
-                controller: PageController(viewportFraction: 0.3),
-                itemBuilder: (context, index) {
-                  return Column(
-                    children: [
-                      // Thumbnail
-                      Container(
-                        width: 90,
-                        height: 160,
-                        decoration: BoxDecoration(
-                          color:
-                              Colors.primaries[DateTime.now()
-                                      .millisecondsSinceEpoch %
-                                  Colors.primaries.length],
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-
-                      // Padding
-                      SizedBox(height: 8),
-
-                      // Title
-                      Text(
-                        "Entry $index",
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Theme.of(context).colorScheme.secondary,
-                        ),
-                      ),
-                    ],
+                    ),
                   );
                 },
               ),
@@ -431,6 +414,21 @@ class ShowEntryState extends EntryBaseState {
 
   @override
   Widget build(BuildContext context) {
+    if (!isLoaded) {
+      return Scaffold(
+        body: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: const [
+              CircularProgressIndicator(),
+              SizedBox(height: 16),
+              Text("Loading show...", style: TextStyle(fontSize: 16)),
+            ],
+          ),
+        ),
+      );
+    }
+
     return Scaffold(
       body: SingleChildScrollView(
         child: Padding(
@@ -438,7 +436,7 @@ class ShowEntryState extends EntryBaseState {
           child: Column(
             children: [
               // Entry
-              // entryMain("Breaking Bad", "assets/Debug/Shows/9.webp", "8.9"),
+              entryMain(),
 
               // Padding
               const SizedBox(height: 8),
@@ -453,33 +451,13 @@ class ShowEntryState extends EntryBaseState {
               const SizedBox(height: 8),
 
               // Game info
-              showInfo(
-                "Ended",
-                "2008-01-20",
-                "2013-09-29",
-                "62",
-                "5",
-                "Drama, Crime",
-                "Walter White, a New Mexico chemistry teacher, is diagnosed with Stage III cancer and given a prognosis of only two years left to live. He becomes filled with a sense of fearlessness and an unrelenting desire to secure his family's financial future at any cost as he enters the dangerous world of drugs and crime.",
-              ),
+              showInfo(),
 
               // Padding
               const SizedBox(height: 8),
 
               // Seasons
-              showSeasons(
-                [
-                  "assets/Debug/Shows/s1.webp",
-                  "assets/Debug/Shows/s2.webp",
-                  "assets/Debug/Shows/s3.webp",
-                  "assets/Debug/Shows/s4.webp",
-                  "assets/Debug/Shows/s5.webp",
-                ],
-                ["8.3", "8.4", "8.4", "8.6", "8.9"],
-              ),
-
-              // Related media
-              relatedMedia(),
+              showSeasons(),
             ],
           ),
         ),

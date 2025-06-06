@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 // Local imports
 import 'package:omnirate/BaseClasses/base_entry.dart';
+import 'package:omnirate/Database/database_helper.dart';
 import 'package:omnirate/Database/model_movie.dart';
 import 'package:omnirate/Shared/utils.dart';
 
@@ -16,6 +17,27 @@ class MovieEntry extends EntryBase {
 }
 
 class MovieEntryState extends EntryBaseState {
+  // ===== Class Variables ===== //
+
+  late Movie currentMovie;
+  bool isLoaded = false;
+
+  // ===== Class Initialization ===== //
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final movie = await getMovie(widget.inEntry.name);
+      if (movie != null) {
+        setState(() {
+          currentMovie = movie;
+          isLoaded = true;
+        });
+      }
+    });
+  }
+
   // ===== Class Widgets ===== //
 
   // Movie info
@@ -42,7 +64,7 @@ class MovieEntryState extends EntryBaseState {
                     ),
                   ),
                   TextSpan(
-                    text: (widget.inEntry as Movie).releaseStatus,
+                    text: currentMovie.releaseStatus,
                     style: TextStyle(fontSize: 16),
                   ),
                 ],
@@ -67,7 +89,7 @@ class MovieEntryState extends EntryBaseState {
                     ),
                   ),
                   TextSpan(
-                    text: (widget.inEntry as Movie).genres.join(', '),
+                    text: currentMovie.genres.join(', '),
                     style: TextStyle(fontSize: 16),
                   ),
                 ],
@@ -81,10 +103,7 @@ class MovieEntryState extends EntryBaseState {
             ),
 
             // Story with Read More toggle
-            ExpandableText(
-              label: 'Story: ',
-              content: (widget.inEntry as Movie).overview,
-            ),
+            ExpandableText(label: 'Story: ', content: currentMovie.overview),
           ],
         ),
       ),
@@ -93,6 +112,15 @@ class MovieEntryState extends EntryBaseState {
 
   // Budget and revenue
   Widget budgetAndRevenue() {
+String formatMoney(dynamic amount) {
+  if (amount == 'N/A' || amount == '0') return 'N/A';
+  final numVal = num.tryParse(amount.toString()) ?? 0;
+  if (numVal >= 1e9) return '\$${(numVal / 1e9).toStringAsFixed(1)}B';
+  if (numVal >= 1e6) return '\$${(numVal / 1e6).toStringAsFixed(1)}M';
+  if (numVal >= 1e3) return '\$${(numVal / 1e3).toStringAsFixed(1)}K';
+  return '\$${numVal.toStringAsFixed(0)}';
+}
+
     Widget buildCard(String label, String time) {
       return Expanded(
         child: Card(
@@ -124,9 +152,9 @@ class MovieEntryState extends EntryBaseState {
 
     return Row(
       children: [
-        buildCard('Budget', (widget.inEntry as Movie).budget),
+        buildCard('Budget', formatMoney(currentMovie.budget)),
         SizedBox(width: 8),
-        buildCard('Revenue', (widget.inEntry as Movie).revenue),
+        buildCard('Revenue', formatMoney(currentMovie.revenue)),
       ],
     );
   }
@@ -194,6 +222,21 @@ class MovieEntryState extends EntryBaseState {
 
   @override
   Widget build(BuildContext context) {
+    if (!isLoaded) {
+      return Scaffold(
+        body: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: const [
+              CircularProgressIndicator(),
+              SizedBox(height: 16),
+              Text("Loading movie...", style: TextStyle(fontSize: 16)),
+            ],
+          ),
+        ),
+      );
+    }
+
     return Scaffold(
       body: SingleChildScrollView(
         child: Padding(
@@ -213,7 +256,7 @@ class MovieEntryState extends EntryBaseState {
               const SizedBox(height: 8),
 
               // Budget and revenue || Removed for now TODO
-              // budgetAndRevenue(),
+              budgetAndRevenue(),
 
               // Padding
               const SizedBox(height: 8),

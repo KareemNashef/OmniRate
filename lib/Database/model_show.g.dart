@@ -33,13 +33,14 @@ class ShowAdapter extends TypeAdapter<Show> {
       seasonsAirDates: (fields[12] as List).cast<String>(),
       seasonsEpisodeCounts: (fields[13] as List).cast<int>(),
       seasonsOverviews: (fields[14] as List).cast<String>(),
+      seasonsRatings: (fields[15] as List).cast<String>(),
     );
   }
 
   @override
   void write(BinaryWriter writer, Show obj) {
     writer
-      ..writeByte(16)
+      ..writeByte(17)
       ..writeByte(0)
       ..write(obj.name)
       ..writeByte(1)
@@ -71,7 +72,9 @@ class ShowAdapter extends TypeAdapter<Show> {
       ..writeByte(13)
       ..write(obj.seasonsEpisodeCounts)
       ..writeByte(14)
-      ..write(obj.seasonsOverviews);
+      ..write(obj.seasonsOverviews)
+      ..writeByte(15)
+      ..write(obj.seasonsRatings);
   }
 
   @override

@@ -1,12 +1,10 @@
 // Flutter imports
 import 'package:flutter/material.dart';
-import 'package:omnirate/API/tmdb_api.dart';
-import 'dart:math';
 
 // Local imports
 import 'package:omnirate/BaseClasses/base_main.dart';
 import 'package:omnirate/Database/model_movie.dart';
-import 'package:omnirate/Shared/utils.dart';
+import 'package:omnirate/API/tmdb_api.dart';
 
 // ========== Movies main page ========== //
 
@@ -131,14 +129,10 @@ class MoviesMainPageState extends MainPageBaseState {
                     ],
                   );
                 }
-                return blankCarousel(
-                  "Movies",
-                  "Now Playing",
-                  snapshot.data!,
-                );
+                return blankCarousel("Movies", "Now Playing", snapshot.data!);
               },
             ),
-            
+
             // Top Rated
             FutureBuilder<List<Movie>>(
               future: futureTopRated,
@@ -170,8 +164,8 @@ class MoviesMainPageState extends MainPageBaseState {
               },
             ),
 
+            // Padding
             SizedBox(height: 64),
-
           ],
         ),
       ),

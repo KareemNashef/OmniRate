@@ -13,7 +13,6 @@ import 'package:omnirate/Main/welcome_page.dart';
 import 'package:omnirate/Shared/user_data.dart';
 import 'package:omnirate/Database/database_helper.dart';
 
-
 void main() async {
   // Firebase initialization
   WidgetsFlutterBinding.ensureInitialized();
@@ -22,6 +21,7 @@ void main() async {
   // Hive initialization
   await Hive.initFlutter();
   Hive.registerAdapter(UserDataAdapter());
+  Hive.registerAdapter(UserMediaEntryAdapter());
   await Hive.openBox<UserData>('userBox');
   await HiveHelper.init();
 
@@ -82,7 +82,6 @@ class _MainAppState extends State<MainApp> {
 
         final seen = snapshot.data!;
         return MaterialApp(
-
           // Define light theme
           theme: ThemeData.from(
             colorScheme: ColorScheme.fromSeed(

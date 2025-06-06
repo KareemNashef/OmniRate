@@ -36,29 +36,38 @@ class MainPageBaseState extends State<MainPageBase> {
   }
   // ===== Class Widgets ===== //
 
-  // Search Bar
-  Widget searchBar(String inType) {
-    return Column(
-      children: [
-        // Search Input Section
-        Container(
-          margin: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 8.0),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.05),
-                blurRadius: 8,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
-          child: TextField(
-            controller: _searchController,
-            decoration: InputDecoration(
-              hintText: "Search $inType...",
-              hintStyle: TextStyle(color: Colors.grey[500], fontSize: 16),
-              prefixIcon: Container(
+// Search Bar
+Widget searchBar(String inType) {
+  return Container(
+    margin: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 8.0),
+    decoration: BoxDecoration(
+      borderRadius: BorderRadius.circular(16),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black.withOpacity(0.05),
+          blurRadius: 8,
+          offset: const Offset(0, 2),
+        ),
+      ],
+    ),
+    child: TextField(
+      controller: _searchController,
+      decoration: InputDecoration(
+        hintText: "Search $inType...",
+        hintStyle: TextStyle(color: Colors.grey[500], fontSize: 16),
+        prefixIcon: _isSearching
+            ? Padding(
+                padding: const EdgeInsets.all(12.0),
+                child: SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                ),
+              )
+            : Container(
                 margin: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
                   color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
@@ -72,170 +81,216 @@ class MainPageBaseState extends State<MainPageBase> {
                   onPressed: () => _performSearch(inType),
                 ),
               ),
-              suffixIcon: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  if (_searchController.text.isNotEmpty)
-                    IconButton(
-                      icon: Icon(Icons.clear, color: Colors.grey[600]),
-                      onPressed: () => _clearSearch(),
-                    ),
-                  Padding(
-                    padding: const EdgeInsets.only(right: 8),
-                    child: InkWell(
-                      onTap: () => _openFilterPage(inType),
-                      borderRadius: BorderRadius.circular(12),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 8,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.surfaceContainer,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              'Filter',
-                              style: TextStyle(
-                                fontWeight: FontWeight.w500,
-                                color: Theme.of(context).colorScheme.onSurface,
-                              ),
-                            ),
-                            const SizedBox(width: 6),
-                            Container(
-                              decoration: BoxDecoration(
-                                color:
-                                    Theme.of(
-                                      context,
-                                    ).colorScheme.primaryContainer,
-                                shape: BoxShape.circle,
-                              ),
-                              padding: const EdgeInsets.all(4),
-                              child: Icon(
-                                Icons.tune,
-                                size: 14,
-                                color:
-                                    Theme.of(
-                                      context,
-                                    ).colorScheme.onPrimaryContainer,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
+        suffixIcon: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (_searchController.text.isNotEmpty)
+              IconButton(
+                icon: Icon(Icons.clear, color: Colors.grey[600]),
+                onPressed: () => _clearSearch(),
+              ),
+            Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: InkWell(
+                onTap: () => _openFilterPage(inType),
+                borderRadius: BorderRadius.circular(12),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 8,
                   ),
-                ],
-              ),
-              filled: true,
-              fillColor: Theme.of(context).colorScheme.surface,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(16),
-                borderSide: BorderSide(
-                  color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
-                ),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(16),
-                borderSide: BorderSide(
-                  color: Theme.of(context).colorScheme.primary,
-                  width: 2,
-                ),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(16),
-                borderSide: BorderSide(
-                  color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
-                ),
-              ),
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: 16,
-                vertical: 16,
-              ),
-            ),
-          ),
-        ),
-
-        // Loading Indicator
-        if (_isSearching)
-          Container(
-            padding: const EdgeInsets.all(16),
-            child: CircularProgressIndicator(
-              strokeWidth: 2,
-              color: Theme.of(context).colorScheme.primary,
-            ),
-          ),
-
-        // Search Results
-        if (_searchResults.isNotEmpty && !_isSearching)
-          Container(
-            margin: const EdgeInsets.symmetric(horizontal: 4),
-            decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.surface,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(
-                color: Theme.of(context).colorScheme.outline.withOpacity(0.1),
-              ),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Results Header
-                Padding(
-                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.surfaceContainer,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                   child: Row(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(
-                        Icons.search,
-                        size: 20,
-                        color: Theme.of(context).colorScheme.primary,
-                      ),
-                      const SizedBox(width: 8),
                       Text(
-                        'Search Results (${_searchResults.length})',
+                        'Filter',
                         style: TextStyle(
-                          fontWeight: FontWeight.w600,
-                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
                           color: Theme.of(context).colorScheme.onSurface,
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      Container(
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).colorScheme.primaryContainer,
+                          shape: BoxShape.circle,
+                        ),
+                        padding: const EdgeInsets.all(4),
+                        child: Icon(
+                          Icons.tune,
+                          size: 14,
+                          color: Theme.of(context).colorScheme.onPrimaryContainer,
                         ),
                       ),
                     ],
                   ),
                 ),
-
-                // Results List
-                ListView.separated(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: _searchResults.length,
-                  separatorBuilder:
-                      (context, index) => Divider(
-                        height: 1,
-                        color: Theme.of(
-                          context,
-                        ).colorScheme.outline.withOpacity(0.1),
-                      ),
-                  itemBuilder: (context, index) {
-                    final entry = _searchResults[index];
-                    return _buildSearchResultTile( inType, entry);
-                  },
-                ),
-              ],
+              ),
             ),
+          ],
+        ),
+        filled: true,
+        fillColor: Theme.of(context).colorScheme.surface,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide(
+            color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
           ),
-      ],
-    );
-  }
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide(
+            color: Theme.of(context).colorScheme.primary,
+            width: 2,
+          ),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide(
+            color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
+          ),
+        ),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 16,
+        ),
+      ),
+    ),
+  );
+}
 
-  // Helper method to build individual search result tiles
-  Widget _buildSearchResultTile(String inType, MediaEntry entry) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      child: GestureDetector(
+// Helper method to show search results in a modal
+void _showSearchResultsModal(String inType, List<MediaEntry> results) {
+  showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent,
+    builder: (context) => DraggableScrollableSheet(
+      initialChildSize: 0.7,
+      minChildSize: 0.5,
+      maxChildSize: 0.9,
+      builder: (context, scrollController) => Container(
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surface,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+        ),
+        child: Column(
+          children: [
+            // Handle bar
+            Container(
+              margin: const EdgeInsets.symmetric(vertical: 12),
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.4),
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            
+            // Header
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.search,
+                    size: 24,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                  const SizedBox(width: 12),
+                  Text(
+                    'Search Results (${results.length})',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 18,
+                      color: Theme.of(context).colorScheme.onSurface,
+                    ),
+                  ),
+                  const Spacer(),
+                  IconButton(
+                    onPressed: () => Navigator.pop(context),
+                    icon: Icon(
+                      Icons.close,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            
+            const Divider(height: 1),
+            
+            // Results List
+            Expanded(
+              child: results.isEmpty
+                  ? Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.search_off,
+                            size: 64,
+                            color: Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.5),
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            'No results found',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w500,
+                              color: Theme.of(context).colorScheme.onSurfaceVariant,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Try adjusting your search terms',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.7),
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
+                  : ListView.separated(
+                      controller: scrollController,
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      itemCount: results.length,
+                      separatorBuilder: (context, index) => const SizedBox(height: 8),
+                      itemBuilder: (context, index) {
+                        final entry = results[index];
+                        return _buildSearchResultTile(inType, entry);
+                      },
+                    ),
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
+}
+
+// Helper method to build individual search result tiles
+Widget _buildSearchResultTile(String inType, MediaEntry entry) {
+  return Container(
+    decoration: BoxDecoration(
+      color: Theme.of(context).colorScheme.surface,
+      borderRadius: BorderRadius.circular(12),
+      border: Border.all(
+        color: Theme.of(context).colorScheme.outline.withOpacity(0.1),
+      ),
+    ),
+    child: Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(12),
         onTap: () {
+          Navigator.pop(context); // Close modal first
+          
           Widget page;
           switch (inType) {
             case "Games":
@@ -252,147 +307,152 @@ class MainPageBaseState extends State<MainPageBase> {
           }
           Navigator.push(context, MaterialPageRoute(builder: (_) => page));
         },
-        child: Row(
-          children: [
-            // Thumbnail with 9:16 aspect ratio
-            Container(
-              width: 54, // 9:16 ratio: 54x96
-              height: 96,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(12),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
-                    blurRadius: 4,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: Image.network(
-                  entry.thumbnailUrl,
-                  fit: BoxFit.cover,
-                  errorBuilder:
-                      (context, error, stackTrace) => Container(
-                        color: Theme.of(context).colorScheme.surfaceVariant,
-                        child: Icon(
-                          Icons.image_not_supported,
-                          color: Theme.of(context).colorScheme.onSurfaceVariant,
-                          size: 24,
-                        ),
-                      ),
-                  loadingBuilder: (context, child, loadingProgress) {
-                    if (loadingProgress == null) return child;
-                    return Container(
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Row(
+            children: [
+              // Thumbnail with 9:16 aspect ratio
+              Container(
+                width: 54, // 9:16 ratio: 54x96
+                height: 96,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(8),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.1),
+                      blurRadius: 4,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: Image.network(
+                    entry.thumbnailUrl,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) => Container(
                       color: Theme.of(context).colorScheme.surfaceVariant,
-                      child: Center(
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          value:
-                              loadingProgress.expectedTotalBytes != null
-                                  ? loadingProgress.cumulativeBytesLoaded /
-                                      loadingProgress.expectedTotalBytes!
-                                  : null,
-                        ),
+                      child: Icon(
+                        Icons.image_not_supported,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        size: 24,
                       ),
-                    );
-                  },
+                    ),
+                    loadingBuilder: (context, child, loadingProgress) {
+                      if (loadingProgress == null) return child;
+                      return Container(
+                        color: Theme.of(context).colorScheme.surfaceVariant,
+                        child: Center(
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            value: loadingProgress.expectedTotalBytes != null
+                                ? loadingProgress.cumulativeBytesLoaded /
+                                    loadingProgress.expectedTotalBytes!
+                                : null,
+                          ),
+                        ),
+                      );
+                    },
+                  ),
                 ),
               ),
-            ),
 
-            const SizedBox(width: 16),
+              const SizedBox(width: 16),
 
-            // Game Title
-            Expanded(
-              child: Text(
-                entry.name,
-                maxLines: 3,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w500,
-                  height: 1.3,
-                  color: Theme.of(context).colorScheme.onSurface,
+              // Title
+              Expanded(
+                child: Text(
+                  entry.name,
+                  maxLines: 3,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w500,
+                    height: 1.3,
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
                 ),
               ),
-            ),
 
-            // Chevron Arrow
-            Icon(
-              Icons.chevron_right,
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-              size: 20,
-            ),
-          ],
+              // Chevron Arrow
+              Icon(
+                Icons.chevron_right,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+                size: 20,
+              ),
+            ],
+          ),
         ),
       ),
-    );
+    ),
+  );
+}
+
+// Helper method to perform search
+void _performSearch(String inType) async {
+  final searchText = _searchController.text.trim();
+  if (searchText.isEmpty) {
+    _clearSearch();
+    return;
   }
 
-  // Helper method to perform search
-  void _performSearch(String inType) async {
-    final searchText = _searchController.text.trim();
-    if (searchText.isEmpty) {
-      _clearSearch();
-      return;
+  setState(() => _isSearching = true);
+
+  try {
+    List<MediaEntry> results;
+    switch (inType) {
+      case "Games":
+        results = await searchGamesByName(searchText);
+        break;
+      case "Shows":
+        results = await searchShowsByName(searchText);
+        break;
+      case "Movies":
+        results = await searchMoviesByName(searchText);
+        break;
+      default:
+        return;
     }
 
-    setState(() => _isSearching = true);
-
-    try {
-// TODO
-      switch (inType) {
-        case "Games":
-          _searchResults = await searchGamesByName(searchText);
-          break;
-        // case "Shows":
-        //   _searchResults = await searchShowsByName(searchText);
-        //   break;
-        case "Movies":
-          _searchResults = await searchMoviesByName(searchText);
-          break;
-        default:
-          return;
-      }
-
-      setState(() {
-        _isSearching = false;
-      });
-    } catch (error) {
-      setState(() => _isSearching = false);
-      // Handle error - could show a snackbar or error message
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Search failed. Please try again.'),
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
-    }
-  }
-
-  // Helper method to clear search
-  void _clearSearch() {
     setState(() {
-      _searchController.clear();
-      _searchResults.clear();
       _isSearching = false;
     });
-  }
 
-  // Helper method to open filter page
-  void _openFilterPage(String inType) {
-    Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder:
-            (context) => DiscoverPageBase(
-              inType: inType,
-              getFilteredItems: getFilteredGames,
-            ),
+    // Show results in modal
+    _showSearchResultsModal(inType, results);
+  } catch (error) {
+    setState(() => _isSearching = false);
+    // Handle error - could show a snackbar or error message
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Search failed. Please try again.'),
+        behavior: SnackBarBehavior.floating,
       ),
     );
   }
+}
+
+// Helper method to clear search
+void _clearSearch() {
+  setState(() {
+    _searchController.clear();
+    _isSearching = false;
+  });
+}
+
+// Helper method to open filter page
+void _openFilterPage(String inType) {
+  Navigator.of(context).push(
+    MaterialPageRoute<void>(
+      builder: (context) => DiscoverPageBase(
+        inType: inType,
+        getFilteredItems: (inType == "Games"
+            ? getFilteredGames
+            : (inType == "Shows" ? getFilteredShows : getFilteredMovies)),
+      ),
+    ),
+  );
+}
 
   // Advanced Search
   Widget advancedSearch(String inTitle, String inType) {
@@ -463,7 +523,11 @@ class MainPageBaseState extends State<MainPageBase> {
   }
 
   // Blank Carousel
-  Widget blankCarousel(String inType, String inTitle, List<MediaEntry> inEntries) {
+  Widget blankCarousel(
+    String inType,
+    String inTitle,
+    List<MediaEntry> inEntries,
+  ) {
     String emptyMessage;
     switch (inType) {
       case "Games":
@@ -517,13 +581,19 @@ class MainPageBaseState extends State<MainPageBase> {
                           Widget page;
                           switch (inType) {
                             case "Games":
-                              page = GameEntry(inEntry: inEntries[index] as Game);
+                              page = GameEntry(
+                                inEntry: inEntries[index] as Game,
+                              );
                               break;
                             case "Shows":
-                              page = ShowEntry(inEntry: inEntries[index] as Show);
+                              page = ShowEntry(
+                                inEntry: inEntries[index] as Show,
+                              );
                               break;
                             case "Movies":
-                              page = MovieEntry(inEntry: inEntries[index] as Movie);
+                              page = MovieEntry(
+                                inEntry: inEntries[index] as Movie,
+                              );
                               break;
                             default:
                               return;

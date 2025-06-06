@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:omnirate/API/tmdb_api.dart';
 import 'package:omnirate/Database/model_movie.dart';
+import 'package:omnirate/Database/model_show.dart';
 import 'package:omnirate/Movies/movie_entry.dart';
 import 'package:flutter/services.dart';
 
@@ -267,7 +268,7 @@ class DebugPage extends StatelessWidget {
             ),
             ElevatedButton(
               onPressed: () async {
-                List<Movie> inList = await searchMoviesByName("Sinners");
+                List<Show> inList = await getTopRatedShows();
 
                 if (context.mounted) {
                   showDialog(
