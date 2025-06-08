@@ -280,6 +280,11 @@ class WelcomePageState extends State<WelcomePage>
     }
   }
 
+  void _handleThemeSelectionComplete() async {
+    await _setSeenWelcome();
+    _goToMainPage();
+  }
+
   Future<void> _setSeenWelcome() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('seenWelcome', true);
@@ -1213,7 +1218,7 @@ class WelcomePageState extends State<WelcomePage>
                     ),
                   ),
                   onPressed: () {
-                    Navigator.pop(context);
+                    _handleThemeSelectionComplete();
                   },
                   child: const Text(
                     'Apply Changes',
