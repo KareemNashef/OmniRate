@@ -1,3 +1,5 @@
+// ==================== Main Page ==================== //
+
 // Flutter imports
 import 'package:flutter/material.dart';
 
@@ -8,7 +10,7 @@ import 'package:omnirate/Home/home_main.dart';
 import 'package:omnirate/Movies/movies_main.dart';
 import 'package:omnirate/Main/animated_bar.dart';
 
-// ========== Main page ========== //
+// ========== Main Page Class ========== //
 
 class MainPage extends StatefulWidget {
   const MainPage({super.key});
@@ -34,46 +36,30 @@ class MainPageState extends State<MainPage> {
   // Switches between main pages
   Widget pageSwitcher() {
     return AnimatedSwitcher(
-      // Set a fade transition
-      duration: Duration(milliseconds: 200),
+      duration: Duration(milliseconds: 300),
       transitionBuilder: (child, animation) {
-        return FadeTransition(
-          opacity: animation,
-          child: ScaleTransition(
-            scale: Tween<double>(begin: 0.95, end: 1.0).animate(animation),
-            child: child,
-          ),
-        );
+        return FadeTransition(opacity: animation, child: child);
       },
-
-      // Switch between pages
-      child: _getPageForIndex(),
+      child: IndexedStack(
+        index: _currentIndex,
+        children: [
+          _playMainPage,
+          _showsMainPage,
+          _moviesMainPage,
+          _homeMainPage,
+        ],
+      ),
     );
-  }
-
-  // Returns the main page for the current index
-  Widget _getPageForIndex() {
-    switch (_currentIndex) {
-      case 0:
-        return _playMainPage;
-      case 1:
-        return _showsMainPage;
-      case 2:
-        return _moviesMainPage;
-      case 3:
-        return _homeMainPage;
-      // case 4:
-      //   return _assistantMainPage;
-      default:
-        return _homeMainPage;
-    }
   }
 
   // Custom navigation bar implementation
   Widget navigationBar() {
     return AnimatedBottomBar(
       items: const [
-        AnimatedBottomBarItem(icon: Icons.gamepad, title: 'Games'),
+        AnimatedBottomBarItem(
+          icon: Icons.videogame_asset_rounded,
+          title: 'Games',
+        ),
         AnimatedBottomBarItem(icon: Icons.tv, title: 'Shows'),
         AnimatedBottomBarItem(icon: Icons.movie, title: 'Movies'),
         AnimatedBottomBarItem(icon: Icons.home, title: 'Home'),

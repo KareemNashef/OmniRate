@@ -17,63 +17,66 @@ class ShowAdapter extends TypeAdapter<Show> {
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
     return Show(
-      name: fields[0] as String,
-      thumbnailUrl: fields[1] as String,
-      artworkUrl: fields[17] as String,
-      rating: fields[2] as double,
-      releaseStatus: fields[3] as String,
-      firstAir: fields[4] as String,
-      lastAir: fields[5] as String,
-      episodesNum: fields[6] as int,
-      seasonsNum: fields[7] as int,
-      genres: (fields[8] as List).cast<String>(),
-      overview: fields[9] as String,
-      seasonsNames: (fields[10] as List).cast<String>(),
-      seasonsThumbnailsUrls: (fields[11] as List).cast<String>(),
-      seasonsAirDates: (fields[12] as List).cast<String>(),
-      seasonsEpisodeCounts: (fields[13] as List).cast<int>(),
-      seasonsOverviews: (fields[14] as List).cast<String>(),
-      seasonsRatings: (fields[15] as List).cast<String>(),
+      id: fields[0] as String,
+      name: fields[1] as String,
+      thumbnailUrl: fields[2] as String,
+      artworkUrl: fields[3] as String,
+      rating: fields[4] as String,
+      releaseStatus: fields[5] as String,
+      firstAir: fields[6] as String,
+      lastAir: fields[7] as String,
+      episodesNum: fields[8] as int,
+      seasonsNum: fields[9] as int,
+      genres: (fields[10] as List).cast<String>(),
+      overview: fields[11] as String,
+      seasonsNames: (fields[12] as List).cast<String>(),
+      seasonsThumbnailsUrls: (fields[13] as List).cast<String>(),
+      seasonsAirDates: (fields[14] as List).cast<String>(),
+      seasonsEpisodeCounts: (fields[15] as List).cast<int>(),
+      seasonsOverviews: (fields[16] as List).cast<String>(),
+      seasonsRatings: (fields[17] as List).cast<String>(),
     );
   }
 
   @override
   void write(BinaryWriter writer, Show obj) {
     writer
-      ..writeByte(17)
+      ..writeByte(18)
       ..writeByte(0)
-      ..write(obj.name)
+      ..write(obj.id)
       ..writeByte(1)
-      ..write(obj.thumbnailUrl)
-      ..writeByte(17)
-      ..write(obj.artworkUrl)
+      ..write(obj.name)
       ..writeByte(2)
-      ..write(obj.rating)
+      ..write(obj.thumbnailUrl)
       ..writeByte(3)
-      ..write(obj.releaseStatus)
+      ..write(obj.artworkUrl)
       ..writeByte(4)
-      ..write(obj.firstAir)
+      ..write(obj.rating)
       ..writeByte(5)
-      ..write(obj.lastAir)
+      ..write(obj.releaseStatus)
       ..writeByte(6)
-      ..write(obj.episodesNum)
+      ..write(obj.firstAir)
       ..writeByte(7)
-      ..write(obj.seasonsNum)
+      ..write(obj.lastAir)
       ..writeByte(8)
-      ..write(obj.genres)
+      ..write(obj.episodesNum)
       ..writeByte(9)
-      ..write(obj.overview)
+      ..write(obj.seasonsNum)
       ..writeByte(10)
-      ..write(obj.seasonsNames)
+      ..write(obj.genres)
       ..writeByte(11)
-      ..write(obj.seasonsThumbnailsUrls)
+      ..write(obj.overview)
       ..writeByte(12)
-      ..write(obj.seasonsAirDates)
+      ..write(obj.seasonsNames)
       ..writeByte(13)
-      ..write(obj.seasonsEpisodeCounts)
+      ..write(obj.seasonsThumbnailsUrls)
       ..writeByte(14)
-      ..write(obj.seasonsOverviews)
+      ..write(obj.seasonsAirDates)
       ..writeByte(15)
+      ..write(obj.seasonsEpisodeCounts)
+      ..writeByte(16)
+      ..write(obj.seasonsOverviews)
+      ..writeByte(17)
       ..write(obj.seasonsRatings);
   }
 

@@ -1,3 +1,5 @@
+// ==================== Show Entry Model ==================== //
+
 // Flutter imports
 import 'package:hive/hive.dart';
 
@@ -14,57 +16,66 @@ class Show implements MediaEntry{
   // ===== Class variables =====
 
   // Main data
+
+  @override
   @HiveField(0)
+  final String id;
+
+  @override
+  @HiveField(1)
   final String name;
 
-  @HiveField(1)
+  @override
+  @HiveField(2)
   final String thumbnailUrl;
 
-  @HiveField(17)
+  @override
+  @HiveField(3)
   final String artworkUrl;
 
-  @HiveField(2)
-  final double rating;
+  @override
+  @HiveField(4)
+  final String rating;
 
   // Additional info
-  @HiveField(3)
+  @HiveField(5)
   final String releaseStatus;
 
-  @HiveField(4)
+  @HiveField(6)
   final String firstAir;
 
-  @HiveField(5)
+  @HiveField(7)
   final String lastAir;
 
-  @HiveField(6)
+  @HiveField(8)
   final int episodesNum;
 
-  @HiveField(7)
+  @HiveField(9)
   final int seasonsNum;
 
-  @HiveField(8)
+  @HiveField(10)
   final List<String> genres;
 
-  @HiveField(9)
+  @HiveField(11)
   final String overview;
 
   // Media specific data
-  @HiveField(10)
+  @HiveField(12)
   final List<String> seasonsNames;
 
-  @HiveField(11)
+  @HiveField(13)
   final List<String> seasonsThumbnailsUrls;
 
-  @HiveField(12)
+  @HiveField(14)
   final List<String> seasonsAirDates;
 
-  @HiveField(13)
+  @HiveField(15)
   final List<int> seasonsEpisodeCounts;
 
-  @HiveField(14)
+  @HiveField(16)
   final List<String> seasonsOverviews;
 
-  @HiveField(15)
+  @HiveField(17)
   final List<String> seasonsRatings;
 
   // ===== MediaEntry Implementation =====
@@ -77,29 +88,32 @@ class Show implements MediaEntry{
 
   // Constructor
   Show({
+    required this.id,
     required this.name,
     required this.thumbnailUrl,
-    this.artworkUrl = '',
-    this.rating = 0.0,
+    required this.artworkUrl,
+    required this.rating,
 
-    this.releaseStatus = 'N/A',
-    this.firstAir = 'N/A',
-    this.lastAir = 'N/A',
-    this.episodesNum = 0,
-    this.seasonsNum = 0,
-    this.genres = const [],
-    this.overview = 'N/A',
+    required this.releaseStatus,
+    required this.firstAir,
+    required this.lastAir,
+    required this.episodesNum,
+    required this.seasonsNum,
+    required this.genres,
+    required this.overview,
 
-    this.seasonsNames = const [],
-    this.seasonsThumbnailsUrls = const [],
-    this.seasonsAirDates = const [],
-    this.seasonsEpisodeCounts = const [],
-    this.seasonsOverviews = const [],
-    this.seasonsRatings = const [],
+    required this.seasonsNames,
+    required this.seasonsThumbnailsUrls,
+    required this.seasonsAirDates,
+    required this.seasonsEpisodeCounts,
+    required this.seasonsOverviews,
+    required this.seasonsRatings,
   });
 
   // Convert to map
+  @override
   Map<String, dynamic> toMap() => {
+    'id': id,
     'name': name,
     'thumbnailUrl': thumbnailUrl,
     'backdropUrl': artworkUrl,
@@ -123,6 +137,7 @@ class Show implements MediaEntry{
 
   // Convert from map
   factory Show.fromMap(Map<String, dynamic> map) => Show(
+    id: map['id'],
     name: map['name'],
     thumbnailUrl: map['thumbnailUrl'],
     artworkUrl: map['backdropUrl'],

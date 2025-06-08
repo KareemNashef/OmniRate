@@ -17,45 +17,48 @@ class GameAdapter extends TypeAdapter<Game> {
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
     return Game(
-      name: fields[0] as String,
-      thumbnailUrl: fields[1] as String,
-      artworkUrl: fields[12] as String,
-      rating: fields[2] as double,
-      releaseDate: fields[3] as String,
-      developer: fields[4] as String,
-      genres: (fields[5] as List).cast<String>(),
-      overview: fields[6] as String,
-      timeHaste: fields[7] as String,
-      timeNormal: fields[8] as String,
-      timeComplete: fields[9] as String,
+      id: fields[0] as String,
+      name: fields[1] as String,
+      thumbnailUrl: fields[2] as String,
+      artworkUrl: fields[3] as String,
+      rating: fields[4] as String,
+      releaseDate: fields[5] as String,
+      developer: fields[6] as String,
+      genres: (fields[7] as List).cast<String>(),
+      overview: fields[8] as String,
+      timeHaste: fields[9] as String,
+      timeNormal: fields[10] as String,
+      timeComplete: fields[11] as String,
     );
   }
 
   @override
   void write(BinaryWriter writer, Game obj) {
     writer
-      ..writeByte(11)
-      ..writeByte(0)
-      ..write(obj.name)
-      ..writeByte(1)
-      ..write(obj.thumbnailUrl)
       ..writeByte(12)
-      ..write(obj.artworkUrl)
+      ..writeByte(0)
+      ..write(obj.id)
+      ..writeByte(1)
+      ..write(obj.name)
       ..writeByte(2)
-      ..write(obj.rating)
+      ..write(obj.thumbnailUrl)
       ..writeByte(3)
-      ..write(obj.releaseDate)
+      ..write(obj.artworkUrl)
       ..writeByte(4)
-      ..write(obj.developer)
+      ..write(obj.rating)
       ..writeByte(5)
-      ..write(obj.genres)
+      ..write(obj.releaseDate)
       ..writeByte(6)
-      ..write(obj.overview)
+      ..write(obj.developer)
       ..writeByte(7)
-      ..write(obj.timeHaste)
+      ..write(obj.genres)
       ..writeByte(8)
-      ..write(obj.timeNormal)
+      ..write(obj.overview)
       ..writeByte(9)
+      ..write(obj.timeHaste)
+      ..writeByte(10)
+      ..write(obj.timeNormal)
+      ..writeByte(11)
       ..write(obj.timeComplete);
   }
 

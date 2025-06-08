@@ -1,9 +1,7 @@
+// ==================== Base Entry Model ==================== //
+
 // Enum to identify the type of media entry.
-enum MediaType {
-  game,
-  movie,
-  show,
-}
+enum MediaType { game, movie, show }
 
 // Abstract class that serves as a common interface for all media types.
 abstract class MediaEntry {
@@ -11,14 +9,11 @@ abstract class MediaEntry {
   MediaType get mediaType;
 
   // ===== Common Main Data =====
+  String get id;
   String get name;
   String get thumbnailUrl;
   String get artworkUrl;
-  double get rating;
-
-  // ===== Common Additional Info =====
-  List<String> get genres;
-  String get overview;
+  String get rating;
 
   // ===== Common Methods =====
   Map<String, dynamic> toMap();

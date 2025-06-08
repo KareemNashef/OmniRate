@@ -63,21 +63,24 @@ class UserMediaEntryAdapter extends TypeAdapter<UserMediaEntry> {
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
     return UserMediaEntry(
-      name: fields[0] as String,
-      rating: fields[1] as double,
-      status: fields[2] as String,
+      id: fields[0] as String,
+      name: fields[1] as String,
+      rating: fields[2] as String,
+      status: fields[3] as String,
     );
   }
 
   @override
   void write(BinaryWriter writer, UserMediaEntry obj) {
     writer
-      ..writeByte(3)
+      ..writeByte(4)
       ..writeByte(0)
-      ..write(obj.name)
+      ..write(obj.id)
       ..writeByte(1)
-      ..write(obj.rating)
+      ..write(obj.name)
       ..writeByte(2)
+      ..write(obj.rating)
+      ..writeByte(3)
       ..write(obj.status);
   }
 

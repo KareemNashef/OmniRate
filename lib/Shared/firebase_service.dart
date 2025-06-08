@@ -1,6 +1,11 @@
+// ==================== Firebase Service ==================== //
+
+// Flutter imports
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:omnirate/Shared/user_data.dart';
+
+// ========== Firebase Service Class ========== //
 
 class FirebaseService {
   // Initialize services

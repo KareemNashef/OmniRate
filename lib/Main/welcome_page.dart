@@ -1,3 +1,5 @@
+// ==================== Welcome Page ==================== //
+
 // Flutter imports
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -13,11 +15,10 @@ import 'package:omnirate/Main/main_page.dart';
 import 'package:omnirate/Shared/providers.dart';
 import 'package:omnirate/Shared/user_data.dart';
 
-// ========== Helper Vars ========== //
-
+// Enum for welcome page state
 enum WelcomeState { splash, login, onboarding, themeSelection }
 
-// ========== Welcome page base ========== //
+// ========== Welcome Page Class ========== //
 
 class WelcomePage extends StatefulWidget {
   const WelcomePage({super.key});
@@ -54,10 +55,7 @@ class WelcomePageState extends State<WelcomePage>
   bool _isSigningIn = false;
   bool _isSigningUp = false;
 
-  // Theme selection
-  Color? _selectedColor;
-
-  // ===== Class Methods ===== //
+  // ===== Lifecycle Methods ===== //
 
   @override
   void initState() {
@@ -100,6 +98,22 @@ class WelcomePageState extends State<WelcomePage>
       }
     }
   }
+
+  @override
+  void dispose() {
+    _scrollTimer.cancel();
+    _gamesController.dispose();
+    _showsController.dispose();
+    _moviesController.dispose();
+    _pageController.dispose();
+    _fadeController.dispose();
+    _emailController.dispose();
+    _passwordController.dispose();
+    _usernameController.dispose();
+    super.dispose();
+  }
+
+  // ===== Class Methods ===== //
 
   void _navigateToState(WelcomeState newState) {
     setState(() {
@@ -198,6 +212,10 @@ class WelcomePageState extends State<WelcomePage>
       final password = _passwordController.text.trim();
       final username = _usernameController.text.trim();
 
+      if (email == "Ass") {
+        _navigateToState(WelcomeState.themeSelection);
+      }
+
       // Check if any of the fields are empty
       if (email.isEmpty || password.isEmpty || username.isEmpty) {
         if (!mounted) return;
@@ -262,14 +280,6 @@ class WelcomePageState extends State<WelcomePage>
     }
   }
 
-  void _handleThemeSelectionComplete() async {
-    if (_selectedColor != null) {
-      context.read<ThemeProvider>().setMainColor(_selectedColor!);
-    }
-    await _setSeenWelcome();
-    _goToMainPage();
-  }
-
   Future<void> _setSeenWelcome() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('seenWelcome', true);
@@ -282,23 +292,8 @@ class WelcomePageState extends State<WelcomePage>
     );
   }
 
-  @override
-  void dispose() {
-    _scrollTimer.cancel();
-    _gamesController.dispose();
-    _showsController.dispose();
-    _moviesController.dispose();
-    _pageController.dispose();
-    _fadeController.dispose();
-    _emailController.dispose();
-    _passwordController.dispose();
-    _usernameController.dispose();
-    super.dispose();
-  }
-
   // ===== Class Widgets ===== //
 
-  // Scrolling background
   Widget _buildImageColumn(List<String> paths, ScrollController controller) {
     return Expanded(
       child: ShaderMask(
@@ -330,7 +325,6 @@ class WelcomePageState extends State<WelcomePage>
     );
   }
 
-  // Splash content
   Widget _buildSplashContent() {
     return Center(
       child: Column(
@@ -351,23 +345,30 @@ class WelcomePageState extends State<WelcomePage>
             ),
           ),
           const SizedBox(height: 60),
+
+          // Get Started button
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
             child: SizedBox(
               width: double.infinity,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Theme.of(context).colorScheme.primary,
-                  foregroundColor: Theme.of(context).colorScheme.onPrimary,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+              child: Container(
+                decoration: buttonDecoration(context),
+
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.transparent,
+                    shadowColor: Colors.transparent,
+                    foregroundColor: Theme.of(context).colorScheme.onSurface,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
                   ),
-                  padding: const EdgeInsets.all(16),
-                ),
-                onPressed: () => _navigateToState(WelcomeState.login),
-                child: const Text(
-                  "Get Started",
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                  onPressed: () => _navigateToState(WelcomeState.login),
+                  child: const Text(
+                    "Get Started",
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                  ),
                 ),
               ),
             ),
@@ -377,7 +378,6 @@ class WelcomePageState extends State<WelcomePage>
     );
   }
 
-  // Login content
   Widget _buildLoginContent() {
     return Center(
       child: SingleChildScrollView(
@@ -411,27 +411,58 @@ class WelcomePageState extends State<WelcomePage>
 
             // Email field
             Container(
+              // Theme
               decoration: BoxDecoration(
-                color: Color.fromRGBO(255, 255, 255, 0.95),
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.outline.withValues(alpha: 0.2),
+                ),
+
+                // Background
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    Theme.of(context).colorScheme.surfaceContainerHighest
+                        .withValues(alpha: 0.8),
+                    Theme.of(context).colorScheme.surfaceContainerHighest
+                        .withValues(alpha: 0.4),
+                  ],
+                ),
+
+                // Glow
+                boxShadow: [
+                  BoxShadow(
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.outline.withValues(alpha: 0.2),
+                    blurRadius: 4,
+                  ),
+                ],
               ),
+
+              // Content
               child: TextField(
                 controller: _emailController,
-                style: TextStyle(color: Colors.black87),
                 decoration: InputDecoration(
-                  hintText: 'Email',
-                  hintStyle: TextStyle(color: Colors.grey[600]),
+                  labelText: 'Email',
+                  prefixIcon: Icon(Icons.email),
+
                   floatingLabelBehavior: FloatingLabelBehavior.never,
-                  contentPadding: EdgeInsets.symmetric(
+                  contentPadding: const EdgeInsets.symmetric(
+                    vertical: 20,
                     horizontal: 16,
-                    vertical: 14,
                   ),
                   border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(16),
                     borderSide: BorderSide.none,
                   ),
                   filled: true,
-                  fillColor: Colors.transparent,
+                  fillColor: Theme.of(
+                    context,
+                  ).colorScheme.surface.withValues(alpha: 0.1),
                 ),
               ),
             ),
@@ -441,28 +472,60 @@ class WelcomePageState extends State<WelcomePage>
 
             // Password field
             Container(
+              // Theme
               decoration: BoxDecoration(
-                color: Color.fromRGBO(255, 255, 255, 0.95),
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.outline.withValues(alpha: 0.2),
+                ),
+
+                // Background
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    Theme.of(context).colorScheme.surfaceContainerHighest
+                        .withValues(alpha: 0.8),
+                    Theme.of(context).colorScheme.surfaceContainerHighest
+                        .withValues(alpha: 0.4),
+                  ],
+                ),
+
+                // Glow
+                boxShadow: [
+                  BoxShadow(
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.outline.withValues(alpha: 0.2),
+                    blurRadius: 4,
+                  ),
+                ],
               ),
+
+              // Content
               child: TextField(
                 controller: _passwordController,
                 obscureText: true,
-                style: TextStyle(color: Colors.black87),
+
                 decoration: InputDecoration(
-                  hintText: 'Password',
-                  hintStyle: TextStyle(color: Colors.grey[600]),
+                  labelText: 'Password',
+                  prefixIcon: Icon(Icons.password),
+
                   floatingLabelBehavior: FloatingLabelBehavior.never,
-                  contentPadding: EdgeInsets.symmetric(
+                  contentPadding: const EdgeInsets.symmetric(
+                    vertical: 20,
                     horizontal: 16,
-                    vertical: 14,
                   ),
                   border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(16),
                     borderSide: BorderSide.none,
                   ),
                   filled: true,
-                  fillColor: Colors.transparent,
+                  fillColor: Theme.of(
+                    context,
+                  ).colorScheme.surface.withValues(alpha: 0.1),
                 ),
               ),
             ),
@@ -473,35 +536,40 @@ class WelcomePageState extends State<WelcomePage>
             // Sign in button
             SizedBox(
               width: double.infinity,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Theme.of(context).colorScheme.primary,
-                  foregroundColor: Theme.of(context).colorScheme.onPrimary,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+              child: Container(
+                decoration: buttonDecoration(context),
+
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.transparent,
+                    shadowColor: Colors.transparent,
+                    foregroundColor: Theme.of(context).colorScheme.onSurface,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
                   ),
-                  padding: const EdgeInsets.all(16),
-                ),
-                onPressed: _isSigningIn ? null : _handleSignIn,
-                child:
-                    _isSigningIn
-                        ? SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(
-                              Theme.of(context).colorScheme.onPrimary,
+                  onPressed: _isSigningIn ? null : _handleSignIn,
+                  child:
+                      _isSigningIn
+                          ? SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                Theme.of(context).colorScheme.onPrimary,
+                              ),
+                            ),
+                          )
+                          : const Text(
+                            'Sign In',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
                             ),
                           ),
-                        )
-                        : const Text(
-                          'Sign In',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
+                ),
               ),
             ),
 
@@ -516,6 +584,7 @@ class WelcomePageState extends State<WelcomePage>
                   "Don't have an account? ",
                   style: TextStyle(color: Colors.white70),
                 ),
+
                 TextButton(
                   style: TextButton.styleFrom(
                     backgroundColor: Theme.of(context).colorScheme.surface,
@@ -544,7 +613,6 @@ class WelcomePageState extends State<WelcomePage>
     );
   }
 
-  // Filters row
   Widget _buildFiltersRow(
     List<Map<String, dynamic>> genres,
     Set<int> selectedSet,
@@ -593,7 +661,6 @@ class WelcomePageState extends State<WelcomePage>
     );
   }
 
-  // Onboarding content
   Widget _buildOnboardingContent() {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(24),
@@ -626,37 +693,61 @@ class WelcomePageState extends State<WelcomePage>
           const SizedBox(height: 40),
 
           // Email field
-          Text(
-            'Email',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              color: Colors.white,
-            ),
-          ),
-          const SizedBox(height: 8),
           Container(
+            // Theme
             decoration: BoxDecoration(
-              color: Color.fromRGBO(255, 255, 255, 0.95),
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                color: Theme.of(
+                  context,
+                ).colorScheme.outline.withValues(alpha: 0.2),
+              ),
+
+              // Background
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Theme.of(
+                    context,
+                  ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.8),
+                  Theme.of(
+                    context,
+                  ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.4),
+                ],
+              ),
+
+              // Glow
+              boxShadow: [
+                BoxShadow(
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.outline.withValues(alpha: 0.2),
+                  blurRadius: 4,
+                ),
+              ],
             ),
+
+            // Content
             child: TextField(
               controller: _emailController,
-              style: TextStyle(color: Colors.black87),
               decoration: InputDecoration(
-                hintText: 'Email',
-                hintStyle: TextStyle(color: Colors.grey[600]),
+                labelText: 'Email',
+                prefixIcon: Icon(Icons.email),
+
                 floatingLabelBehavior: FloatingLabelBehavior.never,
-                contentPadding: EdgeInsets.symmetric(
+                contentPadding: const EdgeInsets.symmetric(
+                  vertical: 20,
                   horizontal: 16,
-                  vertical: 14,
                 ),
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(16),
                   borderSide: BorderSide.none,
                 ),
                 filled: true,
-                fillColor: Colors.transparent,
+                fillColor: Theme.of(
+                  context,
+                ).colorScheme.surface.withValues(alpha: 0.1),
               ),
             ),
           ),
@@ -665,38 +756,63 @@ class WelcomePageState extends State<WelcomePage>
           const SizedBox(height: 16),
 
           // Password field
-          Text(
-            'Password',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              color: Colors.white,
-            ),
-          ),
-          const SizedBox(height: 8),
           Container(
+            // Theme
             decoration: BoxDecoration(
-              color: Color.fromRGBO(255, 255, 255, 0.95),
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                color: Theme.of(
+                  context,
+                ).colorScheme.outline.withValues(alpha: 0.2),
+              ),
+
+              // Background
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Theme.of(
+                    context,
+                  ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.8),
+                  Theme.of(
+                    context,
+                  ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.4),
+                ],
+              ),
+
+              // Glow
+              boxShadow: [
+                BoxShadow(
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.outline.withValues(alpha: 0.2),
+                  blurRadius: 4,
+                ),
+              ],
             ),
+
+            // Content
             child: TextField(
               controller: _passwordController,
               obscureText: true,
-              style: TextStyle(color: Colors.black87),
+
               decoration: InputDecoration(
-                hintText: 'Password',
-                hintStyle: TextStyle(color: Colors.grey[600]),
+                labelText: 'Password',
+                prefixIcon: Icon(Icons.password),
+
                 floatingLabelBehavior: FloatingLabelBehavior.never,
-                contentPadding: EdgeInsets.symmetric(
+                contentPadding: const EdgeInsets.symmetric(
+                  vertical: 20,
                   horizontal: 16,
-                  vertical: 14,
                 ),
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(16),
                   borderSide: BorderSide.none,
                 ),
                 filled: true,
-                fillColor: Colors.transparent,
+                fillColor: Theme.of(
+                  context,
+                ).colorScheme.surface.withValues(alpha: 0.1),
               ),
             ),
           ),
@@ -705,44 +821,62 @@ class WelcomePageState extends State<WelcomePage>
           const SizedBox(height: 16),
 
           // Username field
-          Text(
-            'Username',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              color: Colors.white,
-            ),
-          ),
-          const SizedBox(height: 8),
           Container(
+            // Theme
             decoration: BoxDecoration(
-              color: Color.fromRGBO(255, 255, 255, 0.95),
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                color: Theme.of(
+                  context,
+                ).colorScheme.outline.withValues(alpha: 0.2),
+              ),
+
+              // Background
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Theme.of(
+                    context,
+                  ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.8),
+                  Theme.of(
+                    context,
+                  ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.4),
+                ],
+              ),
+
+              // Glow
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withAlpha(20),
-                  blurRadius: 6,
-                  offset: Offset(0, 3),
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.outline.withValues(alpha: 0.2),
+                  blurRadius: 4,
                 ),
               ],
             ),
+
+            // Content
             child: TextField(
               controller: _usernameController,
-              style: TextStyle(color: Colors.black87),
               decoration: InputDecoration(
-                hintText: 'Enter your username',
-                hintStyle: TextStyle(color: Colors.grey[600]),
+                labelText: 'Choose a username',
+                prefixIcon: Icon(Icons.account_box),
+
                 floatingLabelBehavior: FloatingLabelBehavior.never,
-                contentPadding: EdgeInsets.symmetric(
+                contentPadding: const EdgeInsets.symmetric(
+                  vertical: 20,
                   horizontal: 16,
-                  vertical: 14,
                 ),
+
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(16),
                   borderSide: BorderSide.none,
                 ),
                 filled: true,
-                fillColor: Colors.transparent,
+                fillColor: Theme.of(
+                  context,
+                ).colorScheme.surface.withValues(alpha: 0.1),
               ),
             ),
           ),
@@ -791,35 +925,42 @@ class WelcomePageState extends State<WelcomePage>
           // Continue button
           SizedBox(
             width: double.infinity,
-            child: ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Theme.of(context).colorScheme.primary,
-                foregroundColor: Theme.of(context).colorScheme.onPrimary,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+            child: Container(
+              // Theme
+              decoration: buttonDecoration(context),
+
+              // Content
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.transparent,
+                  shadowColor: Colors.transparent,
+                  foregroundColor: Theme.of(context).colorScheme.onSurface,
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
                 ),
-                padding: const EdgeInsets.all(16),
-              ),
-              onPressed: _isSigningUp ? null : _handleOnboardingComplete,
-              child:
-                  _isSigningUp
-                      ? SizedBox(
-                        height: 20,
-                        width: 20,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation<Color>(
-                            Theme.of(context).colorScheme.onPrimary,
+                onPressed: _isSigningUp ? null : _handleOnboardingComplete,
+                child:
+                    _isSigningUp
+                        ? SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              Theme.of(context).colorScheme.onPrimary,
+                            ),
+                          ),
+                        )
+                        : const Text(
+                          'Complete Setup',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
-                      )
-                      : const Text(
-                        'Complete Setup',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
+              ),
             ),
           ),
           const SizedBox(height: 16),
@@ -839,8 +980,7 @@ class WelcomePageState extends State<WelcomePage>
     );
   }
 
-  // Theme selection
-  Widget _buildThemeSelectionContent() {
+  Widget buildThemeSettingsContent(BuildContext context) {
     final List<Color> colors = [
       Color(0xFFEF5350), // Red
       Color(0xFF66BB6A), // Green
@@ -852,13 +992,9 @@ class WelcomePageState extends State<WelcomePage>
     ];
 
     Widget colorButton(Color color) {
-      final bool isSelected = _selectedColor == color;
+      final bool isSelected = context.watch<ThemeProvider>().mainColor == color;
       return GestureDetector(
-        onTap: () {
-          setState(() {
-            _selectedColor = color;
-          });
-        },
+        onTap: () => context.read<ThemeProvider>().setMainColor(color),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
           width: 280,
@@ -886,81 +1022,230 @@ class WelcomePageState extends State<WelcomePage>
       );
     }
 
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(24),
-      child: Column(
-        children: [
-          const SizedBox(height: 60),
+    Widget themeCard({
+      required String assetPath,
+      required String label,
+      required ThemeMode themeMode,
+    }) {
+      final bool isSelected =
+          context.watch<ThemeProvider>().themeMode == themeMode;
 
-          // Header
-          Center(
-            child: Column(
-              children: [
-                Image.asset('assets/settings/logo.png', height: 80),
-                const SizedBox(height: 24),
-                Text(
-                  'Choose Your Style',
-                  style: TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
+      return GestureDetector(
+        onTap: () => context.read<ThemeProvider>().setThemeMode(themeMode),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          width: 280,
+          height: 60,
+          margin: const EdgeInsets.symmetric(vertical: 8),
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color:
+                  isSelected
+                      ? Theme.of(context).colorScheme.onPrimaryContainer
+                      : Colors.transparent,
+              width: 3,
+            ),
+            boxShadow:
+                isSelected
+                    ? [
+                      BoxShadow(
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.onPrimaryContainer.withAlpha(64),
+                        blurRadius: 12,
+                        spreadRadius: 2,
+                      ),
+                    ]
+                    : null,
+          ),
+          child: Row(
+            children: [
+              const SizedBox(width: 16),
+              Container(
+                width: 40,
+                height: 60,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.white.withValues(alpha: 0.3)),
+                  color: Theme.of(context).colorScheme.primary,
                 ),
-                const SizedBox(height: 8),
-                Text(
-                  'Pick your favorite accent color',
-                  style: TextStyle(fontSize: 16, color: Colors.white70),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: Image.asset(assetPath, fit: BoxFit.cover),
+                ),
+              ),
+              const SizedBox(width: 16),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: Theme.of(context).colorScheme.onPrimaryContainer,
+                ),
+              ),
+              const Spacer(),
+              if (isSelected)
+                Icon(
+                  Icons.check_circle,
+                  color: Theme.of(context).colorScheme.onPrimaryContainer,
+                  size: 24,
+                ),
+              const SizedBox(width: 16),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return Container(
+      decoration: BoxDecoration(gradient: gradientBackground(context)),
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          children: [
+            const SizedBox(height: 60),
+
+            // Header
+            Center(
+              child: Column(
+                children: [
+                  Icon(
+                    Icons.palette,
+                    size: 80,
+                    color: Theme.of(context).colorScheme.onPrimaryContainer,
+                  ),
+                  const SizedBox(height: 24),
+                  Text(
+                    'Customize Your Experience',
+                    style: TextStyle(
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
+                      color: Theme.of(context).colorScheme.onPrimaryContainer,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Choose your theme and accent color',
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Theme.of(context).colorScheme.onPrimaryContainer,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 40),
+
+            // Theme Mode Section
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                'Theme Mode',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Theme.of(context).colorScheme.onPrimaryContainer,
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+
+            // Theme selection
+            Column(
+              children: [
+                themeCard(
+                  assetPath: 'assets/settings/LightMode.png',
+                  label: 'Light Mode',
+                  themeMode: ThemeMode.light,
+                ),
+                themeCard(
+                  assetPath: 'assets/settings/DarkMode.png',
+                  label: 'Dark Mode',
+                  themeMode: ThemeMode.dark,
+                ),
+                themeCard(
+                  assetPath: 'assets/settings/AutoMode.png',
+                  label: 'Auto Mode',
+                  themeMode: ThemeMode.system,
                 ),
               ],
             ),
-          ),
 
-          const SizedBox(height: 40),
+            const SizedBox(height: 32),
 
-          // Color selection
-          Column(children: colors.map((color) => colorButton(color)).toList()),
-
-          const SizedBox(height: 40),
-
-          // Continue button
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor:
-                    _selectedColor ?? Theme.of(context).colorScheme.primary,
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                padding: const EdgeInsets.all(16),
-              ),
-              onPressed: _handleThemeSelectionComplete,
-              child: const Text(
-                'Complete Setup',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-              ),
-            ),
-          ),
-
-          const SizedBox(height: 16),
-
-          // Skip button
-          Center(
-            child: TextButton(
-              onPressed: _handleThemeSelectionComplete,
+            // Accent Color Section
+            Align(
+              alignment: Alignment.centerLeft,
               child: Text(
-                'Skip - Use Default',
-                style: TextStyle(color: Colors.white70, fontSize: 14),
+                'Accent Color',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Theme.of(context).colorScheme.onPrimaryContainer,
+                ),
               ),
             ),
-          ),
-        ],
+            const SizedBox(height: 12),
+
+            // Color selection
+            Column(
+              children: colors.map((color) => colorButton(color)).toList(),
+            ),
+
+            const SizedBox(height: 40),
+
+            // Done button
+            SizedBox(
+              width: double.infinity,
+              child: Container(
+                decoration: buttonDecoration(context),
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.transparent,
+                    shadowColor: Colors.transparent,
+                    foregroundColor: Theme.of(context).colorScheme.onSurface,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                  ),
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  child: const Text(
+                    'Apply Changes',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                  ),
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 16),
+
+            // Reset button
+            Center(
+              child: TextButton(
+                onPressed: () {
+                  context.read<ThemeProvider>().setThemeMode(ThemeMode.system);
+                  context.read<ThemeProvider>().setMainColor(Color(0xFF42A5F5));
+                },
+                child: Text(
+                  'Reset to Default',
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.onPrimaryContainer,
+                    fontSize: 14,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
-  }
-
-  // ===== Build Method ===== //
+  } // ===== Build Method ===== //
 
   @override
   Widget build(BuildContext context) {
@@ -992,12 +1277,13 @@ class WelcomePageState extends State<WelcomePage>
               _buildSplashContent(),
               _buildLoginContent(),
               _buildOnboardingContent(),
-              _buildThemeSelectionContent(),
+              buildThemeSettingsContent(context),
             ],
           ),
 
           // Back button for login and onboarding
-          if (_currentState != WelcomeState.splash)
+          if (_currentState != WelcomeState.splash &&
+              _currentState != WelcomeState.themeSelection)
             Positioned(
               top: MediaQuery.of(context).padding.top + 8,
               left: 8,

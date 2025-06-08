@@ -1,3 +1,5 @@
+// ==================== Database Helper ==================== //
+
 // Flutter imports
 import 'package:hive_flutter/hive_flutter.dart';
 
@@ -10,21 +12,19 @@ import 'package:omnirate/Database/model_show.dart';
 
 // ========== Main Functions ========== //
 
-// getGame
-// input: game name
-// output: game object
-// Searches the database for the game. if it is not found, look it up using the API
-Future<Game?> getGame(String inName) async {
-  // Search the database
-  final game = await HiveHelper.getGameByName(inName);
-  if (game != null) {
-    return game;
+Future<Game?> getGame(String inID, {bool refresh = false}) async {
+  if (refresh == false) {
+    // Search the database
+    final game = await HiveHelper.getGameByID(inID);
+    if (game != null) {
+      return game;
+    }
   }
 
   // Look it up using the API
-  Game? apiGame = await getGameEntry(inName);
+  Game? apiGame = await getGameEntry(inID);
 
-  // Add the game to the database
+  // Add entry to the database
   if (apiGame != null) {
     await HiveHelper.insertGame(apiGame);
     return apiGame;
@@ -33,57 +33,45 @@ Future<Game?> getGame(String inName) async {
   return null;
 }
 
-// getShow
-// input: show name
-// output: show object
-// Searches the database for the show. if it is not found, look it up using the API
-Future<Show?> getShow(String inName) async {
-  // 1. Check the local Hive database first
-  final show = await HiveHelper.getShowByName(inName);
-  if (show != null) {
-    print("Found '${inName}' in cache.");
-    return show;
+Future<Show?> getShow(String inName, {bool refresh = false}) async {
+  if (refresh == false) {
+    // Search the database
+    final show = await HiveHelper.getShowByID(inName);
+    if (show != null) {
+      return show;
+    }
   }
 
-  // 2. If not found in cache, fetch from the API
-  print("'${inName}' not in cache. Fetching from API...");
+  // Look it up using the API
   final apiShow = await getShowEntry(inName);
 
-  // 3. If the API call was successful, save the result to Hive
+  // Add entry to the database
   if (apiShow != null) {
-    print("Saving '${apiShow.name}' to cache.");
     await HiveHelper.insertShow(apiShow);
     return apiShow;
   }
 
-  // 4. Return null if not found in cache or API
   return null;
 }
 
-// getMovie
-// input: movie name
-// output: movie object
-// Searches the database for the movie. if it is not found, look it up using the API
-Future<Movie?> getMovie(String inName) async {
-  // 1. Check the local Hive database first
-  final movie = await HiveHelper.getMovieByName(inName);
-  if (movie != null) {
-    print("Found '${inName}' in cache.");
-    return movie;
+Future<Movie?> getMovie(String inName, {bool refresh = false}) async {
+  if (refresh == false) {
+    // Search the database
+    final movie = await HiveHelper.getMovieByID(inName);
+    if (movie != null) {
+      return movie;
+    }
   }
 
-  // 2. If not found in cache, fetch from the API
-  print("'${inName}' not in cache. Fetching from API...");
+  // Look it up using the API
   final apiMovie = await getMovieEntry(inName);
-  
-  // 3. If the API call was successful, save the result to Hive
+
+  // Add entry to the database
   if (apiMovie != null) {
-    print("Saving '${apiMovie.name}' to cache.");
     await HiveHelper.insertMovie(apiMovie);
     return apiMovie;
   }
 
-  // 4. Return null if not found in cache or API
   return null;
 }
 
@@ -99,7 +87,7 @@ class HiveHelper {
 
   // ===== Initialization =====
 
-  /// Initialize Hive database
+  // Initialize Hive database
   static Future<void> init() async {
     await Hive.initFlutter();
 
@@ -131,13 +119,13 @@ class HiveHelper {
   // Insert a game into the database
   static Future<void> insertGame(Game game) async {
     final box = Hive.box<Game>(boxGames);
-    await box.put(game.name.toLowerCase(), game);
+    await box.put(game.id, game);
   }
 
   // Get a game by its name
-  static Future<Game?> getGameByName(String name) async {
+  static Future<Game?> getGameByID(String id) async {
     final box = Hive.box<Game>(boxGames);
-    return box.get(name.toLowerCase());
+    return box.get(id);
   }
 
   // Update a game
@@ -150,13 +138,13 @@ class HiveHelper {
   // Insert a show into the database
   static Future<void> insertShow(Show show) async {
     final box = Hive.box<Show>(boxShows);
-    await box.put(show.name.toLowerCase(), show);
+    await box.put(show.id, show);
   }
 
   // Get a show by its name
-  static Future<Show?> getShowByName(String name) async {
+  static Future<Show?> getShowByID(String id) async {
     final box = Hive.box<Show>(boxShows);
-    return box.get(name.toLowerCase());
+    return box.get(id);
   }
 
   // Update a show
@@ -169,13 +157,13 @@ class HiveHelper {
   // Insert a movie into the database
   static Future<void> insertMovie(Movie movie) async {
     final box = Hive.box<Movie>(boxMovies);
-    await box.put(movie.name.toLowerCase(), movie);
+    await box.put(movie.id, movie);
   }
 
   // Get a movie by its name
-  static Future<Movie?> getMovieByName(String name) async {
+  static Future<Movie?> getMovieByID(String id) async {
     final box = Hive.box<Movie>(boxMovies);
-    return box.get(name.toLowerCase());
+    return box.get(id);
   }
 
   // Update a movie

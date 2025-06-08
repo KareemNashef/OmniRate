@@ -1,175 +1,170 @@
+// ==================== Games Main Page ==================== //
+
 // Flutter imports
 import 'package:flutter/material.dart';
 import 'package:omnirate/API/igdb_api.dart';
 
 // Local imports
-import 'package:omnirate/BaseClasses/base_main.dart';
+import 'package:omnirate/BasePages/media_page.dart';
 import 'package:omnirate/Database/model_game.dart';
+import 'package:omnirate/Shared/utils.dart';
 
 // ========== Games main page ========== //
 
-class GamesMainPage extends MainPageBase {
+class GamesMainPage extends MediaPageBase {
   const GamesMainPage({super.key});
 
   @override
   GamesMainPageState createState() => GamesMainPageState();
 }
 
-class GamesMainPageState extends MainPageBaseState {
+class GamesMainPageState extends MediaPageBaseState {
   // ===== Class variables ===== //
 
+  // Games lists
   late Future<List<Game>> futureDiscover;
-  late Future<List<Game>> futureComingSoon;
-  late Future<List<Game>> futureRecentlyReleased;
-  late Future<List<Game>> futureTopRated;
+  late Future<List<List<Game>>> futureCombined;
 
-  // ===== Class Initialization ===== //
+  // ===== Lifecycle Methods ===== //
 
   @override
   void initState() {
     super.initState();
     futureDiscover = getDiscoverGames();
-    futureComingSoon = getComingSoonGames();
-    futureRecentlyReleased = getRecentlyReleasedGames();
-    futureTopRated = getTopRatedGames();
+    futureCombined = getCombinedGames();
   }
 
   // ===== Build Method ===== //
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      child: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            // Padding
-            SizedBox(height: 40),
+    return Container(
+      decoration: BoxDecoration(gradient: gradientBackground(context)),
 
-            // Search Bar
-            searchBar("Games"),
+      child: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
 
-            // Padding
-            SizedBox(height: 20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              // Padding
+              SizedBox(height: 40),
 
-            // Main Carousel
-            FutureBuilder<List<Game>>(
-              future: futureDiscover,
-              builder: (context, snapshot) {
-                if (!snapshot.hasData) {
-                  return SizedBox(
-                    height: 290,
-                    child: Center(child: CircularProgressIndicator()),
-                  );
-                }
+              // Search Bar
+              searchBar("Games"),
 
-                return mainCarousel("Games", snapshot.data!);
-              },
-            ),
+              // Padding
+              SizedBox(height: 16),
 
-            // Padding
-            const SizedBox(height: 16),
+              // Main Carousel
+              FutureBuilder<List<Game>>(
+                future: futureDiscover,
+                builder: (context, snapshot) {
+                  if (!snapshot.hasData) {
+                    return SizedBox(
+                      height: 290,
+                      child: Center(child: CircularProgressIndicator()),
+                    );
+                  }
 
-            // Coming Soon
-            FutureBuilder<List<Game>>(
-              future: futureComingSoon,
-              builder: (context, snapshot) {
-                if (!snapshot.hasData) {
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 8),
-                        child: Text(
+                  return mainCarousel("Games", snapshot.data!);
+                },
+              ),
+
+              // Padding
+              const SizedBox(height: 16),
+
+              // Coming Soon
+              FutureBuilder<List<List<Game>>>(
+                future: futureCombined,
+                builder: (context, snapshot) {
+                  if (!snapshot.hasData) {
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        sectionHeader(
+                          context,
                           "Coming Soon",
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Theme.of(context).colorScheme.primary,
-                          ),
+                          "Just around the corner",
                         ),
-                      ),
-                      SizedBox(height: 8),
-                      SizedBox(
-                        height: 230,
-                        child: Center(child: CircularProgressIndicator()),
-                      ),
-                    ],
+                        SizedBox(height: 8),
+                        SizedBox(
+                          height: 230,
+                          child: Center(child: CircularProgressIndicator()),
+                        ),
+                      ],
+                    );
+                  }
+                  return blankCarousel(
+                    "Games",
+                    "Coming Soon",
+                    "Just around the corner",
+                    snapshot.data![0],
                   );
-                }
-                return blankCarousel("Games", "Coming Soon", snapshot.data!);
-              },
-            ),
+                },
+              ),
 
-            // Recently Released
-            FutureBuilder<List<Game>>(
-              future: futureRecentlyReleased,
-              builder: (context, snapshot) {
-                if (!snapshot.hasData) {
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 8),
-                        child: Text(
+              // Recently Released
+              FutureBuilder<List<List<Game>>>(
+                future: futureCombined,
+                builder: (context, snapshot) {
+                  if (!snapshot.hasData) {
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        sectionHeader(
+                          context,
                           "Recently Released",
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Theme.of(context).colorScheme.primary,
-                          ),
+                          "Just dropped",
                         ),
-                      ),
-                      SizedBox(height: 8),
-                      SizedBox(
-                        height: 230,
-                        child: Center(child: CircularProgressIndicator()),
-                      ),
-                    ],
-                  );
-                }
-                return blankCarousel(
-                  "Games",
-                  "Recently Released",
-                  snapshot.data!,
-                );
-              },
-            ),
-
-            // Top Rated
-            FutureBuilder<List<Game>>(
-              future: futureTopRated,
-              builder: (context, snapshot) {
-                if (!snapshot.hasData) {
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 8),
-                        child: Text(
-                          "Top Rated",
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Theme.of(context).colorScheme.primary,
-                          ),
+                        SizedBox(height: 8),
+                        SizedBox(
+                          height: 230,
+                          child: Center(child: CircularProgressIndicator()),
                         ),
-                      ),
-                      SizedBox(height: 8),
-                      SizedBox(
-                        height: 230,
-                        child: Center(child: CircularProgressIndicator()),
-                      ),
-                    ],
+                      ],
+                    );
+                  }
+                  return blankCarousel(
+                    "Games",
+                    "Recently Released",
+                    "Just dropped",
+                    snapshot.data![1],
                   );
-                }
-                return blankCarousel("Games", "Top Rated", snapshot.data!);
-              },
-            ),
+                },
+              ),
 
-            SizedBox(height: 64),
-          ],
+              // Top Rated
+              FutureBuilder<List<List<Game>>>(
+                future: futureCombined,
+                builder: (context, snapshot) {
+                  if (!snapshot.hasData) {
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        sectionHeader(context, "Top Rated", "Must-play hits"),
+                        SizedBox(height: 8),
+                        SizedBox(
+                          height: 230,
+                          child: Center(child: CircularProgressIndicator()),
+                        ),
+                      ],
+                    );
+                  }
+                  return blankCarousel(
+                    "Games",
+                    "Top Rated",
+                    "Must-play hits",
+                    snapshot.data![2],
+                  );
+                },
+              ),
+
+              // Padding
+              SizedBox(height: 90),
+            ],
+          ),
         ),
       ),
     );

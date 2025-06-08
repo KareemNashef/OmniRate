@@ -1,17 +1,26 @@
+// ==================== Shows Filter Page ==================== //
+
 // Flutter imports
 import 'package:flutter/material.dart';
 
 // Local imports
-import 'package:omnirate/BaseClasses/base_filter.dart';
+import 'package:omnirate/BasePages/base_filter.dart';
 
-class ShowsFilterPage extends BaseFilterPage {
-  const ShowsFilterPage({super.key});
+// ===== Shows Filter Page Class ===== //
+
+class ShowsFilterPage extends FilterModalBase {
+  const ShowsFilterPage({
+    super.key,
+    super.initialCategoryId,
+    super.initialRatingValue,
+    super.initialSelectedGenreIds,
+  });
 
   @override
   State<ShowsFilterPage> createState() => _ShowsFilterPageState();
 }
 
-class _ShowsFilterPageState extends BaseFilterPageState<ShowsFilterPage> {
+class _ShowsFilterPageState extends FilterModalBaseState<ShowsFilterPage> {
   @override
   final List<Map<String, dynamic>> genres = [
     {"id": 10759, "name": "Action & Adventure"},

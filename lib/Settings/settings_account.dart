@@ -1,3 +1,5 @@
+// ==================== Games Main Page ==================== //
+
 // Flutter imports
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -6,8 +8,9 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:omnirate/Main/welcome_page.dart';
 import 'package:omnirate/Shared/firebase_service.dart';
 import 'package:omnirate/Shared/user_data.dart';
+import 'package:omnirate/Shared/utils.dart';
 
-// ========== Account settings page ========== //
+// ========== Account Settings Page Class ========== //
 
 class AccountSettingsPage extends StatefulWidget {
   const AccountSettingsPage({super.key});
@@ -40,16 +43,14 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
   UserData? _userData;
   Box<UserData>? _userBox;
 
-  // ===== Class Methods ===== //
+  // ===== Lifecycle Methods ===== //
 
-  // Initializes state
   @override
   void initState() {
     super.initState();
     _loadUserData();
   }
 
-  // Loads user data from Hive
   Future<void> _loadUserData() async {
     _userBox = Hive.box<UserData>('userBox');
     if (_userBox!.isNotEmpty) {
@@ -59,6 +60,16 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
       });
     }
   }
+
+  @override
+  void dispose() {
+    _usernameController.dispose();
+    _newPasswordController.dispose();
+    _confirmPasswordController.dispose();
+    super.dispose();
+  }
+
+  // ===== Class Methods ===== //
 
   Future<void> _changeUsername() async {
     // Check if user data is loaded
@@ -205,25 +216,274 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
     );
   }
 
-  // Disposes controllers
-  @override
-  void dispose() {
-    _usernameController.dispose();
-    _newPasswordController.dispose();
-    _confirmPasswordController.dispose();
-    super.dispose();
-  }
-
   // ===== Class Widgets ===== //
 
-  Widget _buildSectionHeader(String title) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8.0),
-      child: Text(
-        title,
-        style: Theme.of(
-          context,
-        ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+  Widget accountInfoSection() {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      decoration: containerDecoration(context),
+
+      child: SizedBox(
+        width: double.infinity,
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Account's Email
+              Text(
+                'Email',
+                style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                  color: Theme.of(context).colorScheme.onSurface,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 0.5,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                _userData?.email ?? 'Loading...',
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.onSurfaceVariant.withValues(alpha: 0.9),
+                  fontWeight: FontWeight.w400,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget usernameSection() {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      decoration: containerDecoration(context),
+
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            // Username Input
+            TextField(
+              controller: _usernameController,
+              decoration: InputDecoration(
+                labelText: 'Username',
+                prefixIcon: Icon(Icons.person),
+                filled: true,
+                fillColor: Theme.of(
+                  context,
+                ).colorScheme.surface.withValues(alpha: 0.1),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  borderSide: BorderSide.none,
+                ),
+                contentPadding: const EdgeInsets.symmetric(
+                  vertical: 20,
+                  horizontal: 16,
+                ),
+              ),
+            ),
+
+            // Padding
+            const SizedBox(height: 16),
+
+            // Update Username Button
+            SizedBox(
+              width: double.infinity,
+              child: Container(
+                decoration: buttonDecoration(context),
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.transparent,
+                    shadowColor: Colors.transparent,
+                    foregroundColor: Theme.of(context).colorScheme.onSurface,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                  ),
+                  onPressed: _isLoadingUsername ? null : _changeUsername,
+                  child:
+                      _isLoadingUsername
+                          ? SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Theme.of(context).colorScheme.surface,
+                            ),
+                          )
+                          : const Text('Update Username'),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget passwordSection() {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      decoration: containerDecoration(context),
+
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            // Password Inputs
+            TextField(
+              controller: _newPasswordController,
+              obscureText: _obscureNewPassword,
+              decoration: InputDecoration(
+                labelText: 'New Password',
+                prefixIcon: const Icon(Icons.lock),
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    _obscureNewPassword
+                        ? Icons.visibility
+                        : Icons.visibility_off,
+                  ),
+                  onPressed:
+                      () => setState(() {
+                        _obscureNewPassword = !_obscureNewPassword;
+                      }),
+                ),
+                filled: true,
+                fillColor: Theme.of(
+                  context,
+                ).colorScheme.surface.withValues(alpha: 0.1),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  borderSide: BorderSide.none,
+                ),
+                contentPadding: const EdgeInsets.symmetric(
+                  vertical: 20,
+                  horizontal: 16,
+                ),
+              ),
+            ),
+
+            // Padding
+            const SizedBox(height: 16),
+
+            // Confirm Password Input
+            TextField(
+              controller: _confirmPasswordController,
+              obscureText: _obscureConfirmPassword,
+              decoration: InputDecoration(
+                labelText: 'Confirm New Password',
+                prefixIcon: const Icon(Icons.lock_outline),
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    _obscureConfirmPassword
+                        ? Icons.visibility
+                        : Icons.visibility_off,
+                  ),
+                  onPressed:
+                      () => setState(() {
+                        _obscureConfirmPassword = !_obscureConfirmPassword;
+                      }),
+                ),
+                filled: true,
+                fillColor: Theme.of(
+                  context,
+                ).colorScheme.surface.withValues(alpha: 0.1),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  borderSide: BorderSide.none,
+                ),
+                contentPadding: const EdgeInsets.symmetric(
+                  vertical: 20,
+                  horizontal: 16,
+                ),
+              ),
+            ),
+
+            // Padding
+            const SizedBox(height: 16),
+
+            // Update Password Button
+            SizedBox(
+              width: double.infinity,
+              child: Container(
+                decoration: buttonDecoration(context),
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.transparent,
+                    shadowColor: Colors.transparent,
+                    foregroundColor: Theme.of(context).colorScheme.onSurface,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                  ),
+                  onPressed: _isLoadingPassword ? null : _changePassword,
+                  child:
+                      _isLoadingPassword
+                          ? const SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                          : const Text('Update Password'),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget signOutSection() {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      decoration: containerDecoration(context),
+
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+
+        // Sign Out Button
+child: SizedBox(
+  width: double.infinity,
+  child: Container(
+    decoration: BoxDecoration(
+      gradient: LinearGradient(
+        colors: [Colors.red, Colors.orange],
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+      ),
+      borderRadius: BorderRadius.circular(12),
+    ),
+    child: ElevatedButton(
+      onPressed: _isLoadingSignOut ? null : _signOut,
+      style: ElevatedButton.styleFrom(
+        backgroundColor: Colors.transparent,
+        shadowColor: Colors.transparent,
+        foregroundColor: Colors.white,
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+      ),
+      child: _isLoadingSignOut
+          ? const SizedBox(
+              height: 20,
+              width: 20,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+              ),
+            )
+          : const Text('Sign Out'),
+    ),
+  ),
+),
+
       ),
     );
   }
@@ -232,189 +492,37 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Account Settings'), elevation: 0),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Account Info Section
-            _buildSectionHeader('Account Information'),
-            SizedBox(
-              width: double.infinity,
-              child: Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Email',
-                        style: Theme.of(context).textTheme.titleSmall,
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        _userData?.email ?? 'Loading...',
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: Colors.grey[600],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
+    return Container(
+      // Background
+      decoration: BoxDecoration(gradient: gradientBackground(context)),
 
-            const SizedBox(height: 24),
+      // Foreground
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
 
-            // Change Username Section
-            _buildSectionHeader('Change Username'),
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  children: [
-                    TextField(
-                      controller: _usernameController,
-                      decoration: const InputDecoration(
-                        labelText: 'Username',
-                        border: OutlineInputBorder(),
-                        prefixIcon: Icon(Icons.person),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: _isLoadingUsername ? null : _changeUsername,
-                        child:
-                            _isLoadingUsername
-                                ? const SizedBox(
-                                  height: 20,
-                                  width: 20,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                  ),
-                                )
-                                : const Text('Update Username'),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
+        // Body
+        body: SingleChildScrollView(
+          padding: const EdgeInsets.only(top: 100, bottom: 32),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Account Info Section
+              sectionHeader(context, "Account Info", "Your account details"),
+              accountInfoSection(),
 
-            const SizedBox(height: 24),
+              // Change Username Section
+              sectionHeader(context, "Change Username", "Update your username"),
+              usernameSection(),
 
-            // Change Password Section
-            _buildSectionHeader('Change Password'),
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  children: [
-                    TextField(
-                      controller: _newPasswordController,
-                      obscureText: _obscureNewPassword,
-                      decoration: InputDecoration(
-                        labelText: 'New Password',
-                        border: const OutlineInputBorder(),
-                        prefixIcon: const Icon(Icons.lock),
-                        suffixIcon: IconButton(
-                          icon: Icon(
-                            _obscureNewPassword
-                                ? Icons.visibility
-                                : Icons.visibility_off,
-                          ),
-                          onPressed:
-                              () => setState(
-                                () =>
-                                    _obscureNewPassword = !_obscureNewPassword,
-                              ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    TextField(
-                      controller: _confirmPasswordController,
-                      obscureText: _obscureConfirmPassword,
-                      decoration: InputDecoration(
-                        labelText: 'Confirm New Password',
-                        border: const OutlineInputBorder(),
-                        prefixIcon: const Icon(Icons.lock_outline),
-                        suffixIcon: IconButton(
-                          icon: Icon(
-                            _obscureConfirmPassword
-                                ? Icons.visibility
-                                : Icons.visibility_off,
-                          ),
-                          onPressed:
-                              () => setState(
-                                () =>
-                                    _obscureConfirmPassword =
-                                        !_obscureConfirmPassword,
-                              ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: _isLoadingPassword ? null : _changePassword,
-                        child:
-                            _isLoadingPassword
-                                ? const SizedBox(
-                                  height: 20,
-                                  width: 20,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                  ),
-                                )
-                                : const Text('Update Password'),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
+              // Change Password Section
+              sectionHeader(context, "Change Password", "Update your password"),
+              passwordSection(),
 
-            const SizedBox(height: 24),
-
-            // Sign Out Section
-            _buildSectionHeader('Account Actions'),
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: _isLoadingSignOut ? null : _signOut,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.red,
-                      foregroundColor: Colors.white,
-                    ),
-                    child:
-                        _isLoadingSignOut
-                            ? const SizedBox(
-                              height: 20,
-                              width: 20,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                valueColor: AlwaysStoppedAnimation<Color>(
-                                  Colors.white,
-                                ),
-                              ),
-                            )
-                            : const Text('Sign Out'),
-                  ),
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 32),
-          ],
+              // Sign Out Section
+              sectionHeader(context, "Sign Out", "Sign out of your account"),
+              signOutSection(),
+            ],
+          ),
         ),
       ),
     );

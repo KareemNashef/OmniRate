@@ -1,17 +1,25 @@
+// ==================== Movie Filter Page ==================== //
+
 // Flutter imports
 import 'package:flutter/material.dart';
 
 // Local imports
-import 'package:omnirate/BaseClasses/base_filter.dart';
+import 'package:omnirate/BasePages/base_filter.dart';
 
-class MoviesFilterPage extends BaseFilterPage {
-  const MoviesFilterPage({super.key});
+class MoviesFilterPage extends FilterModalBase {
+  // ===== Constructor ===== //
+  const MoviesFilterPage({
+    super.key,
+    super.initialCategoryId,
+    super.initialRatingValue,
+    super.initialSelectedGenreIds,
+  });
 
   @override
   State<MoviesFilterPage> createState() => _MoviesFilterPageState();
 }
 
-class _MoviesFilterPageState extends BaseFilterPageState<MoviesFilterPage> {
+class _MoviesFilterPageState extends FilterModalBaseState<MoviesFilterPage> {
   @override
   final List<Map<String, dynamic>> genres = [
     {"id": 28, "name": "Action"},

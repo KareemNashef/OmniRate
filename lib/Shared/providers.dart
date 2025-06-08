@@ -1,7 +1,10 @@
-// ignore_for_file: deprecated_member_use
+// ==================== Providers ==================== //
 
+// Flutter imports
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+// ignore_for_file: deprecated_member_use
 
 class ThemeProvider with ChangeNotifier {
   ThemeMode _themeMode = ThemeMode.system;

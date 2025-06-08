@@ -1,17 +1,27 @@
+// ==================== Game Filter Page ==================== //
+
 // Flutter imports
 import 'package:flutter/material.dart';
 
 // Local imports
-import 'package:omnirate/BaseClasses/base_filter.dart';
+import 'package:omnirate/BasePages/base_filter.dart';
 
-class GamesFilterPage extends BaseFilterPage {
-  const GamesFilterPage({super.key});
+// ========== Game Filter Page Class ========== //
+
+class GamesFilterPage extends FilterModalBase {
+  // ===== Constructor ===== //
+  const GamesFilterPage({
+    super.key,
+    super.initialCategoryId,
+    super.initialRatingValue,
+    super.initialSelectedGenreIds,
+  });
 
   @override
   State<GamesFilterPage> createState() => _GamesFilterPageState();
 }
 
-class _GamesFilterPageState extends BaseFilterPageState<GamesFilterPage> {
+class _GamesFilterPageState extends FilterModalBaseState<GamesFilterPage> {
   @override
   final List<Map<String, dynamic>> genres = [
     {"id": 33, "name": "Arcade"},
@@ -47,5 +57,5 @@ class _GamesFilterPageState extends BaseFilterPageState<GamesFilterPage> {
   ];
 
   @override
-  String get categoriesTitle => "Categories:";
+  String get categoriesTitle => "Categories";
 }

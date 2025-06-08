@@ -1,3 +1,5 @@
+// ==================== Movie Entry Model ==================== //
+
 // Flutter imports
 import 'package:hive/hive.dart';
 
@@ -14,33 +16,42 @@ class Movie implements MediaEntry{
   // ===== Class variables =====
 
   // Main data
+
+  @override
   @HiveField(0)
+  final String id;
+
+  @override
+  @HiveField(1)
   final String name;
 
-  @HiveField(1)
+  @override
+  @HiveField(2)
   final String thumbnailUrl;
 
-  @HiveField(10)
+  @override
+  @HiveField(3)
   final String artworkUrl;
 
-  @HiveField(2)
-  final double rating;
+  @override
+  @HiveField(4)
+  final String rating;
 
   // Additional info
-  @HiveField(3)
+  @HiveField(5)
   final String releaseStatus;
 
-  @HiveField(4)
+  @HiveField(6)
   final List<String> genres;
 
-  @HiveField(5)
+  @HiveField(7)
   final String overview;
 
   // Media specific data
-  @HiveField(6)
+  @HiveField(8)
   final String budget;
 
-  @HiveField(7)
+  @HiveField(9)
   final String revenue;
 
   // ===== MediaEntry Implementation =====
@@ -53,21 +64,24 @@ class Movie implements MediaEntry{
 
   // Constructor
   Movie({
+    required this.id,
     required this.name,
     required this.thumbnailUrl,
-    this.artworkUrl = '',
-    this.rating = 0.0,
+    required this.artworkUrl,
+    required this.rating,
 
-    this.releaseStatus = 'N/A',
-    this.genres = const [],
-    this.overview = 'N/A',
+    required this.releaseStatus,
+    required this.genres,
+    required this.overview,
 
-    this.budget = 'N/A',
-    this.revenue = 'N/A',
+    required this.budget,
+    required this.revenue,
   });
 
   // Convert to map
+  @override
   Map<String, dynamic> toMap() => {
+    'id': id,
     'name': name,
     'thumbnailUrl': thumbnailUrl,
     'backdropUrl': artworkUrl,
@@ -83,6 +97,7 @@ class Movie implements MediaEntry{
 
   // Convert from map
   factory Movie.fromMap(Map<String, dynamic> map) => Movie(
+    id: map['id'],
     name: map['name'],
     thumbnailUrl: map['thumbnailUrl'],
     artworkUrl: map['backdropUrl'],
@@ -100,6 +115,7 @@ class Movie implements MediaEntry{
 @override
 String toString() => '''
 Movie:
+  ID: $id
   Name: $name
   Thumbnail URL: $thumbnailUrl
   Backdrop URL: $artworkUrl

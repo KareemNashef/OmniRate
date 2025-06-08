@@ -1,11 +1,12 @@
+// ==================== Animated Navigation Bar ==================== //
+
 // Flutter imports
 import 'package:flutter/material.dart';
 
-// ========== Animated navigation bar ========== //
+// ========== Animated Navigation Bar Class ========== //
 
 class AnimatedBottomBar extends StatefulWidget {
-  // ===== Class Variables ===== //
-
+  // ===== Input Variables ===== //
   final List<AnimatedBottomBarItem> items;
   final int initialIndex;
   final Function(int) onTabSelected;
@@ -14,7 +15,6 @@ class AnimatedBottomBar extends StatefulWidget {
   final double iconSize;
 
   // ===== Constructor ===== //
-
   const AnimatedBottomBar({
     super.key,
     required this.items,
@@ -34,7 +34,7 @@ class AnimatedBottomBarState extends State<AnimatedBottomBar> {
 
   late int _selectedIndex;
 
-  // ===== Class Methods ===== //
+  // ===== Lifecycle Methods ===== //
 
   @override
   void initState() {
@@ -44,7 +44,7 @@ class AnimatedBottomBarState extends State<AnimatedBottomBar> {
 
   // ===== Class Widgets ===== //
 
-  Widget _buildTabItem(int index) {
+  Widget buildTabItem(int index) {
     final isSelected = index == _selectedIndex;
 
     return SizedBox(
@@ -118,18 +118,37 @@ class AnimatedBottomBarState extends State<AnimatedBottomBar> {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0),
       child: Container(
-        height: 56.0,
         decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surfaceContainer,
-          borderRadius: BorderRadius.circular(12.0),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.2),
+          ),
+
+          // Background
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Theme.of(
+                context,
+              ).colorScheme.primaryContainer.withValues(alpha: 0.95),
+              Theme.of(
+                context,
+              ).colorScheme.tertiaryContainer.withValues(alpha: 0.95),
+            ],
+          ),
+
+          // Glow
           boxShadow: [
             BoxShadow(
-              color: Color.fromRGBO(0, 0, 0, 0.1),
-              blurRadius: 8.0,
-              offset: const Offset(0, 2),
+              color: Theme.of(
+                context,
+              ).colorScheme.outline.withValues(alpha: 0.2),
+              blurRadius: 4,
             ),
           ],
         ),
+
         padding: const EdgeInsets.symmetric(horizontal: 6.0, vertical: 6.0),
         child: LayoutBuilder(
           builder: (context, constraints) {
@@ -168,7 +187,7 @@ class AnimatedBottomBarState extends State<AnimatedBottomBar> {
                           widget.onTabSelected(index);
                         },
                         borderRadius: BorderRadius.circular(12.0),
-                        child: _buildTabItem(index),
+                        child: buildTabItem(index),
                       ),
                     );
                   }),

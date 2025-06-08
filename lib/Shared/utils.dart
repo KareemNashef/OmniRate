@@ -1,22 +1,10 @@
+// ==================== Utils ==================== //
+
 // Flutter imports
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
-// ========== Debug global variables ========== //
-List<String> gamesList = [
-  "The Witcher 3: Wild Hunt",
-  "The Elder Scrolls IV: Oblivion Remastered",
-  "Clair Obscur: Expedition 33",
-  "Drop Duchy",
-  "Deadzone: Rogue",
-  "Baldur's Gate 3",
-  "Mass Effect Trilogy",
-  "The Legend of Zelda: Tears of the Kingdom",
-  "Elden Ring",
-  "R.E.P.O.",
-  "Inzoi",
-  "Assassin's Creed Shadows",
-  "Schedule I",
-];
+// ========== Stock thumbnails for onboarding ========== //
 
 List<String> gamesPaths = [
   "assets/Debug/Games/1.webp",
@@ -32,22 +20,6 @@ List<String> gamesPaths = [
   "assets/Debug/Games/11.webp",
   "assets/Debug/Games/12.webp",
   "assets/Debug/Games/13.webp",
-];
-
-List<String> showsList = [
-  "Law & Order: Special Victims Unit",
-  "The Eternaut",
-  "The Flash",
-  "Diners, Drive-Ins and Dives",
-  "The Bold and the Beautiful",
-  "Tokyo Revengers",
-  "WWE NXT",
-  "The Studio",
-  "Breaking Bad",
-  "Arcane",
-  "Frieren: Beyond Journey's End",
-  "Adventure Time: Fionna & Cake",
-  "The Last of Us",
 ];
 
 List<String> showsPaths = [
@@ -66,22 +38,6 @@ List<String> showsPaths = [
   "assets/Debug/Shows/13.webp",
 ];
 
-List<String> moviesList = [
-  "The Alto Knights",
-  "Havoc",
-  "The Shawshank Redemption",
-  "The Godfather",
-  "Spirited Away",
-  "Schindler's List",
-  "A Minecraft Movie",
-  "Thunderbolts*",
-  "Sinners",
-  "Drop",
-  "The Accountant²",
-  "Exterritorial",
-  "A Working Man",
-];
-
 List<String> moviesPaths = [
   "assets/Debug/Movies/1.webp",
   "assets/Debug/Movies/2.webp",
@@ -98,80 +54,80 @@ List<String> moviesPaths = [
   "assets/Debug/Movies/13.webp",
 ];
 
-// ========== Global variables ========== //
+// ========== Constant Maps ========== //
 
 final List<Map<String, dynamic>> genresGames = [
-    {"id": 33, "name": "Arcade"},
-    {"id": 31, "name": "Adventure"},
-    {"id": 32, "name": "Indie"},
-    {"id": 36, "name": "MOBA"},
-    {"id": 2, "name": "Point-and-click"},
-    {"id": 5, "name": "Shooter"},
-    {"id": 9, "name": "Puzzle"},
-    {"id": 4, "name": "Fighting"},
-    {"id": 10, "name": "Racing"},
-    {"id": 11, "name": "Real Time Strategy (RTS)"},
-    {"id": 12, "name": "Role-playing (RPG)"},
-    {"id": 13, "name": "Simulator"},
-    {"id": 14, "name": "Sport"},
-    {"id": 15, "name": "Strategy"},
-    {"id": 16, "name": "Turn-based strategy (TBS)"},
-    {"id": 24, "name": "Tactical"},
-    {"id": 25, "name": "Hack and slash/Beat 'em up"},
-    {"id": 26, "name": "Quiz/Trivia"},
-    {"id": 30, "name": "Pinball"},
-    {"id": 7, "name": "Music"},
-    {"id": 8, "name": "Platform"},
-    {"id": 34, "name": "Visual Novel"},
-    {"id": 35, "name": "Card & Board Game"},
-  ];
+  {"id": 33, "name": "Arcade"},
+  {"id": 31, "name": "Adventure"},
+  {"id": 32, "name": "Indie"},
+  {"id": 36, "name": "MOBA"},
+  {"id": 2, "name": "Point-and-click"},
+  {"id": 5, "name": "Shooter"},
+  {"id": 9, "name": "Puzzle"},
+  {"id": 4, "name": "Fighting"},
+  {"id": 10, "name": "Racing"},
+  {"id": 11, "name": "Real Time Strategy (RTS)"},
+  {"id": 12, "name": "Role-playing (RPG)"},
+  {"id": 13, "name": "Simulator"},
+  {"id": 14, "name": "Sport"},
+  {"id": 15, "name": "Strategy"},
+  {"id": 16, "name": "Turn-based strategy (TBS)"},
+  {"id": 24, "name": "Tactical"},
+  {"id": 25, "name": "Hack and slash/Beat 'em up"},
+  {"id": 26, "name": "Quiz/Trivia"},
+  {"id": 30, "name": "Pinball"},
+  {"id": 7, "name": "Music"},
+  {"id": 8, "name": "Platform"},
+  {"id": 34, "name": "Visual Novel"},
+  {"id": 35, "name": "Card & Board Game"},
+];
 
-  final List<Map<String, dynamic>> categoriesGames = [
-    {"id": 0, "name": "Base Game"},
-    {"id": 1, "name": "DLC"},
-    {"id": 2, "name": "Expansion"},
-  ];
+final List<Map<String, dynamic>> categoriesGames = [
+  {"id": 0, "name": "Base Game"},
+  {"id": 1, "name": "DLC"},
+  {"id": 2, "name": "Expansion"},
+];
 
-  final List<Map<String, dynamic>> genresShows = [
-    {"id": 10759, "name": "Action & Adventure"},
-    {"id": 16, "name": "Animation"},
-    {"id": 35, "name": "Comedy"},
-    {"id": 80, "name": "Crime"},
-    {"id": 99, "name": "Documentary"},
-    {"id": 18, "name": "Drama"},
-    {"id": 10751, "name": "Family"},
-    {"id": 10762, "name": "Kids"},
-    {"id": 9648, "name": "Mystery"},
-    {"id": 10763, "name": "News"},
-    {"id": 10764, "name": "Reality"},
-    {"id": 10765, "name": "Sci-Fi & Fantasy"},
-    {"id": 10766, "name": "Soap"},
-    {"id": 10767, "name": "Talk"},
-    {"id": 10768, "name": "War & Politics"},
-    {"id": 37, "name": "Western"},
-  ];
+final List<Map<String, dynamic>> genresShows = [
+  {"id": 10759, "name": "Action & Adventure"},
+  {"id": 16, "name": "Animation"},
+  {"id": 35, "name": "Comedy"},
+  {"id": 80, "name": "Crime"},
+  {"id": 99, "name": "Documentary"},
+  {"id": 18, "name": "Drama"},
+  {"id": 10751, "name": "Family"},
+  {"id": 10762, "name": "Kids"},
+  {"id": 9648, "name": "Mystery"},
+  {"id": 10763, "name": "News"},
+  {"id": 10764, "name": "Reality"},
+  {"id": 10765, "name": "Sci-Fi & Fantasy"},
+  {"id": 10766, "name": "Soap"},
+  {"id": 10767, "name": "Talk"},
+  {"id": 10768, "name": "War & Politics"},
+  {"id": 37, "name": "Western"},
+];
 
-  final List<Map<String, dynamic>> genresMovies = [
-    {"id": 28, "name": "Action"},
-    {"id": 12, "name": "Adventure"},
-    {"id": 16, "name": "Animation"},
-    {"id": 35, "name": "Comedy"},
-    {"id": 80, "name": "Crime"},
-    {"id": 99, "name": "Documentary"},
-    {"id": 18, "name": "Drama"},
-    {"id": 10751, "name": "Family"},
-    {"id": 14, "name": "Fantasy"},
-    {"id": 36, "name": "History"},
-    {"id": 27, "name": "Horror"},
-    {"id": 10402, "name": "Music"},
-    {"id": 9648, "name": "Mystery"},
-    {"id": 10749, "name": "Romance"},
-    {"id": 878, "name": "Science Fiction"},
-    {"id": 10770, "name": "TV Movie"},
-    {"id": 53, "name": "Thriller"},
-    {"id": 10752, "name": "War"},
-    {"id": 37, "name": "Western"},
-  ];
+final List<Map<String, dynamic>> genresMovies = [
+  {"id": 28, "name": "Action"},
+  {"id": 12, "name": "Adventure"},
+  {"id": 16, "name": "Animation"},
+  {"id": 35, "name": "Comedy"},
+  {"id": 80, "name": "Crime"},
+  {"id": 99, "name": "Documentary"},
+  {"id": 18, "name": "Drama"},
+  {"id": 10751, "name": "Family"},
+  {"id": 14, "name": "Fantasy"},
+  {"id": 36, "name": "History"},
+  {"id": 27, "name": "Horror"},
+  {"id": 10402, "name": "Music"},
+  {"id": 9648, "name": "Mystery"},
+  {"id": 10749, "name": "Romance"},
+  {"id": 878, "name": "Science Fiction"},
+  {"id": 10770, "name": "TV Movie"},
+  {"id": 53, "name": "Thriller"},
+  {"id": 10752, "name": "War"},
+  {"id": 37, "name": "Western"},
+];
 
 // ========== Helper Classes ========== //
 
@@ -191,22 +147,24 @@ class ExpandableTextState extends State<ExpandableText> {
 
   @override
   Widget build(BuildContext context) {
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         RichText(
           textAlign: TextAlign.justify,
           text: TextSpan(
-                style: TextStyle(
-      fontSize: 16,
-      color: Theme.of(context).colorScheme.onSurface,
-    ),
+            style: TextStyle(
+              fontSize: 16,
+              color: Theme.of(
+                context,
+              ).colorScheme.onSurface.withValues(alpha: 0.85),
+            ),
             children: [
               TextSpan(
                 text: widget.label,
                 style: TextStyle(
                   color: Theme.of(context).colorScheme.primary,
+                  fontWeight: FontWeight.w600,
                   fontSize: 16,
                 ),
               ),
@@ -235,3 +193,113 @@ class ExpandableTextState extends State<ExpandableText> {
     );
   }
 }
+
+// ========== Helper Builds ========== //
+
+LinearGradient gradientBackground(context) => LinearGradient(
+  begin: Alignment.topCenter,
+  end: Alignment.bottomCenter,
+  colors: [
+    Theme.of(context).colorScheme.primaryContainer,
+    Theme.of(context).colorScheme.tertiaryContainer,
+  ],
+);
+
+BoxDecoration buttonDecoration(context) => BoxDecoration(
+  borderRadius: BorderRadius.circular(20),
+  border: Border.all(
+    color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.2),
+  ),
+
+  // Background
+  gradient: LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [
+      Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.8),
+      Theme.of(context).colorScheme.tertiaryContainer.withValues(alpha: 0.8),
+    ],
+  ),
+
+  // Glow
+  boxShadow: [
+    BoxShadow(
+      color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.2),
+      blurRadius: 4,
+    ),
+  ],
+);
+
+BoxDecoration containerDecoration(context) => BoxDecoration(
+  // Border
+  borderRadius: BorderRadius.circular(16),
+  border: Border.all(
+    color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.2),
+  ),
+
+  // Background
+  color: Theme.of(
+    context,
+  ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.2),
+);
+
+// ============
+LinearGradient gradientContainer(context) => LinearGradient(
+  begin: Alignment.topCenter,
+  end: Alignment.bottomCenter,
+  colors: [
+    Theme.of(context).colorScheme.surfaceContainer.withValues(alpha: 0.4),
+    Theme.of(context).colorScheme.surfaceContainer.withValues(alpha: 0.2),
+  ],
+);
+// ============
+
+Widget sectionHeader(BuildContext context, String title, String subtitle) {
+  return Padding(
+    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Container(
+              width: 4,
+              height: 24,
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.primary,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Text(
+              title,
+              style: TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+                color: Theme.of(context).colorScheme.onSurface,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 4),
+        Padding(
+          padding: const EdgeInsets.only(left: 16),
+          child: Text(
+            subtitle,
+            style: TextStyle(
+              fontSize: 14,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
+Widget buildImageFromUrl(String inURL) => CachedNetworkImage(
+  imageUrl: inURL,
+  fit: BoxFit.cover,
+  placeholder: (_, __) => const Center(child: CircularProgressIndicator()),
+  errorWidget: (_, __, ___) => Icon(Icons.broken_image),
+);

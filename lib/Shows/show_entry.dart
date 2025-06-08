@@ -1,35 +1,36 @@
+// ==================== Show Entry Page ==================== //
+
 // Flutter imports
-import 'package:animations/animations.dart';
 import 'package:flutter/material.dart';
 
 // Local imports
-import 'package:omnirate/BaseClasses/base_entry.dart';
+import 'package:omnirate/BasePages/base_entry_page.dart';
 import 'package:omnirate/Database/database_helper.dart';
 import 'package:omnirate/Database/model_show.dart';
 import 'package:omnirate/Shared/utils.dart';
 
-// ========== Game entry page ========== //
+// ========== Show Entry Page Class ========== //
 
-class ShowEntry extends EntryBase {
+class ShowEntry extends EntryPageBase {
   const ShowEntry({super.key, required super.inEntry});
 
   @override
   ShowEntryState createState() => ShowEntryState();
 }
 
-class ShowEntryState extends EntryBaseState {
+class ShowEntryState extends EntryPageBaseState {
   // ===== Class Variables ===== //
 
   late Show currentShow;
   bool isLoaded = false;
 
-  // ===== Class Initialization ===== //
+  // ===== Lifecycle Methods ===== //
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      final show = await getShow(widget.inEntry.name);
+      final show = await getShow(widget.inEntry.id);
       if (show != null) {
         setState(() {
           currentShow = show;
@@ -41,298 +42,177 @@ class ShowEntryState extends EntryBaseState {
 
   // ===== Class Widgets ===== //
 
-  // Show info
   Widget showInfo() {
-    return Card(
-      color: Theme.of(context).colorScheme.surfaceContainer,
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Release Status
-            Text.rich(
-              TextSpan(
-                children: [
-                  TextSpan(
-                    text: 'Status: ',
-                    style: TextStyle(
-                      color: Theme.of(context).colorScheme.primary,
-                      fontSize: 16,
-                    ),
-                  ),
-                  TextSpan(
-                    text: currentShow.releaseStatus,
-                    style: TextStyle(fontSize: 16),
-                  ),
-                ],
+    return Column(
+      children: [
+        // Section header
+        sectionHeader(context, 'Show info', "Information about the show."),
+
+        // Show info
+        Container(
+          decoration: containerDecoration(context),
+
+          padding: const EdgeInsets.all(16),
+
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              infoLine('Status: ', currentShow.releaseStatus),
+              divider(),
+              infoLine('First air date: ', currentShow.firstAir),
+              divider(),
+              infoLine('Last air date: ', currentShow.lastAir),
+              divider(),
+              infoLine(
+                'Total number of episodes: ',
+                currentShow.episodesNum.toString(),
               ),
-            ),
-
-            Divider(
-              height: 16,
-              thickness: 1,
-              color: Theme.of(context).colorScheme.primary,
-            ),
-
-            // First air date
-            Text.rich(
-              TextSpan(
-                children: [
-                  TextSpan(
-                    text: 'First air date: ',
-                    style: TextStyle(
-                      color: Theme.of(context).colorScheme.primary,
-                      fontSize: 16,
-                    ),
-                  ),
-                  TextSpan(
-                    text: currentShow.firstAir,
-                    style: TextStyle(fontSize: 16),
-                  ),
-                ],
+              divider(),
+              infoLine(
+                'Number of seasons: ',
+                (currentShow.seasonsEpisodeCounts.length).toString(),
               ),
-            ),
+              divider(),
+              infoLine('Genres: ', currentShow.genres.join(', ')),
+              divider(),
 
-            Divider(
-              height: 16,
-              thickness: 1,
-              color: Theme.of(context).colorScheme.primary,
-            ),
-
-            // Last air date
-            Text.rich(
-              TextSpan(
-                children: [
-                  TextSpan(
-                    text: 'Last air date: ',
-                    style: TextStyle(
-                      color: Theme.of(context).colorScheme.primary,
-                      fontSize: 16,
-                    ),
-                  ),
-                  TextSpan(
-                    text: currentShow.lastAir,
-                    style: TextStyle(fontSize: 16),
-                  ),
-                ],
-              ),
-            ),
-
-            Divider(
-              height: 16,
-              thickness: 1,
-              color: Theme.of(context).colorScheme.primary,
-            ),
-
-            // Number of episodes
-            Text.rich(
-              TextSpan(
-                children: [
-                  TextSpan(
-                    text: 'Total number of episodes: ',
-                    style: TextStyle(
-                      color: Theme.of(context).colorScheme.primary,
-                      fontSize: 16,
-                    ),
-                  ),
-                  TextSpan(
-                    text: currentShow.episodesNum.toString(),
-                    style: TextStyle(fontSize: 16),
-                  ),
-                ],
-              ),
-            ),
-
-            Divider(
-              height: 16,
-              thickness: 1,
-              color: Theme.of(context).colorScheme.primary,
-            ),
-
-            // Number of seasons
-            Text.rich(
-              TextSpan(
-                children: [
-                  TextSpan(
-                    text: 'Number of seasons: ',
-                    style: TextStyle(
-                      color: Theme.of(context).colorScheme.primary,
-                      fontSize: 16,
-                    ),
-                  ),
-                  TextSpan(
-                    text: (currentShow.seasonsEpisodeCounts.length).toString(),
-                    style: TextStyle(fontSize: 16),
-                  ),
-                ],
-              ),
-            ),
-
-            Divider(
-              height: 16,
-              thickness: 1,
-              color: Theme.of(context).colorScheme.primary,
-            ),
-
-            // Genres
-            Text.rich(
-              TextSpan(
-                children: [
-                  TextSpan(
-                    text: 'Genres: ',
-                    style: TextStyle(
-                      color: Theme.of(context).colorScheme.primary,
-                      fontSize: 16,
-                    ),
-                  ),
-                  TextSpan(
-                    text: currentShow.genres.join(', '),
-                    style: TextStyle(fontSize: 16),
-                  ),
-                ],
-              ),
-            ),
-
-            Divider(
-              height: 16,
-              thickness: 1,
-              color: Theme.of(context).colorScheme.primary,
-            ),
-
-            // Story with Read More toggle
-            ExpandableText(label: 'Story: ', content: currentShow.overview),
-          ],
+              // Story with Read More toggle
+              ExpandableText(label: 'Story: ', content: currentShow.overview),
+            ],
+          ),
         ),
-      ),
+      ],
     );
   }
 
-  // Show info
   Widget seasonInfo(
     String inName,
     String inAirDate,
     String inEpisodeCount,
     String inOverview,
   ) {
-    return Scaffold(
-      appBar: AppBar(
-        automaticallyImplyLeading: false,
-        toolbarHeight: 40,
-        title: Center(
-          child: Text(
-            inName,
-            style: TextStyle(color: Theme.of(context).colorScheme.primary),
-          ),
-        ),
+    return Container(
+      // Theme
+      decoration: BoxDecoration(
+        gradient: gradientBackground(context),
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
       ),
 
-      body: Card(
-        color: Theme.of(context).colorScheme.surfaceContainer,
-        elevation: 4,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        child: Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Air date
-              Text.rich(
-                TextSpan(
-                  children: [
-                    TextSpan(
-                      text: 'Air date: ',
-                      style: TextStyle(
-                        color: Theme.of(context).colorScheme.primary,
-                        fontSize: 16,
-                      ),
-                    ),
-                    TextSpan(text: inAirDate, style: TextStyle(fontSize: 16)),
-                  ],
-                ),
-              ),
+      // Padding
+      padding: EdgeInsets.only(
+        left: 20,
+        right: 20,
+        top: 20,
+        bottom: MediaQuery.of(context).viewInsets.bottom + 20,
+      ),
 
-              Divider(
-                height: 16,
-                thickness: 1,
-                color: Theme.of(context).colorScheme.primary,
+      // Content
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Handle bar
+          Center(
+            child: Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+                borderRadius: BorderRadius.circular(2),
               ),
-
-              // Number of episodes
-              Text.rich(
-                TextSpan(
-                  children: [
-                    TextSpan(
-                      text: 'Number of episodes: ',
-                      style: TextStyle(
-                        color: Theme.of(context).colorScheme.primary,
-                        fontSize: 16,
-                      ),
-                    ),
-                    TextSpan(
-                      text: inEpisodeCount,
-                      style: TextStyle(fontSize: 16),
-                    ),
-                  ],
-                ),
-              ),
-
-              Divider(
-                height: 16,
-                thickness: 1,
-                color: Theme.of(context).colorScheme.primary,
-              ),
-
-              // Overview
-              Text.rich(
-                TextSpan(
-                  children: [
-                    TextSpan(
-                      text: 'Overview: ',
-                      style: TextStyle(
-                        color: Theme.of(context).colorScheme.primary,
-                        fontSize: 16,
-                      ),
-                    ),
-                    TextSpan(text: inOverview, style: TextStyle(fontSize: 16)),
-                  ],
-                ),
-                textAlign: TextAlign.justify,
-              ),
-            ],
+            ),
           ),
-        ),
+
+          // Padding
+          const SizedBox(height: 8),
+
+          // Section titles
+          sectionHeader(context, inName, "Number of episodes: $inEpisodeCount"),
+
+          // Padding
+          const SizedBox(height: 8),
+
+          Container(
+            // Padding
+            padding: EdgeInsets.only(
+              left: 20,
+              right: 20,
+              top: 20,
+              bottom: MediaQuery.of(context).viewInsets.bottom + 20,
+            ),
+
+            decoration: containerDecoration(context),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Air date
+                infoLine('Air date: ', inAirDate),
+                divider(),
+
+                // Overview
+                RichText(
+                  textAlign: TextAlign.justify,
+                  text: TextSpan(
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.onSurface.withValues(alpha: 0.85),
+                    ),
+                    children: [
+                      TextSpan(
+                        text: 'Overview: ',
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.primary,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 16,
+                        ),
+                      ),
+                      TextSpan(
+                        text: inOverview == '' ? 'N/A' : inOverview,
+                        style: TextStyle(fontSize: 16),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          // Padding
+          const SizedBox(height: 20),
+        ],
       ),
     );
   }
 
-  // Available Seasons
   Widget showSeasons() {
-    return Card(
-      color: Theme.of(context).colorScheme.surfaceContainer,
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text("Available Seasons:", style: TextStyle(fontSize: 16)),
-            SizedBox(height: 8),
+    return Column(
+      children: [
+        // Section header
+        sectionHeader(context, "Available Seasons", "Seasons of the show."),
 
-            SizedBox(
-              height: 220,
-              child: PageView.builder(
-                itemCount: currentShow.seasonsNum,
-                padEnds: false,
-                controller: PageController(viewportFraction: 0.3),
-                itemBuilder: (context, index) {
-                  return GestureDetector(
+        // Seasons
+        Container(
+          decoration: containerDecoration(context),
+
+          padding: const EdgeInsets.all(16),
+
+          child: SizedBox(
+            height: 220,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              physics: BouncingScrollPhysics(), // Smooth momentum scrolling
+              itemCount: currentShow.seasonsNum,
+              itemBuilder: (context, index) {
+                return Container(
+                  width: 100,
+                  margin: EdgeInsets.only(
+                    left: index == 0 ? 0 : 8,
+                    right: index == currentShow.seasonsNum - 1 ? 0 : 8,
+                  ),
+                  child: GestureDetector(
                     onTap: () {
                       showModalBottomSheet(
                         context: context,
@@ -353,13 +233,33 @@ class ShowEntryState extends EntryBaseState {
                           width: 90,
                           height: 160,
                           decoration: BoxDecoration(
-                            image: DecorationImage(
-                              image: NetworkImage(
-                                currentShow.seasonsThumbnailsUrls[index],
-                              ),
-                              fit: BoxFit.cover,
-                            ),
                             borderRadius: BorderRadius.circular(12),
+                            gradient: LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [
+                                Colors.white.withValues(alpha: 0.1),
+                                Colors.white.withValues(alpha: 0.05),
+                              ],
+                            ),
+                            border: Border.all(
+                              color: Colors.white.withValues(alpha: 0.2),
+                              width: 1,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.15),
+                                blurRadius: 20,
+                                offset: const Offset(0, 8),
+                                spreadRadius: -5,
+                              ),
+                            ],
+                          ),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(12),
+                            child: buildImageFromUrl(
+                              currentShow.seasonsThumbnailsUrls[index],
+                            ),
                           ),
                         ),
 
@@ -384,7 +284,9 @@ class ShowEntryState extends EntryBaseState {
                                 Icon(Icons.star, size: 16, color: Colors.amber),
                                 SizedBox(width: 4),
                                 Text(
-                                  currentShow.seasonsRatings[index].toString() == "0.0"
+                                  currentShow.seasonsRatings[index]
+                                              .toString() ==
+                                          "0.0"
                                       ? "N/A"
                                       : currentShow.seasonsRatings[index]
                                           .toString(),
@@ -400,13 +302,13 @@ class ShowEntryState extends EntryBaseState {
                         ),
                       ],
                     ),
-                  );
-                },
-              ),
+                  ),
+                );
+              },
             ),
-          ],
+          ),
         ),
-      ),
+      ],
     );
   }
 
@@ -414,51 +316,80 @@ class ShowEntryState extends EntryBaseState {
 
   @override
   Widget build(BuildContext context) {
-    if (!isLoaded) {
+    if (isLoaded == false) {
       return Scaffold(
-        body: Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: const [
-              CircularProgressIndicator(),
-              SizedBox(height: 16),
-              Text("Loading show...", style: TextStyle(fontSize: 16)),
-            ],
+        body: Container(
+          decoration: BoxDecoration(gradient: gradientBackground(context)),
+          child: Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: buttonDecoration(context),
+                  child: CircularProgressIndicator(
+                    color: Theme.of(context).colorScheme.primary,
+                    strokeWidth: 3,
+                  ),
+                ),
+                const SizedBox(height: 24),
+                Text(
+                  "Loading show...",
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  "Please wait a moment",
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       );
     }
 
     return Scaffold(
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(8, 80, 8, 0),
-          child: Column(
-            children: [
-              // Entry
-              entryMain(),
+      body: Container(
+        decoration: BoxDecoration(gradient: gradientBackground(context)),
 
-              // Padding
-              const SizedBox(height: 8),
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(8, 80, 8, 0),
+            child: Column(
+              children: [
+                // Entry
+                entryMain(),
 
-              // Add to list
-              addToList(),
+                // Padding
+                const SizedBox(height: 8),
 
-              // Padding
-              const SizedBox(height: 8),
+                // Add to list
+                addToList(),
 
-              // Padding
-              const SizedBox(height: 8),
+                // Padding
+                const SizedBox(height: 8),
 
-              // Game info
-              showInfo(),
+                // Game info
+                showInfo(),
 
-              // Padding
-              const SizedBox(height: 8),
+                // Padding
+                const SizedBox(height: 8),
 
-              // Seasons
-              showSeasons(),
-            ],
+                // Seasons
+                showSeasons(),
+
+                // Padding
+                const SizedBox(height: 40),
+              ],
+            ),
           ),
         ),
       ),

@@ -1,150 +1,79 @@
-// Flutter imports
+// ==================== Game Entry Page ==================== //
 
+// Flutter imports
 import 'package:flutter/material.dart';
 
 // Local imports
-import 'package:omnirate/BaseClasses/base_entry.dart';
+import 'package:omnirate/BasePages/base_entry_page.dart';
 import 'package:omnirate/Database/model_game.dart';
 import 'package:omnirate/Shared/utils.dart';
 
-// ========== Game entry page ========== //
+// ========== Game Entry Page Class ========== //
 
-class GameEntry extends EntryBase<Game> {
+class GameEntry extends EntryPageBase<Game> {
   const GameEntry({super.key, required super.inEntry});
 
   @override
   GameEntryState createState() => GameEntryState();
 }
 
-class GameEntryState extends EntryBaseState {
-
+class GameEntryState extends EntryPageBaseState {
   // ===== Class Widgets ===== //
 
-  // Game info
   Widget gameInfo() {
-    return Card(
-      color: Theme.of(context).colorScheme.surfaceContainer,
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Release date
-            Text.rich(
-              TextSpan(
-                children: [
-                  TextSpan(
-                    text: 'Release date: ',
-                    style: TextStyle(
-                      color: Theme.of(context).colorScheme.primary,
-                      fontSize: 16,
-                    ),
-                  ),
-                  TextSpan(
-                    text: (widget.inEntry as Game).releaseDate,
-                    style: TextStyle(fontSize: 16),
-                  ),
-                ],
-              ),
-            ),
+    final game = widget.inEntry as Game;
+    return Column(
+      children: [
+        // Section header
+        sectionHeader(context, 'Game info', "Information about the game."),
 
-            Divider(
-              height: 16,
-              thickness: 1,
-              color: Theme.of(context).colorScheme.primary,
-            ),
+        // Game info
+        Container(
+          decoration: containerDecoration(context),
 
-            // Developer
-            Text.rich(
-              TextSpan(
-                children: [
-                  TextSpan(
-                    text: 'Developer: ',
-                    style: TextStyle(
-                      color: Theme.of(context).colorScheme.primary,
-                      fontSize: 16,
-                    ),
-                  ),
-                  TextSpan(
-                    text: (widget.inEntry as Game).developer,
-                    style: TextStyle(fontSize: 16),
-                  ),
-                ],
-              ),
-            ),
+          padding: const EdgeInsets.all(16),
 
-            Divider(
-              height: 16,
-              thickness: 1,
-              color: Theme.of(context).colorScheme.primary,
-            ),
-
-            // Genres
-            Text.rich(
-              TextSpan(
-                children: [
-                  TextSpan(
-                    text: 'Genres: ',
-                    style: TextStyle(
-                      color: Theme.of(context).colorScheme.primary,
-                      fontSize: 16,
-                    ),
-                  ),
-                  TextSpan(
-                    text: widget.inEntry.genres.join(', '),
-                    style: TextStyle(fontSize: 16),
-                  ),
-                ],
-              ),
-            ),
-
-            Divider(
-              height: 16,
-              thickness: 1,
-              color: Theme.of(context).colorScheme.primary,
-            ),
-
-            // Overview with Read More toggle
-            ExpandableText(
-              label: 'Overview: ',
-              content: widget.inEntry.overview,
-            ),
-          ],
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              infoLine('Release date:', game.releaseDate),
+              divider(),
+              infoLine('Developer:', game.developer),
+              divider(),
+              infoLine('Genres:', game.genres.join(', ')),
+              divider(),
+              ExpandableText(label: 'Overview: ', content: game.overview),
+            ],
+          ),
         ),
-      ),
+      ],
     );
   }
 
-  // Time to beat
   Widget timeToBeat() {
+    // Time card
     Widget buildCard(String label, String time) {
-      return Expanded(
-        child: Card(
-          color: Theme.of(context).colorScheme.surfaceContainer,
-          elevation: 2,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 16),
-            child: Column(
-              children: [
-                Text(label, style: TextStyle(fontSize: 14)),
-                SizedBox(height: 8),
-                Text(
-                  time,
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
-                ),
-              ],
+      return Container(
+        decoration: containerDecoration(context),
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          children: [
+            // Label
+            Text(label, style: TextStyle(fontSize: 14)),
+
+            // Padding
+            SizedBox(height: 8),
+
+            // Time
+            Text(
+              time,
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: Theme.of(context).colorScheme.primary,
+              ),
             ),
-          ),
+          ],
         ),
       );
     }
@@ -152,44 +81,62 @@ class GameEntryState extends EntryBaseState {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        Text(
+        // Section header
+        sectionHeader(
+          context,
           'Time to Beat',
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-            color: Theme.of(context).colorScheme.primary,
-          ),
+          "Average time to beat the game.",
         ),
-        SizedBox(height: 12),
+
+        // Times row
         Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-            buildCard(
-              'Hastily',
-              (widget.inEntry as Game).timeHaste == 'N/A'
-                  ? 'N/A'
-                  : (double.tryParse((widget.inEntry as Game).timeHaste) ?? 0) > 999
-                  ? '999+ H'
-                  : '${(widget.inEntry as Game).timeHaste} H',
+            // Haste time
+            Expanded(
+              child: buildCard(
+                'Hastily',
+                (widget.inEntry as Game).timeHaste == 'N/A'
+                    ? 'N/A'
+                    : (double.tryParse((widget.inEntry as Game).timeHaste) ??
+                            0) >
+                        999
+                    ? '999+ H'
+                    : '${(widget.inEntry as Game).timeHaste} H',
+              ),
             ),
 
+            // Padding
             SizedBox(width: 8),
-            buildCard(
-              'Normally',
-              (widget.inEntry as Game).timeNormal == 'N/A'
-                  ? 'N/A'
-                  : (double.tryParse((widget.inEntry as Game).timeNormal) ?? 0) > 999
-                  ? '999+ H'
-                  : '${(widget.inEntry as Game).timeNormal} H',
-            ),
 
+            // Normal time
+            Expanded(
+              child: buildCard(
+                'Normally',
+                (widget.inEntry as Game).timeNormal == 'N/A'
+                    ? 'N/A'
+                    : (double.tryParse((widget.inEntry as Game).timeNormal) ??
+                            0) >
+                        999
+                    ? '999+ H'
+                    : '${(widget.inEntry as Game).timeNormal} H',
+              ),
+            ),
+            // Padding
             SizedBox(width: 8),
-            buildCard(
-              'Completely',
-              (widget.inEntry as Game).timeComplete == 'N/A'
-                  ? 'N/A'
-                  : (double.tryParse((widget.inEntry as Game).timeComplete) ?? 0) > 999
-                  ? '999+ H'
-                  : '${(widget.inEntry as Game).timeComplete} H',
+
+            // Complete time
+            Expanded(
+              child: buildCard(
+                'Completely',
+                (widget.inEntry as Game).timeComplete == 'N/A'
+                    ? 'N/A'
+                    : (double.tryParse((widget.inEntry as Game).timeComplete) ??
+                            0) >
+                        999
+                    ? '999+ H'
+                    : '${(widget.inEntry as Game).timeComplete} H',
+              ),
             ),
           ],
         ),
@@ -197,7 +144,6 @@ class GameEntryState extends EntryBaseState {
     );
   }
 
-  // Related Media
   Widget relatedMedia() {
     return Card(
       color: Theme.of(context).colorScheme.surfaceContainer,
@@ -260,36 +206,42 @@ class GameEntryState extends EntryBaseState {
 
   @override
   Widget build(BuildContext context) {
+
+    
     return Scaffold(
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(8, 80, 8, 0),
-          child: Column(
-            children: [
-              // Entry
-              entryMain(),
+      body: Container(
+        decoration: BoxDecoration(gradient: gradientBackground(context)),
 
-              // Padding
-              const SizedBox(height: 8),
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(8, 80, 8, 0),
+            child: Column(
+              children: [
+                // Entry
+                entryMain(),
 
-              // Add to list
-              addToList(),
+                // Padding
+                const SizedBox(height: 8),
 
-              // Padding
-              const SizedBox(height: 8),
+                // Add to list
+                addToList(),
 
-              // Time to beat
-              timeToBeat(),
+                // Padding
+                const SizedBox(height: 8),
 
-              // Padding
-              const SizedBox(height: 8),
+                // Game info
+                gameInfo(),
 
-              // Game info
-              gameInfo(),
+                // Padding
+                const SizedBox(height: 8),
 
-              // Padding
-              const SizedBox(height: 8),
-            ],
+                // Time to beat
+                timeToBeat(),
+
+                // Padding
+                const SizedBox(height: 40),
+              ],
+            ),
           ),
         ),
       ),

@@ -1,3 +1,5 @@
+// ==================== Main App ==================== //
+
 // Flutter imports
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -12,6 +14,9 @@ import 'package:omnirate/Shared/providers.dart';
 import 'package:omnirate/Main/welcome_page.dart';
 import 'package:omnirate/Shared/user_data.dart';
 import 'package:omnirate/Database/database_helper.dart';
+
+
+final RouteObserver<PageRoute> routeObserver = RouteObserver<PageRoute>();
 
 void main() async {
   // Firebase initialization
@@ -82,6 +87,8 @@ class _MainAppState extends State<MainApp> {
 
         final seen = snapshot.data!;
         return MaterialApp(
+          navigatorObservers: [routeObserver],
+
           // Define light theme
           theme: ThemeData.from(
             colorScheme: ColorScheme.fromSeed(

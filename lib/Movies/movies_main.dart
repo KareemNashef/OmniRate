@@ -1,21 +1,24 @@
+// ==================== Movies Main Page ==================== //
+
 // Flutter imports
 import 'package:flutter/material.dart';
 
 // Local imports
-import 'package:omnirate/BaseClasses/base_main.dart';
+import 'package:omnirate/BasePages/media_page.dart';
 import 'package:omnirate/Database/model_movie.dart';
 import 'package:omnirate/API/tmdb_api.dart';
+import 'package:omnirate/Shared/utils.dart';
 
-// ========== Movies main page ========== //
+// ========== Movies Main Page Class ========== //
 
-class MoviesMainPage extends MainPageBase {
+class MoviesMainPage extends MediaPageBase {
   const MoviesMainPage({super.key});
 
   @override
   MoviesMainPageState createState() => MoviesMainPageState();
 }
 
-class MoviesMainPageState extends MainPageBaseState {
+class MoviesMainPageState extends MediaPageBaseState {
   // ===== Class variables ===== //
 
   late Future<List<Movie>> futurePopular;
@@ -23,7 +26,7 @@ class MoviesMainPageState extends MainPageBaseState {
   late Future<List<Movie>> futureNowPlaying;
   late Future<List<Movie>> futureTopRated;
 
-  // ===== Class Initialization ===== //
+  // ===== Lifecycle Methods ===== //
 
   @override
   void initState() {
@@ -38,135 +41,133 @@ class MoviesMainPageState extends MainPageBaseState {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      child: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            // Padding
-            SizedBox(height: 40),
+    return Container(
+      decoration: BoxDecoration(gradient: gradientBackground(context)),
 
-            // Search Bar
-            searchBar("Movies"),
+      child: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
 
-            // Padding
-            SizedBox(height: 20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              // Padding
+              SizedBox(height: 40),
 
-            // Main Carousel
-            FutureBuilder<List<Movie>>(
-              future: futurePopular,
-              builder: (context, snapshot) {
-                if (!snapshot.hasData) {
-                  return SizedBox(
-                    height: 290,
-                    child: Center(child: CircularProgressIndicator()),
-                  );
-                }
+              // Search Bar
+              searchBar("Movies"),
 
-                return mainCarousel("Movies", snapshot.data!);
-              },
-            ),
+              // Padding
+              SizedBox(height: 16),
 
-            // Padding
-            const SizedBox(height: 16),
+              // Main Carousel
+              FutureBuilder<List<Movie>>(
+                future: futurePopular,
+                builder: (context, snapshot) {
+                  if (!snapshot.hasData) {
+                    return SizedBox(
+                      height: 290,
+                      child: Center(child: CircularProgressIndicator()),
+                    );
+                  }
 
-            // Upcoming
-            FutureBuilder<List<Movie>>(
-              future: futureUpcoming,
-              builder: (context, snapshot) {
-                if (!snapshot.hasData) {
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 8),
-                        child: Text(
-                          "Coming Soon",
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Theme.of(context).colorScheme.primary,
-                          ),
+                  return mainCarousel("Movies", snapshot.data!);
+                },
+              ),
+
+              // Padding
+              const SizedBox(height: 16),
+
+              // Upcoming
+              FutureBuilder<List<Movie>>(
+                future: futureUpcoming,
+                builder: (context, snapshot) {
+                  if (!snapshot.hasData) {
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        sectionHeader(context, "Upcoming", "Soon in theaters"),
+                        SizedBox(height: 8),
+                        SizedBox(
+                          height: 230,
+                          child: Center(child: CircularProgressIndicator()),
                         ),
-                      ),
-                      SizedBox(height: 8),
-                      SizedBox(
-                        height: 230,
-                        child: Center(child: CircularProgressIndicator()),
-                      ),
-                    ],
+                      ],
+                    );
+                  }
+                  return blankCarousel(
+                    "Movies",
+                    "Upcoming",
+                    "Soon in theaters",
+                    snapshot.data!,
                   );
-                }
-                return blankCarousel("Movies", "Upcoming", snapshot.data!);
-              },
-            ),
+                },
+              ),
 
-            // Now Playing
-            FutureBuilder<List<Movie>>(
-              future: futureNowPlaying,
-              builder: (context, snapshot) {
-                if (!snapshot.hasData) {
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 8),
-                        child: Text(
-                          "Recently Released",
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Theme.of(context).colorScheme.primary,
-                          ),
+              // Now Playing
+              FutureBuilder<List<Movie>>(
+                future: futureNowPlaying,
+                builder: (context, snapshot) {
+                  if (!snapshot.hasData) {
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        sectionHeader(
+                          context,
+                          "Now Playing",
+                          "Fresh on screens",
                         ),
-                      ),
-                      SizedBox(height: 8),
-                      SizedBox(
-                        height: 230,
-                        child: Center(child: CircularProgressIndicator()),
-                      ),
-                    ],
+                        SizedBox(height: 8),
+                        SizedBox(
+                          height: 230,
+                          child: Center(child: CircularProgressIndicator()),
+                        ),
+                      ],
+                    );
+                  }
+                  return blankCarousel(
+                    "Movies",
+                    "Now Playing",
+                    "Fresh on screens",
+                    snapshot.data!,
                   );
-                }
-                return blankCarousel("Movies", "Now Playing", snapshot.data!);
-              },
-            ),
+                },
+              ),
 
-            // Top Rated
-            FutureBuilder<List<Movie>>(
-              future: futureTopRated,
-              builder: (context, snapshot) {
-                if (!snapshot.hasData) {
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 8),
-                        child: Text(
+              // Top Rated
+              FutureBuilder<List<Movie>>(
+                future: futureTopRated,
+                builder: (context, snapshot) {
+                  if (!snapshot.hasData) {
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        sectionHeader(
+                          context,
                           "Top Rated",
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Theme.of(context).colorScheme.primary,
-                          ),
+                          "Must-watch classics",
                         ),
-                      ),
-                      SizedBox(height: 8),
-                      SizedBox(
-                        height: 230,
-                        child: Center(child: CircularProgressIndicator()),
-                      ),
-                    ],
+                        SizedBox(height: 8),
+                        SizedBox(
+                          height: 230,
+                          child: Center(child: CircularProgressIndicator()),
+                        ),
+                      ],
+                    );
+                  }
+                  return blankCarousel(
+                    "Movies",
+                    "Top Rated",
+                    "Must-watch classics",
+                    snapshot.data!,
                   );
-                }
-                return blankCarousel("Movies", "Top Rated", snapshot.data!);
-              },
-            ),
+                },
+              ),
 
-            // Padding
-            SizedBox(height: 64),
-          ],
+              // Padding
+              SizedBox(height: 90),
+            ],
+          ),
         ),
       ),
     );

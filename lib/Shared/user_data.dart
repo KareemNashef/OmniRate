@@ -1,3 +1,5 @@
+// ==================== User Data Class ==================== //
+
 // Flutter imports
 import 'package:hive/hive.dart';
 
@@ -75,17 +77,28 @@ class UserData {
 class UserMediaEntry {
   // Media details
   @HiveField(0)
-  String name;
+  String id;
+
   @HiveField(1)
-  double rating;
+  String name;
+
   @HiveField(2)
+  String rating;
+
+  @HiveField(3)
   String status;
 
   // Constructor
-  UserMediaEntry({required this.name, required this.rating, required this.status});
+  UserMediaEntry({
+    required this.id,
+    required this.name,
+    required this.rating,
+    required this.status,
+  });
 
   // Convert to map
   Map<String, dynamic> toMap() => {
+    'id': id,
     'name': name,
     'rating': rating,
     'status': status,
@@ -93,13 +106,14 @@ class UserMediaEntry {
 
   // Convert from map
   factory UserMediaEntry.fromMap(Map<String, dynamic> map) => UserMediaEntry(
-    name: map['name'] ?? '',
-    rating: (map['rating'] ?? 0).toDouble(),
-    status: map['status'] ?? '',
+    id: map['id'] ?? '0',
+    name: map['name'] ?? 'N/A',
+    rating: map['rating'] ?? "0.0",
+    status: map['status'] ?? 'N/A',
   );
 
   // Convert to string
   @override
   String toString() =>
-      'MediaEntry(name: $name, rating: $rating, status: $status)';
+      'MediaEntry( id: $id, name: $name, rating: $rating, status: $status)';
 }

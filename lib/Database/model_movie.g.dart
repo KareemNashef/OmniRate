@@ -17,39 +17,42 @@ class MovieAdapter extends TypeAdapter<Movie> {
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
     return Movie(
-      name: fields[0] as String,
-      thumbnailUrl: fields[1] as String,
-      artworkUrl: fields[10] as String,
-      rating: fields[2] as double,
-      releaseStatus: fields[3] as String,
-      genres: (fields[4] as List).cast<String>(),
-      overview: fields[5] as String,
-      budget: fields[6] as String,
-      revenue: fields[7] as String,
+      id: fields[0] as String,
+      name: fields[1] as String,
+      thumbnailUrl: fields[2] as String,
+      artworkUrl: fields[3] as String,
+      rating: fields[4] as String,
+      releaseStatus: fields[5] as String,
+      genres: (fields[6] as List).cast<String>(),
+      overview: fields[7] as String,
+      budget: fields[8] as String,
+      revenue: fields[9] as String,
     );
   }
 
   @override
   void write(BinaryWriter writer, Movie obj) {
     writer
-      ..writeByte(9)
-      ..writeByte(0)
-      ..write(obj.name)
-      ..writeByte(1)
-      ..write(obj.thumbnailUrl)
       ..writeByte(10)
-      ..write(obj.artworkUrl)
+      ..writeByte(0)
+      ..write(obj.id)
+      ..writeByte(1)
+      ..write(obj.name)
       ..writeByte(2)
-      ..write(obj.rating)
+      ..write(obj.thumbnailUrl)
       ..writeByte(3)
-      ..write(obj.releaseStatus)
+      ..write(obj.artworkUrl)
       ..writeByte(4)
-      ..write(obj.genres)
+      ..write(obj.rating)
       ..writeByte(5)
-      ..write(obj.overview)
+      ..write(obj.releaseStatus)
       ..writeByte(6)
-      ..write(obj.budget)
+      ..write(obj.genres)
       ..writeByte(7)
+      ..write(obj.overview)
+      ..writeByte(8)
+      ..write(obj.budget)
+      ..writeByte(9)
       ..write(obj.revenue);
   }
 

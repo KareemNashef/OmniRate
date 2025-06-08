@@ -9,144 +9,10 @@ import 'dart:async';
 import 'package:omnirate/Database/model_game.dart';
 import 'package:omnirate/Database/database_helper.dart';
 import 'package:omnirate/Shared/utils.dart';
-
-// ========== Helper Consts ========== //
-
-// API Keys
-final igdbHeaders = {
-  'Client-ID': 'uy1ewiwcafvxgao5jq3bxhme0z20tx',
-  'Authorization': 'Bearer 2bf4mjgv69yeh7buax0ijizt6bsg5u',
-  'Accept': 'application/json',
-};
-
-// API URLs
-const String gamesUrl = 'https://api.igdb.com/v4/games';
-const String releaseDateUrl = 'https://api.igdb.com/v4/release_dates';
-const String coverArtUrl = 'https://api.igdb.com/v4/covers';
-const String gameTimeUrl = 'https://api.igdb.com/v4/game_time_to_beats';
-const String involvedCompaniesUrl =
-    'https://api.igdb.com/v4/involved_companies';
-const String companyNamesUrl = 'https://api.igdb.com/v4/companies';
-const String artworksUrl = 'https://api.igdb.com/v4/artworks';
-const String popscoreUrl = 'https://api.igdb.com/v4/popularity_primitives';
-
-// Common fields for list queries
-const String _commonGameListFields =
-    'id, name, cover, rating, first_release_date, genres.name, summary, involved_companies, artworks';
-
-// Missing media URLs
-const String missingCoverUrl =
-    'https://www.igdb.com/assets/no_cover_show-ef1e36c00e101c2fb23d15bb80edd9667bbf604a12fc0267a66033afea320c65.png';
-const String missingArtworkUrl =
-    'https://img.freepik.com/free-vector/futuristic-video-game-controller-background-with-text-space_1017-54730.jpg';
-
-// ========== Eager Future Class ========== //
-
-class EagerFuture<T> implements Future<T> {
-  final Future<T> _future;
-  late T _result;
-  Object? _error;
-  bool _isCompleted = false;
-  bool _hasError = false;
-
-  EagerFuture(Future<T> future) : _future = future {
-    _future
-        .then((value) {
-          _result = value;
-          _isCompleted = true;
-        })
-        .catchError((error, stackTrace) {
-          _error = error;
-          _isCompleted = true;
-          _hasError = true;
-          // Optionally rethrow or handle:
-          // Completer().completeError(error, stackTrace);
-        });
-  }
-
-  @override
-  Stream<T> asStream() => _future.asStream();
-
-  @override
-  Future<T> catchError(Function onError, {bool Function(Object error)? test}) =>
-      _future.catchError(onError, test: test);
-
-  @override
-  Future<R> then<R>(
-    FutureOr<R> Function(T value) onValue, {
-    Function? onError,
-  }) {
-    if (_isCompleted && !_hasError) {
-      try {
-        return Future.value(onValue(_result));
-      } catch (e, s) {
-        if (onError != null) {
-          // Simulating Future's onError behavior
-          try {
-            return Future.value(onError(e, s));
-          } catch (ne, ns) {
-            return Future.error(ne, ns);
-          }
-        }
-        return Future.error(e, s);
-      }
-    } else if (_isCompleted && _hasError) {
-      if (onError != null) {
-        try {
-          return Future.value(
-            onError(
-              _error!,
-              StackTrace.current /*or store original if possible*/,
-            ),
-          );
-        } catch (e, s) {
-          return Future.error(e, s);
-        }
-      }
-      return Future.error(_error!);
-    }
-    return _future.then(onValue, onError: onError);
-  }
-
-  @override
-  Future<T> timeout(Duration timeLimit, {FutureOr<T> Function()? onTimeout}) =>
-      _future.timeout(timeLimit, onTimeout: onTimeout);
-
-  @override
-  Future<T> whenComplete(FutureOr<void> Function() action) =>
-      _future.whenComplete(action);
-}
-
-// ========== Rate Limiting Class ========== //
-
-class RateLimiter {
-  static const int maxRequestsPerSecond = 4;
-  static final List<DateTime> _requestTimes = [];
-
-  static Future<void> waitForRateLimit() async {
-    final now = DateTime.now();
-
-    // Remove requests older than 1 second
-    _requestTimes.removeWhere(
-      (time) => now.difference(time).inMilliseconds > 1000,
-    );
-
-    // If we've made 4 requests in the last second, wait
-    if (_requestTimes.length >= maxRequestsPerSecond) {
-      final oldestRequest = _requestTimes.first;
-      final waitTime = 1000 - now.difference(oldestRequest).inMilliseconds;
-      if (waitTime > 0) {
-        await Future.delayed(Duration(milliseconds: waitTime));
-      }
-    }
-
-    _requestTimes.add(DateTime.now());
-  }
-}
+import 'package:omnirate/API/api_helpers.dart';
 
 // ========== Helper Functions ========== //
 
-// Post request handler
 Future<http.Response> postRequest(String inURL, String inQuery) async {
   // Wait for rate limit
   await RateLimiter.waitForRateLimit();
@@ -155,42 +21,40 @@ Future<http.Response> postRequest(String inURL, String inQuery) async {
   return await http.post(Uri.parse(inURL), headers: igdbHeaders, body: inQuery);
 }
 
-// Convert Unix timestamp to "YYYY-MM-DD" or "N/A"
-String _formatTimestampToDate(int? timestamp) {
+String timestampToDate(int? timestamp) {
   if (timestamp == null) return 'N/A';
+
+  // Convert timestamp to date
   final date = DateTime.fromMillisecondsSinceEpoch(timestamp * 1000);
+
+  // Convert to YYYY-MM-DD format
   return "${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}";
 }
 
-// Process and cache game list
-Future<List<Game>> _processAndCacheGameList(
-  List<dynamic> rawGamesData,
-) async {
+Future<List<Game>> processAndCacheGameList(List<dynamic> rawGamesData) async {
   // Initialize list
   List<Game> readyGamesList = [];
   if (rawGamesData.isEmpty) return readyGamesList;
 
   // Initialize lists
-  List<Game> gamesToCacheEventually = []; // Games fetched from API to be cached
-  List<dynamic> gamesToProcessFromApi = []; // Raw game data for games NOT found in cache
+  List<Game> gamesToCacheEventually = []; // Games to cache eventually
+  List<dynamic> gamesToProcessFromApi = []; // Games to fetch from API
 
-  // Step 1: Check if game is in cache
+  // Step 1: Check if any game is in cache
   for (var rawGameData in rawGamesData) {
-    final String? name = rawGameData['name'] as String?;
-    if (name == null || name == 'N/A') {
+    final String? id = rawGameData['id']?.toString();
+
+    if (id == null || id == '0') {
       continue;
     }
 
-    Game? existingGame = await HiveHelper.getGameByName(name);
+    Game? existingGame = await HiveHelper.getGameByID(id);
     if (existingGame != null) {
       // Game found in cache, use its data directly
       readyGamesList.add(existingGame);
     } else {
       // Game not in cache, add its raw data to the list for API processing
-      if (rawGameData['id'] != null) {
-        // Ensure it has an ID for further processing
-        gamesToProcessFromApi.add(rawGameData);
-      } else {}
+      gamesToProcessFromApi.add(rawGameData);
     }
   }
 
@@ -222,15 +86,15 @@ Future<List<Game>> _processAndCacheGameList(
 
   // Perform batch fetches concurrently for the filtered list
   final EagerFuture<Map<int, String>> coverUrlsFuture = EagerFuture(
-    _batchFetchCoverUrls(coverIdsToFetch),
+    batchFetchCoverUrls(coverIdsToFetch),
   );
   final EagerFuture<Map<int, String>> artworkUrlsFuture = EagerFuture(
-    _batchFetchArtworkUrls(artworkIdsToFetch),
+    batchFetchArtworkUrls(artworkIdsToFetch),
   );
   final EagerFuture<Map<int, Map<String, String>>> gameTimesFuture =
-      EagerFuture(_batchFetchGameTimes(gameIdsToFetch));
+      EagerFuture(batchFetchGameTimes(gameIdsToFetch));
   final EagerFuture<Map<int, String>> developerNamesFuture = EagerFuture(
-    _batchFetchDeveloperNames(gameToInvolvedCompanyIdsMapForFetching),
+    batchFetchDeveloperNames(gameToInvolvedCompanyIdsMapForFetching),
   );
 
   final results = await Future.wait([
@@ -248,32 +112,29 @@ Future<List<Game>> _processAndCacheGameList(
 
   // ----- Step 3: Construct Game objects for API-fetched games and add to cache list -----
   for (var gameData in gamesToProcessFromApi) {
-    // Iterate ONLY over games we processed via API
-    final int gameId = gameData['id'];
-    final String name =
-        gameData['name'] ?? 'N/A'; // Should be valid due to earlier check
+    final String gameId = gameData['id'].toString();
+    final String name = gameData['name'] ?? 'N/A';
 
     // Data from initial fetch (gamesToProcessFromApi contains this)
-    final double rating =
+    final String rating =
         gameData['rating'] != null
-            ? double.parse(
-              (double.parse(gameData['rating'].toString()) / 10)
-                  .toStringAsFixed(1),
-            )
-            : 0.0;
+            ? (double.parse(gameData['rating'].toString()) / 10)
+                .toStringAsFixed(1)
+            : '0.0';
+
     final List<String> genres =
         (gameData['genres'] as List<dynamic>?)
             ?.map((g) => g['name'].toString())
             .toList() ??
         [];
+
     final String overview = gameData['summary'] ?? 'N/A';
-    final String releaseDate = _formatTimestampToDate(
-      gameData['first_release_date'],
-    );
+
+    final String releaseDate = timestampToDate(gameData['first_release_date']);
 
     // Data from batch fetches
     final String thumbnailUrl =
-        fetchedCoverUrls[gameData['cover'] ?? 0] ?? missingCoverUrl;
+        fetchedCoverUrls[gameData['cover'] ?? 0] ?? gamesMissingCoverUrl;
     final String artworkUrl =
         fetchedArtworkUrls[(gameData['artworks'] != null &&
                 gameData['artworks'].isNotEmpty
@@ -282,11 +143,12 @@ Future<List<Game>> _processAndCacheGameList(
         'N/A';
 
     final Map<String, String> times =
-        fetchedGameTimes[gameId] ??
+        fetchedGameTimes[int.parse(gameId)] ??
         {'timeHaste': 'N/A', 'timeNormal': 'N/A', 'timeComplete': 'N/A'};
-    final String developer = fetchedDeveloperNames[gameId] ?? 'N/A';
+    final String developer = fetchedDeveloperNames[int.parse(gameId)] ?? 'N/A';
 
     Game game = Game(
+      id: gameId,
       name: name,
       thumbnailUrl: thumbnailUrl,
       artworkUrl: artworkUrl,
@@ -314,10 +176,10 @@ Future<List<Game>> _processAndCacheGameList(
 
   return readyGamesList;
 }
+
 // ========== Batch Fetch Functions ========== //
 
-// Fetches cover art URLs for a list of cover IDs
-Future<Map<int, String>> _batchFetchCoverUrls(List<int> coverIds) async {
+Future<Map<int, String>> batchFetchCoverUrls(List<int> coverIds) async {
   if (coverIds.isEmpty) return {};
 
   // Initialize the map
@@ -333,10 +195,11 @@ Future<Map<int, String>> _batchFetchCoverUrls(List<int> coverIds) async {
       where id = (${validCoverIds.join(',')});
       limit ${validCoverIds.length};
     ''';
-    final response = await postRequest(coverArtUrl, query);
+    final response = await postRequest(gamesCoverArtUrl, query);
 
     if (response.statusCode == 200) {
       final List<dynamic> data = jsonDecode(response.body);
+
       for (var coverData in data) {
         if (coverData['id'] != null && coverData['image_id'] != null) {
           results[coverData['id'] as int] =
@@ -348,14 +211,13 @@ Future<Map<int, String>> _batchFetchCoverUrls(List<int> coverIds) async {
 
   // Fill a default image for missing Ids
   for (var id in coverIds) {
-    results.putIfAbsent(id, () => missingCoverUrl);
+    results.putIfAbsent(id, () => gamesMissingCoverUrl);
   }
 
   return results;
 }
 
-// Fetch artworks URLs for a list of artwork IDs
-Future<Map<int, String>> _batchFetchArtworkUrls(List<int> artworkIds) async {
+Future<Map<int, String>> batchFetchArtworkUrls(List<int> artworkIds) async {
   if (artworkIds.isEmpty) return {};
 
   // Initialize the map
@@ -372,7 +234,7 @@ Future<Map<int, String>> _batchFetchArtworkUrls(List<int> artworkIds) async {
     limit ${validArtworkIds.length};
   ''';
 
-    final response = await postRequest(artworksUrl, query);
+    final response = await postRequest(gamesArtworksUrl, query);
 
     if (response.statusCode == 200) {
       final List<dynamic> data = jsonDecode(response.body);
@@ -387,13 +249,12 @@ Future<Map<int, String>> _batchFetchArtworkUrls(List<int> artworkIds) async {
 
   // Fill a default image for missing Ids
   for (var id in artworkIds) {
-    results.putIfAbsent(id, () => missingArtworkUrl);
+    results.putIfAbsent(id, () => gamesMissingArtworkUrl);
   }
   return results;
 }
 
-// Fetch multiple company names
-Future<Map<int, String>> _batchFetchDeveloperNames(
+Future<Map<int, String>> batchFetchDeveloperNames(
   Map<int, List<int>> gameToInvolvedCompanyIdsMap,
 ) async {
   if (gameToInvolvedCompanyIdsMap.isEmpty) return {};
@@ -420,7 +281,7 @@ Future<Map<int, String>> _batchFetchDeveloperNames(
     limit ${allInvolvedCompanyIds.length};
   ''';
   final involvedResponse = await postRequest(
-    involvedCompaniesUrl,
+    gamesInvolvedCompaniesUrl,
     involvedQuery,
   );
   if (involvedResponse.statusCode != 200) {
@@ -452,7 +313,7 @@ Future<Map<int, String>> _batchFetchDeveloperNames(
     where id = (${companyIds.join(',')});
     limit ${companyIds.length};
   ''';
-  final companyResponse = await postRequest(companyNamesUrl, companyQuery);
+  final companyResponse = await postRequest(gamesCompanyNamesUrl, companyQuery);
   if (companyResponse.statusCode != 200) {
     for (var gameId in gameToInvolvedCompanyIdsMap.keys) {
       gameDeveloperMap[gameId] = 'N/A';
@@ -487,8 +348,7 @@ Future<Map<int, String>> _batchFetchDeveloperNames(
   return gameDeveloperMap;
 }
 
-// Fetch multiple game times
-Future<Map<int, Map<String, String>>> _batchFetchGameTimes(
+Future<Map<int, Map<String, String>>> batchFetchGameTimes(
   List<int> gameIds,
 ) async {
   if (gameIds.isEmpty) return {};
@@ -501,7 +361,7 @@ Future<Map<int, Map<String, String>>> _batchFetchGameTimes(
     where game_id = (${gameIds.join(',')});
     limit ${gameIds.length};
   ''';
-  final response = await postRequest(gameTimeUrl, query);
+  final response = await postRequest(gamesTimeUrl, query);
 
   if (response.statusCode == 200) {
     final List<dynamic> data = jsonDecode(response.body);
@@ -537,51 +397,30 @@ Future<Map<int, Map<String, String>>> _batchFetchGameTimes(
 
 // ========== Main Functions ==========
 
-Future<Game?> getGameEntry(String inName) async {
+Future<Game?> getGameEntry(String inID) async {
   try {
     // 1. Fetch basic game info
     final query = '''
-      fields $_commonGameListFields; 
-      search "$inName";
-      where category = 0;
-      limit 1; 
+      fields $gamesCommonListFields; 
+      where id = $inID & category = 0;
+      limit 1;
     ''';
-    final gameResponse = await postRequest(gamesUrl, query);
+    final gameResponse = await postRequest(gamesAPIUrl, query);
     if (gameResponse.statusCode != 200) {
-      throw Exception(
-        "Game fetch failed: ${gameResponse.statusCode} ${gameResponse.body}",
-      );
+      return null;
     }
-    final gameList = jsonDecode(gameResponse.body);
-    Map<String, dynamic> gameData = {};
-    if (gameList.isEmpty) {
-      final exactNameQuery = '''
-            fields $_commonGameListFields;
-            where name = "$inName" & category = (0,8,9);
-            limit 1;
-        ''';
-      final exactResponse = await postRequest(gamesUrl, exactNameQuery);
-      if (exactResponse.statusCode == 200) {
-        final exactGameList = jsonDecode(exactResponse.body);
-        if (exactGameList.isEmpty) return null;
-        gameData = exactGameList[0];
-      } else {
-        return null;
-      }
-    } else {
-      gameData = gameList[0];
-    }
+
+    Map<String, dynamic> gameData = jsonDecode(gameResponse.body)[0];
 
     final int gameId = gameData['id'];
     final String name = gameData['name'];
 
-    final double rating =
+    final String rating =
         gameData['rating'] != null
-            ? double.parse(
-              (double.parse(gameData['rating'].toString()) / 10)
-                  .toStringAsFixed(1),
-            )
-            : 0.0;
+            ? (double.parse(gameData['rating'].toString()) / 10)
+                .toStringAsFixed(1)
+            : '0.0';
+
     final List<String> genres =
         (gameData['genres'] as List<dynamic>?)
             ?.map((g) => g['name'].toString())
@@ -592,18 +431,19 @@ Future<Game?> getGameEntry(String inName) async {
     // Fetching individual pieces
 
     // Fetch thumbnail
+    final int coverID = gameData['cover'] ?? 0;
     final String thumbnailUrl =
-        (await _batchFetchCoverUrls([gameId]))[gameId] ?? '';
+        (await batchFetchCoverUrls([coverID]))[coverID] ?? '';
 
     // Fetch release date
     final String releaseDate =
         gameData['first_release_date'] != null
-            ? _formatTimestampToDate(gameData['first_release_date'])
+            ? timestampToDate(gameData['first_release_date'])
             : 'N/A';
 
     // Fetch game times
     final Map<String, String> gameTimes =
-        (await _batchFetchGameTimes([gameId]))[gameId] ?? {};
+        (await batchFetchGameTimes([gameId]))[gameId] ?? {};
     final String timeHaste = gameTimes['timeHaste'] ?? 'N/A';
     final String timeNormal = gameTimes['timeNormal'] ?? 'N/A';
     final String timeComplete = gameTimes['timeComplete'] ?? 'N/A';
@@ -615,16 +455,19 @@ Future<Game?> getGameEntry(String inName) async {
         gameData['involved_companies'],
       );
       developer =
-          (await _batchFetchDeveloperNames({
+          (await batchFetchDeveloperNames({
             gameId: involvedCompanyIds,
           }))[gameId] ??
           'N/A';
     }
 
+  // Fetch artwork
+  int artworkID = gameData['artworks'] != null ? gameData['artworks'][0] : 0;
     final String artworkUrl =
-        (await _batchFetchArtworkUrls([gameId]))[gameId] ?? '';
+        (await batchFetchArtworkUrls([artworkID]))[artworkID] ?? '';
 
     return Game(
+      id: gameId.toString(),
       name: name,
       thumbnailUrl: thumbnailUrl,
       artworkUrl: artworkUrl,
@@ -644,17 +487,17 @@ Future<Game?> getGameEntry(String inName) async {
 
 Future<List<Game>> searchGamesByName(String name) async {
   final query = '''
-  fields $_commonGameListFields;
+  fields $gamesCommonListFields;
   search "$name";
   where rating_count > 10;
   limit 10;
 ''';
 
-  final response = await postRequest(gamesUrl, query);
+  final response = await postRequest(gamesAPIUrl, query);
 
   if (response.statusCode == 200) {
     final List<dynamic> data = jsonDecode(response.body);
-    return await _processAndCacheGameList(data);
+    return await processAndCacheGameList(data);
   } else {
     throw Exception("Failed to search games by name");
   }
@@ -691,17 +534,17 @@ Future<List<Game>> getFilteredGames(
   final categoryId = int.parse(inCategoryId);
 
   final query = '''
-  fields $_commonGameListFields;
+  fields $gamesCommonListFields;
   where ${genreFilter}category = $categoryId & rating >= ${(double.parse(inMinRating) * 10).toInt()} & rating_count > 10;
   sort rating desc;
   limit 60;
 ''';
 
-  final response = await postRequest(gamesUrl, query);
+  final response = await postRequest(gamesAPIUrl, query);
 
   if (response.statusCode == 200) {
     final List<dynamic> data = jsonDecode(response.body);
-    return await _processAndCacheGameList(data);
+    return await processAndCacheGameList(data);
   } else {
     throw Exception("Failed to fetch filtered games");
   }
@@ -716,7 +559,7 @@ Future<List<Game>> getDiscoverGames() async {
     limit 10;
   ''';
 
-  final popularResponse = await postRequest(popscoreUrl, popularQuery);
+  final popularResponse = await postRequest(gamesPopscoreUrl, popularQuery);
   if (popularResponse.statusCode != 200) {
     throw Exception('Failed to fetch popular game IDs');
   }
@@ -729,16 +572,16 @@ Future<List<Game>> getDiscoverGames() async {
 
   // 2. Fetch full game details for these IDs
   final gamesQuery = '''
-    fields $_commonGameListFields;
+    fields $gamesCommonListFields;
     where id = (${gameIds.join(',')});
     limit ${gameIds.length};
   ''';
-  final gamesResponse = await postRequest(gamesUrl, gamesQuery);
+  final gamesResponse = await postRequest(gamesAPIUrl, gamesQuery);
   if (gamesResponse.statusCode != 200) {
     throw Exception('Failed to fetch game data for popular games');
   }
   final List<dynamic> gamesData = jsonDecode(gamesResponse.body);
-  return await _processAndCacheGameList(gamesData);
+  return await processAndCacheGameList(gamesData);
 }
 
 Future<List<Game>> getComingSoonGames() async {
@@ -746,16 +589,17 @@ Future<List<Game>> getComingSoonGames() async {
   final today = DateTime.now().toUtc().millisecondsSinceEpoch ~/ 1000;
 
   final query = '''
-    fields $_commonGameListFields;
+    fields $gamesCommonListFields;
     where first_release_date > $today & category = 0 & cover != null;
     sort first_release_date asc;
     limit 10;
   ''';
-  final response = await postRequest(gamesUrl, query);
+  final response = await postRequest(gamesAPIUrl, query);
 
   if (response.statusCode == 200) {
     final List<dynamic> data = jsonDecode(response.body);
-    return await _processAndCacheGameList(data);
+
+    return await processAndCacheGameList(data);
   } else {
     throw Exception('Failed to fetch upcoming games');
   }
@@ -766,15 +610,15 @@ Future<List<Game>> getRecentlyReleasedGames() async {
   final today = DateTime.now().toUtc().millisecondsSinceEpoch ~/ 1000;
 
   final query = '''
-    fields $_commonGameListFields;
+    fields $gamesCommonListFields;
     where first_release_date != null & first_release_date < $today & category = 0 & cover != null;
     sort first_release_date desc;
     limit 10;
   ''';
-  final response = await postRequest(gamesUrl, query);
+  final response = await postRequest(gamesAPIUrl, query);
   if (response.statusCode == 200) {
     final List<dynamic> data = jsonDecode(response.body);
-    return await _processAndCacheGameList(data);
+    return await processAndCacheGameList(data);
   } else {
     throw Exception('Failed to fetch latest games');
   }
@@ -782,16 +626,105 @@ Future<List<Game>> getRecentlyReleasedGames() async {
 
 Future<List<Game>> getTopRatedGames({String limit = "10"}) async {
   final query = '''
-    fields $_commonGameListFields;
+    fields $gamesCommonListFields;
     where rating_count > 100 & category = 0 & cover != null;
     sort rating desc;
     limit $limit;
   ''';
-  final response = await postRequest(gamesUrl, query);
+  final response = await postRequest(gamesAPIUrl, query);
   if (response.statusCode == 200) {
     final List<dynamic> data = jsonDecode(response.body);
-    return await _processAndCacheGameList(data);
+    return await processAndCacheGameList(data);
   } else {
     throw Exception("Failed to fetch top games");
   }
+}
+
+Future<List<List<Game>>> getCombinedGames() async {
+  final today = DateTime.now().toUtc().millisecondsSinceEpoch ~/ 1000;
+
+  final multiQuery = '''
+query games "coming_soon" {
+  fields $gamesCommonListFields;
+  where first_release_date > $today & category = 0 & cover != null;
+  sort first_release_date asc;
+  limit 20;
+};
+query games "recently_released" {
+  fields $gamesCommonListFields;
+  where first_release_date != null & first_release_date < $today & category = 0 & cover != null;
+  sort first_release_date desc;
+  limit 20;
+};
+query games "top_rated" {
+  fields $gamesCommonListFields;
+  where rating_count > 100 & category = 0 & cover != null;
+  sort rating desc;
+  limit 20;
+};
+''';
+
+  final response = await postRequest(
+    "https://api.igdb.com/v4/multiquery",
+    multiQuery,
+  );
+  if (response.statusCode != 200) {
+    throw Exception('Failed to fetch combined games');
+  }
+
+  final List<dynamic> data = jsonDecode(response.body);
+
+  // Extract ID lists for each query
+  List<int> extractIds(String queryName) {
+    final queryData = data.firstWhere(
+      (q) => q['name'] == queryName,
+      orElse: () => null,
+    );
+    if (queryData == null) return [];
+    final List<dynamic> results = queryData['result'] ?? [];
+    return results.map<int>((e) => e['id'] as int).toList();
+  }
+
+  final comingSoonIds = extractIds('coming_soon');
+  final recentlyReleasedIds = extractIds('recently_released');
+  final topRatedIds = extractIds('top_rated');
+
+  // Combine all unique game data into one list
+  final allGamesRaw = <dynamic>[];
+  for (var qName in ['coming_soon', 'recently_released', 'top_rated']) {
+    final qData = data.firstWhere(
+      (q) => q['name'] == qName,
+      orElse: () => null,
+    );
+    if (qData != null && qData['result'] != null) {
+      allGamesRaw.addAll(qData['result']);
+    }
+  }
+
+  // Remove duplicates by id
+  final uniqueGamesMap = <int, dynamic>{};
+  for (var game in allGamesRaw) {
+    uniqueGamesMap[game['id']] = game;
+  }
+
+  final uniqueGamesList = uniqueGamesMap.values.toList();
+
+  // Process and cache
+  final allGamesProcessed = await processAndCacheGameList(uniqueGamesList);
+
+  // Helper to get games by ID list, preserving order
+  final mapById = {for (var g in allGamesProcessed) int.parse(g.id): g};
+
+  List<Game> filterByIds(List<int> ids) {
+    return ids
+        .where((id) => mapById.containsKey(id))
+        .map((id) => mapById[id]!)
+        .toList();
+  }
+
+  final comingSoonGames = filterByIds(comingSoonIds);
+  final recentlyReleasedGames = filterByIds(recentlyReleasedIds);
+  final topRatedGames = filterByIds(topRatedIds);
+
+  return [comingSoonGames, recentlyReleasedGames, topRatedGames];
 }
