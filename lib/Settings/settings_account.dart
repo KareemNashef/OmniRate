@@ -3,6 +3,7 @@
 // Flutter imports
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 // Local imports
 import 'package:omnirate/Main/welcome_page.dart';
@@ -162,7 +163,13 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
 
     // Attempt to sign out
     try {
+      // Sign out from firebase
       await _firebaseService.signOut();
+
+      // Set app config to signed out
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('seenWelcome', false);
+
       if (mounted) {
         // Navigate to welcome page
         Navigator.pushReplacement(
@@ -448,42 +455,44 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
         padding: const EdgeInsets.all(16.0),
 
         // Sign Out Button
-child: SizedBox(
-  width: double.infinity,
-  child: Container(
-    decoration: BoxDecoration(
-      gradient: LinearGradient(
-        colors: [Colors.red, Colors.orange],
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-      ),
-      borderRadius: BorderRadius.circular(12),
-    ),
-    child: ElevatedButton(
-      onPressed: _isLoadingSignOut ? null : _signOut,
-      style: ElevatedButton.styleFrom(
-        backgroundColor: Colors.transparent,
-        shadowColor: Colors.transparent,
-        foregroundColor: Colors.white,
-        elevation: 0,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
-      ),
-      child: _isLoadingSignOut
-          ? const SizedBox(
-              height: 20,
-              width: 20,
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+        child: SizedBox(
+          width: double.infinity,
+          child: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Colors.red, Colors.orange],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
               ),
-            )
-          : const Text('Sign Out'),
-    ),
-  ),
-),
-
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: ElevatedButton(
+              onPressed: _isLoadingSignOut ? null : _signOut,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.transparent,
+                shadowColor: Colors.transparent,
+                foregroundColor: Colors.white,
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              child:
+                  _isLoadingSignOut
+                      ? const SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            Colors.white,
+                          ),
+                        ),
+                      )
+                      : const Text('Sign Out'),
+            ),
+          ),
+        ),
       ),
     );
   }

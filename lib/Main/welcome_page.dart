@@ -1073,7 +1073,9 @@ class WelcomePageState extends State<WelcomePage>
                 height: 60,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.white.withValues(alpha: 0.3)),
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.3),
+                  ),
                   color: Theme.of(context).colorScheme.primary,
                 ),
                 child: ClipRRect(
@@ -1254,61 +1256,65 @@ class WelcomePageState extends State<WelcomePage>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Stack(
-        children: [
-          // Animated background
-          FadeTransition(
-            opacity: _fadeAnimation,
-            child: Row(
-              children: [
-                _buildImageColumn(gamesPaths, _gamesController),
-                const SizedBox(width: 16),
-                _buildImageColumn(showsPaths, _showsController),
-                const SizedBox(width: 16),
-                _buildImageColumn(moviesPaths, _moviesController),
-              ],
-            ),
-          ),
+    return PopScope(
+      canPop: false,
 
-          // Background overlay
-          Container(color: Color.fromRGBO(0, 0, 0, 0.6)),
-
-          // Page content
-          PageView(
-            controller: _pageController,
-            physics: const NeverScrollableScrollPhysics(),
-            children: [
-              _buildSplashContent(),
-              _buildLoginContent(),
-              _buildOnboardingContent(),
-              buildThemeSettingsContent(context),
-            ],
-          ),
-
-          // Back button for login and onboarding
-          if (_currentState != WelcomeState.splash &&
-              _currentState != WelcomeState.themeSelection)
-            Positioned(
-              top: MediaQuery.of(context).padding.top + 8,
-              left: 8,
-              child: IconButton(
-                onPressed:
-                    () => _navigateToState(
-                      _currentState == WelcomeState.login
-                          ? WelcomeState.splash
-                          : _currentState == WelcomeState.onboarding
-                          ? WelcomeState.login
-                          : WelcomeState.onboarding,
-                    ),
-                icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
-                style: IconButton.styleFrom(
-                  backgroundColor: Colors.transparent,
-                  shape: const CircleBorder(),
-                ),
+      child: Scaffold(
+        body: Stack(
+          children: [
+            // Animated background
+            FadeTransition(
+              opacity: _fadeAnimation,
+              child: Row(
+                children: [
+                  _buildImageColumn(gamesPaths, _gamesController),
+                  const SizedBox(width: 16),
+                  _buildImageColumn(showsPaths, _showsController),
+                  const SizedBox(width: 16),
+                  _buildImageColumn(moviesPaths, _moviesController),
+                ],
               ),
             ),
-        ],
+
+            // Background overlay
+            Container(color: Color.fromRGBO(0, 0, 0, 0.6)),
+
+            // Page content
+            PageView(
+              controller: _pageController,
+              physics: const NeverScrollableScrollPhysics(),
+              children: [
+                _buildSplashContent(),
+                _buildLoginContent(),
+                _buildOnboardingContent(),
+                buildThemeSettingsContent(context),
+              ],
+            ),
+
+            // Back button for login and onboarding
+            if (_currentState != WelcomeState.splash &&
+                _currentState != WelcomeState.themeSelection)
+              Positioned(
+                top: MediaQuery.of(context).padding.top + 8,
+                left: 8,
+                child: IconButton(
+                  onPressed:
+                      () => _navigateToState(
+                        _currentState == WelcomeState.login
+                            ? WelcomeState.splash
+                            : _currentState == WelcomeState.onboarding
+                            ? WelcomeState.login
+                            : WelcomeState.onboarding,
+                      ),
+                  icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
+                  style: IconButton.styleFrom(
+                    backgroundColor: Colors.transparent,
+                    shape: const CircleBorder(),
+                  ),
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }

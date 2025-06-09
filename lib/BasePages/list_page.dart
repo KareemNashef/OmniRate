@@ -112,56 +112,36 @@ class ListPageState extends State<ListPage> with TickerProviderStateMixin {
 
   Future<void> loadAllData() async {
     final statuses = ['Current', 'Planned', 'Completed', 'Dropped'];
-    await Future.wait(statuses.map((status) => loadDataForStatus(status)));
+    final allItems = await getMediaByType(widget.listType);
 
-    if (mounted) {
-      List<dynamic> allMedia = [];
-      List<dynamic> allUserEntries = [];
-      for (String status in statuses) {
-        allMedia.addAll(tabData[status] ?? []);
-        allUserEntries.addAll(userEntryData[status] ?? []);
-      }
-
-      setState(() {
-        tabData['All'] = allMedia;
-        userEntryData['All'] = allUserEntries;
-        isLoading['All'] = false;
-      });
+    for (final item in allItems) {
+      final content = switch (widget.listType) {
+        'Games' => await getGame(item.id),
+        'Shows' => await getShow(item.id),
+        _ => await getMovie(item.id),
+      };
+      tabData[item.status]?.add(content);
+      userEntryData[item.status]?.add(item);
     }
+
+    for (var status in statuses) {
+      isLoading[status] = false;
+    }
+
+    if (!mounted) return;
+
+    setState(() {
+      tabData['All'] = statuses.expand((s) => tabData[s] ?? []).toList();
+      userEntryData['All'] =
+          statuses.expand((s) => userEntryData[s] ?? []).toList();
+      isLoading['All'] = false;
+    });
   }
 
   Future<void> loadDataForStatus(String status) async {
     try {
       final userEntries = await getMediaByStatus(widget.listType, status);
       List<dynamic> mediaEntries = [];
-
-      for (var userEntry in userEntries) {
-        dynamic media;
-
-        switch (widget.listType.toLowerCase()) {
-          case 'games':
-            media = await getGame(userEntry.id);
-            break;
-          case 'shows':
-            media = await getShow(userEntry.id);
-            break;
-          case 'movies':
-            media = await getMovie(userEntry.id);
-            break;
-        }
-
-        if (media != null) {
-          // Fix thumbnail issue by ensuring media object has correct ID
-          if (media.id != userEntry.id) {
-            // Create a corrected media object or reload
-            media = await _getMediaByIdDirectly(
-              int.parse(userEntry.id),
-              widget.listType,
-            );
-          }
-          mediaEntries.add(media);
-        }
-      }
 
       if (mounted) {
         setState(() {
@@ -178,24 +158,6 @@ class ListPageState extends State<ListPage> with TickerProviderStateMixin {
           isLoading[status] = false;
         });
       }
-    }
-  }
-
-  // Helper method to get media by ID directly to fix thumbnail issue
-  Future<dynamic> _getMediaByIdDirectly(int id, String listType) async {
-    try {
-      switch (listType.toLowerCase()) {
-        case 'games':
-          return await getGame(id.toString());
-        case 'shows':
-          return await getShow(id.toString());
-        case 'movies':
-          return await getMovie(id.toString());
-        default:
-          return null;
-      }
-    } catch (e) {
-      return null;
     }
   }
 
@@ -358,7 +320,9 @@ class ListPageState extends State<ListPage> with TickerProviderStateMixin {
       expandedHeight: 130,
       pinned: true,
       automaticallyImplyLeading: false,
-      backgroundColor: Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.95),
+      backgroundColor: Theme.of(
+        context,
+      ).colorScheme.primaryContainer.withValues(alpha: 0.95),
       elevation: 0,
       shadowColor: Colors.transparent,
       forceElevated: false,
@@ -404,7 +368,9 @@ class ListPageState extends State<ListPage> with TickerProviderStateMixin {
                         vertical: 12,
                       ),
                       decoration: BoxDecoration(
-                        color: getTypeColor(widget.listType).withValues(alpha: 0.15),
+                        color: getTypeColor(
+                          widget.listType,
+                        ).withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(16),
                       ),
                       child: Row(
@@ -659,7 +625,9 @@ class ListPageState extends State<ListPage> with TickerProviderStateMixin {
         Text(
           getEmptyListSubtitle(widget.listType, status),
           style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
+            color: Theme.of(
+              context,
+            ).colorScheme.onSurface.withValues(alpha: 0.7),
             height: 1.5,
           ),
           textAlign: TextAlign.center,
@@ -701,7 +669,9 @@ class ListPageState extends State<ListPage> with TickerProviderStateMixin {
           Text(
             'Try searching for "$_searchQuery" with different terms',
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
+              color: Theme.of(
+                context,
+              ).colorScheme.onSurface.withValues(alpha: 0.7),
             ),
             textAlign: TextAlign.center,
           ),
@@ -1024,7 +994,9 @@ class ListPageState extends State<ListPage> with TickerProviderStateMixin {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.primary.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(

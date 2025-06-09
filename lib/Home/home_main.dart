@@ -2,6 +2,7 @@
 
 // Flutter imports
 import 'package:flutter/material.dart';
+import 'package:hive/hive.dart';
 
 // Local imports
 import 'package:omnirate/BasePages/media_page.dart';
@@ -11,6 +12,7 @@ import 'package:omnirate/Database/model_game.dart';
 import 'package:omnirate/Database/model_movie.dart';
 import 'package:omnirate/Database/model_show.dart';
 import 'package:omnirate/Settings/settings_main.dart';
+import 'package:omnirate/Shared/firebase_service.dart';
 import 'package:omnirate/Shared/user_data.dart';
 import 'package:omnirate/Shared/list_use.dart';
 import 'package:omnirate/Shared/utils.dart';
@@ -46,14 +48,24 @@ class HomeMainPageState extends MediaPageBaseState with RouteAware {
   @override
   void initState() {
     super.initState();
-    futureGames = getMediaByStatus("Games", "Current");
-    futureShows = getMediaByStatus("Shows", "Current");
-    futureMovies = getMediaByStatus("Movies", "Current");
 
     initOngoingMedia();
   }
 
   void initOngoingMedia() async {
+    // Load user data from firebase
+    final firebaseService = FirebaseService();
+
+    final data = await firebaseService.loadUserData();
+    if (data != null) {
+      final box = await Hive.openBox<UserData>('userBox');
+      await box.put('user', data);
+    }
+
+    futureGames = getMediaByStatus("Games", "Current");
+    futureShows = getMediaByStatus("Shows", "Current");
+    futureMovies = getMediaByStatus("Movies", "Current");
+
     final games = await futureGames;
     final shows = await futureShows;
     final movies = await futureMovies;
@@ -409,70 +421,86 @@ class HomeMainPageState extends MediaPageBaseState with RouteAware {
     return Container(
       decoration: BoxDecoration(gradient: gradientBackground(context)),
 
-      child: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(8.0),
+      child: RefreshIndicator(
+        onRefresh: () async {
+          // Load user data from firebase
+          final firebaseService = FirebaseService();
 
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Padding
-              SizedBox(height: 40),
+          final data = await firebaseService.loadUserData();
+          if (data != null) {
+            final box = await Hive.openBox<UserData>('userBox');
+            await box.put('user', data);
+          }
 
-              buildWelcomeHeader(),
-              const SizedBox(height: 24),
-              sectionHeader(
-                context,
-                "My Collections",
-                "A central hub to track everything you enjoy.",
-              ),
-              const SizedBox(height: 8),
+          refreshPage();
+        },
 
-              buildProgressStats(),
-              const SizedBox(height: 32),
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
 
-              if (ongoingGames.isNotEmpty ||
-                  ongoingShows.isNotEmpty ||
-                  ongoingMovies.isNotEmpty) ...[
-                if (ongoingGames.isNotEmpty) ...[
-                  blankCarousel(
-                    "Games",
-                    "Ongoing Games",
-                    "Games you're actively enjoying",
-                    ongoingGames,
-                    inShowArrow: false,
-                  ),
-                  const SizedBox(height: 24),
-                ],
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Padding
+                SizedBox(height: 40),
 
-                if (ongoingShows.isNotEmpty) ...[
-                  blankCarousel(
-                    "Shows",
-                    "Ongoing Shows",
-                    "Shows you're following",
-                    ongoingShows,
-                    inShowArrow: false,
-                  ),
-                  const SizedBox(height: 24),
-                ],
-
-                if (ongoingMovies.isNotEmpty) ...[
-                  blankCarousel(
-                    "Movies",
-                    "Ongoing Movies",
-                    "Films on your watchlist",
-                    ongoingMovies,
-                    inShowArrow: false,
-                  ),
-                  const SizedBox(height: 24),
-                ],
-              ] else ...[
-                emptyOngoing(),
+                buildWelcomeHeader(),
                 const SizedBox(height: 24),
-              ],
+                sectionHeader(
+                  context,
+                  "My Collections",
+                  "A central hub to track everything you enjoy.",
+                ),
+                const SizedBox(height: 8),
 
-              const SizedBox(height: 80),
-            ],
+                buildProgressStats(),
+                const SizedBox(height: 32),
+
+                if (ongoingGames.isNotEmpty ||
+                    ongoingShows.isNotEmpty ||
+                    ongoingMovies.isNotEmpty) ...[
+                  if (ongoingGames.isNotEmpty) ...[
+                    blankCarousel(
+                      "Games",
+                      "Ongoing Games",
+                      "Games you're actively enjoying",
+                      ongoingGames,
+                      inShowArrow: false,
+                    ),
+                    const SizedBox(height: 24),
+                  ],
+
+                  if (ongoingShows.isNotEmpty) ...[
+                    blankCarousel(
+                      "Shows",
+                      "Ongoing Shows",
+                      "Shows you're following",
+                      ongoingShows,
+                      inShowArrow: false,
+                    ),
+                    const SizedBox(height: 24),
+                  ],
+
+                  if (ongoingMovies.isNotEmpty) ...[
+                    blankCarousel(
+                      "Movies",
+                      "Ongoing Movies",
+                      "Films on your watchlist",
+                      ongoingMovies,
+                      inShowArrow: false,
+                    ),
+                    const SizedBox(height: 24),
+                  ],
+                ] else ...[
+                  emptyOngoing(),
+                  const SizedBox(height: 24),
+                ],
+
+                const SizedBox(height: 80),
+              ],
+            ),
           ),
         ),
       ),
