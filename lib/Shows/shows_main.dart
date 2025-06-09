@@ -161,7 +161,7 @@ class ShowsMainPageState extends MediaPageBaseState {
               ),
 
               // Padding
-              SizedBox(height: 90),
+              SizedBox(height: 100),
             ],
           ),
         ),

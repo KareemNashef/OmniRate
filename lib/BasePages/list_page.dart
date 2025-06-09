@@ -114,6 +114,11 @@ class ListPageState extends State<ListPage> with TickerProviderStateMixin {
     final statuses = ['Current', 'Planned', 'Completed', 'Dropped'];
     final allItems = await getMediaByType(widget.listType);
 
+    for (final status in statuses) {
+      tabData[status] = [];
+      userEntryData[status] = [];
+    }
+
     for (final item in allItems) {
       final content = switch (widget.listType) {
         'Games' => await getGame(item.id),
@@ -717,134 +722,126 @@ class ListPageState extends State<ListPage> with TickerProviderStateMixin {
 
     return GestureDetector(
       onTap: () => _navigateToEntry(entry),
-      child: Hero(
-        tag: 'media_${entry.id}',
+      child: Container(
+        // Theme
+        decoration: containerDecoration(context),
 
-        child: Container(
-          // Theme
-          decoration: containerDecoration(context),
+        // Content
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // Thumbnail with gradient overlay
+            Expanded(
+              child: Stack(
+                children: [
+                  Container(
+                    margin: const EdgeInsets.all(12),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(16),
+                      child: Stack(
+                        fit: StackFit.expand,
+                        children: [buildImageFromUrl(entry.thumbnailUrl ?? '')],
+                      ),
+                    ),
+                  ),
 
-          // Content
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // Thumbnail with gradient overlay
-              Expanded(
-                child: Stack(
-                  children: [
-                    Container(
-                      margin: const EdgeInsets.all(12),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(16),
-                        child: Stack(
-                          fit: StackFit.expand,
+                  // Rating badge
+                  if (rating != null)
+                    Positioned(
+                      top: 16,
+                      right: 16,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              Colors.amber.shade400,
+                              Colors.orange.shade500,
+                            ],
+                          ),
+                          borderRadius: BorderRadius.circular(12),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.2),
+                              blurRadius: 8,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
                           children: [
-                            buildImageFromUrl(entry.thumbnailUrl ?? ''),
+                            if (!(rating.toString() == '0.0'))
+                              const Icon(
+                                Icons.star_rounded,
+                                size: 14,
+                                color: Colors.white,
+                              ),
+                            const SizedBox(width: 4),
+                            Text(
+                              rating.toString() == '0.0' ? 'Not Rated' : rating,
+                              style: const TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.white,
+                              ),
+                            ),
                           ],
                         ),
                       ),
                     ),
-
-                    // Rating badge
-                    if (rating != null)
-                      Positioned(
-                        top: 16,
-                        right: 16,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 4,
-                          ),
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: [
-                                Colors.amber.shade400,
-                                Colors.orange.shade500,
-                              ],
-                            ),
-                            borderRadius: BorderRadius.circular(12),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.2),
-                                blurRadius: 8,
-                                offset: const Offset(0, 4),
-                              ),
-                            ],
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              if (!(rating.toString() == '0.0'))
-                                const Icon(
-                                  Icons.star_rounded,
-                                  size: 14,
-                                  color: Colors.white,
-                                ),
-                              const SizedBox(width: 4),
-                              Text(
-                                rating.toString() == '0.0'
-                                    ? 'Not Rated'
-                                    : rating,
-                                style: const TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w700,
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                  ],
-                ),
+                ],
               ),
+            ),
 
-              // Title and info
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Title
-                    Text(
-                      entry.name,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                        fontWeight: FontWeight.w600,
-                        height: 1.3,
+            // Title and info
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Title
+                  Text(
+                    entry.name,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.w600,
+                      height: 1.3,
+                    ),
+                  ),
+
+                  // Status
+                  if (userEntry != null) ...[
+                    const SizedBox(height: 4),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 2,
+                      ),
+                      decoration: BoxDecoration(
+                        color: getStatusColor(
+                          userEntry.status,
+                        ).withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        userEntry.status,
+                        style: TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w600,
+                          color: getStatusColor(userEntry.status),
+                        ),
                       ),
                     ),
-
-                    // Status
-                    if (userEntry != null) ...[
-                      const SizedBox(height: 4),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 2,
-                        ),
-                        decoration: BoxDecoration(
-                          color: getStatusColor(
-                            userEntry.status,
-                          ).withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Text(
-                          userEntry.status,
-                          style: TextStyle(
-                            fontSize: 10,
-                            fontWeight: FontWeight.w600,
-                            color: getStatusColor(userEntry.status),
-                          ),
-                        ),
-                      ),
-                    ],
                   ],
-                ),
+                ],
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

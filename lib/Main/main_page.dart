@@ -82,7 +82,7 @@ class MainPageState extends State<MainPage> {
       body: Stack(
         children: [
           pageSwitcher(),
-          Positioned(left: 0, right: 0, bottom: 32, child: navigationBar()),
+          Positioned(left: 0, right: 0, bottom: 20, child: navigationBar()),
         ],
       ),
     );

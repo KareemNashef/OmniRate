@@ -30,14 +30,6 @@ void main() async {
   await Hive.openBox<UserData>('userBox');
   await HiveHelper.init();
 
-  // Navigation bar color
-  SystemChrome.setSystemUIOverlayStyle(
-    SystemUiOverlayStyle(
-      systemNavigationBarColor: Colors.black,
-      systemNavigationBarIconBrightness: Brightness.light,
-    ),
-  );
-
   runApp(
     MultiProvider(
       // Providers
@@ -73,6 +65,23 @@ class _MainAppState extends State<MainApp> {
     return prefs.getBool('seenWelcome') ?? false;
   }
 
+  // Helper method to create system UI overlay style based on theme
+  SystemUiOverlayStyle _getSystemUIStyle(ColorScheme colorScheme, Brightness brightness) {
+    return SystemUiOverlayStyle(
+      // Navigation bar styling
+      systemNavigationBarColor: colorScheme.tertiaryContainer,
+      systemNavigationBarIconBrightness: brightness == Brightness.dark 
+          ? Brightness.light 
+          : Brightness.dark,
+      
+      // Status bar styling
+      statusBarColor: Colors.transparent,
+      statusBarIconBrightness: brightness == Brightness.dark 
+          ? Brightness.light 
+          : Brightness.dark,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     // Get theme provider
@@ -82,34 +91,72 @@ class _MainAppState extends State<MainApp> {
       future: _seenWelcomeFuture,
       builder: (context, snapshot) {
         if (!snapshot.hasData) {
-          return const CircularProgressIndicator();
+          return MaterialApp(
+            home: Scaffold(
+              body: Center(child: CircularProgressIndicator()),
+            ),
+          );
         }
 
         final seen = snapshot.data!;
+        
+        // Create light color scheme
+        final lightColorScheme = ColorScheme.fromSeed(
+          seedColor: themeProvider.mainColor,
+          brightness: Brightness.light,
+        );
+        
+        // Create dark color scheme
+        final darkColorScheme = ColorScheme.fromSeed(
+          seedColor: themeProvider.mainColor,
+          brightness: Brightness.dark,
+        );
+
         return MaterialApp(
           navigatorObservers: [routeObserver],
 
-          // Define light theme
+          // Define light theme with global system UI styling
           theme: ThemeData.from(
-            colorScheme: ColorScheme.fromSeed(
-              seedColor: themeProvider.mainColor,
-              brightness: Brightness.light,
+            colorScheme: lightColorScheme,
+          ).copyWith(
+            appBarTheme: AppBarTheme(
+              systemOverlayStyle: _getSystemUIStyle(lightColorScheme, Brightness.light),
             ),
           ),
 
-          // Define dark theme
+          // Define dark theme with global system UI styling
           darkTheme: ThemeData.from(
-            colorScheme: ColorScheme.fromSeed(
-              seedColor: themeProvider.mainColor,
-              brightness: Brightness.dark,
+            colorScheme: darkColorScheme,
+          ).copyWith(
+            appBarTheme: AppBarTheme(
+              systemOverlayStyle: _getSystemUIStyle(darkColorScheme, Brightness.dark),
             ),
           ),
 
           // Set theme mode
           themeMode: themeProvider.themeMode,
 
+          // Global builder to handle safe area and system UI for ALL pages
+          builder: (context, child) {
+            // Get current theme colors
+            final currentColorScheme = Theme.of(context).colorScheme;
+            final currentBrightness = Theme.of(context).brightness;
+            
+            return AnnotatedRegion<SystemUiOverlayStyle>(
+              value: _getSystemUIStyle(currentColorScheme, currentBrightness),
+              child: SafeArea(
+                // Allow content to extend behind status bar, but protect from navigation bar
+                top: false,  // Don't add padding for status bar
+                bottom: true,  // Add padding for navigation bar
+                left: true,   // Protect from notches/cutouts on sides
+                right: true,  // Protect from notches/cutouts on sides
+                child: child!,
+              ),
+            );
+          },
+
           // Set initial route
-          home: Scaffold(body: seen ? MainPage() : WelcomePage()),
+          home: seen ? MainPage() : WelcomePage(),
         );
       },
     );

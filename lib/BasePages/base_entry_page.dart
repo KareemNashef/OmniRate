@@ -58,6 +58,7 @@ abstract class EntryPageBaseState<
                   : 'Added to $listType!'),
         ),
         backgroundColor: Theme.of(context).colorScheme.primary,
+    duration: Duration(seconds: 2), // shorter time
       ),
     );
 
