@@ -18,7 +18,7 @@ class ShowEntry extends EntryPageBase {
   ShowEntryState createState() => ShowEntryState();
 }
 
-class ShowEntryState extends EntryPageBaseState {
+class ShowEntryState extends EntryPageBaseState with TickerProviderStateMixin {
   // ===== Class Variables ===== //
 
   late Show currentShow;
@@ -29,6 +29,59 @@ class ShowEntryState extends EntryPageBaseState {
   @override
   void initState() {
     super.initState();
+
+    // Initialize animation controllers
+    entryAnimationController = AnimationController(
+      duration: const Duration(milliseconds: 200),
+      vsync: this,
+    );
+
+    entrySlideController = AnimationController(
+      duration: const Duration(milliseconds: 300),
+      vsync: this,
+    );
+
+    reviewSlideController = AnimationController(
+      duration: const Duration(milliseconds: 300),
+      vsync: this,
+    );
+
+    // Initialize animations
+    entryScaleAnimation = Tween<double>(begin: 1.0, end: 0.95).animate(
+      CurvedAnimation(
+        parent: entryAnimationController,
+        curve: Curves.easeInOut,
+      ),
+    );
+
+    // Entry slides left
+    entrySlideAnimation = Tween<Offset>(
+      begin: Offset.zero,
+      end: const Offset(-1.5, 0),
+    ).animate(
+      CurvedAnimation(
+        parent: entrySlideController,
+        curve: Curves.easeInOutCubic,
+      ),
+    );
+
+    // Reviews slide right
+    reviewSlideAnimation = Tween<Offset>(
+      begin: const Offset(1.5, 0),
+      end: Offset.zero,
+    ).animate(
+      CurvedAnimation(
+        parent: reviewSlideController,
+        curve: Curves.easeInOutCubic,
+      ),
+    );
+
+    // Initial state: show entry content, hide reviews content
+    entrySlideController.value = 0.0;
+    reviewSlideController.value = 0.0;
+
+    getReviews();
+
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       final show = await getShow(widget.inEntry.id);
       if (show != null) {
@@ -38,6 +91,14 @@ class ShowEntryState extends EntryPageBaseState {
         });
       }
     });
+  }
+
+  @override
+  void dispose() {
+    entryAnimationController.dispose();
+    entrySlideController.dispose();
+    reviewSlideController.dispose();
+    super.dispose();
   }
 
   // ===== Class Widgets ===== //
@@ -312,6 +373,32 @@ class ShowEntryState extends EntryPageBaseState {
     );
   }
 
+  Widget showContent() {
+    return SlideTransition(
+      position: entrySlideAnimation,
+      child: Column(
+        children: [
+          // Add to list
+          addToList(),
+          // Padding
+          const SizedBox(height: 8),
+          // Game info
+          showInfo(),
+          // Padding
+          const SizedBox(height: 8),
+          // Time to beat
+          showSeasons(),
+          // Padding
+          // const SizedBox(height: 8),
+          // Related media
+          // relatedMedia(),
+          // Padding
+          const SizedBox(height: 90),
+        ],
+      ),
+    );
+  }
+
   // ===== Build Method ===== //
 
   @override
@@ -360,37 +447,61 @@ class ShowEntryState extends EntryPageBaseState {
       body: Container(
         decoration: BoxDecoration(gradient: gradientBackground(context)),
 
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(8, 80, 8, 0),
-            child: Column(
-              children: [
-                // Entry
-                entryMain(),
+        child: Stack(
+          children: [
+            // Page content
+            SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(8, 80, 8, 0),
+                child: Column(
+                  children: [
+                    // Entry main
+                    entryMain(inCommentView: commentView),
 
-                // Padding
-                const SizedBox(height: 8),
+                    // Padding
+                    const SizedBox(height: 8),
 
-                // Add to list
-                addToList(),
-
-                // Padding
-                const SizedBox(height: 8),
-
-                // Game info
-                showInfo(),
-
-                // Padding
-                const SizedBox(height: 8),
-
-                // Seasons
-                showSeasons(),
-
-                // Padding
-                const SizedBox(height: 40),
-              ],
+                    // Content switcher
+                    Stack(children: [showContent(), commentContent()]),
+                  ],
+                ),
+              ),
             ),
-          ),
+
+            // FAB and NavBar
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 20,
+              child: Column(
+                children: [
+                  AnimatedSwitcher(
+                    duration: Duration(milliseconds: 300),
+                    transitionBuilder: (child, animation) {
+                      final offsetAnimation = Tween<Offset>(
+                        begin: Offset(0, 1),
+                        end: Offset(0, 0),
+                      ).animate(animation);
+                      return SlideTransition(
+                        position: offsetAnimation,
+                        child: child,
+                      );
+                    },
+                    child:
+                        commentView
+                            ? Column(
+                              children: [
+                                addCommentFAB(),
+                                const SizedBox(height: 8),
+                              ],
+                            )
+                            : SizedBox.shrink(),
+                  ),
+                  navigationBar(),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );

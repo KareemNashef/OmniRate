@@ -402,7 +402,7 @@ Future<Game?> getGameEntry(String inID) async {
     // 1. Fetch basic game info
     final query = '''
       fields $gamesCommonListFields; 
-      where id = $inID & category = 0;
+      where id = $inID;
       limit 1;
     ''';
     final gameResponse = await postRequest(gamesAPIUrl, query);

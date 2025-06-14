@@ -142,7 +142,7 @@ class Show implements MediaEntry{
     thumbnailUrl: map['thumbnailUrl'],
     artworkUrl: map['backdropUrl'],
     rating: map['rating'],
-    releaseStatus: map['releaseStatus'],
+    releaseStatus: map['releaseDate'],
     firstAir: map['firstAir'],
     lastAir: map['lastAir'],
     episodesNum: map['episodesNum'],

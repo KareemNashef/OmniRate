@@ -111,7 +111,8 @@ class ListPageState extends State<ListPage> with TickerProviderStateMixin {
   }
 
   Future<void> loadAllData() async {
-    final statuses = ['Current', 'Planned', 'Completed', 'Dropped'];
+    print(await HiveHelper.getAllIDs());
+    final statuses = ['All', 'Current', 'Planned', 'Completed', 'Dropped'];
     final allItems = await getMediaByType(widget.listType);
 
     for (final status in statuses) {
@@ -125,8 +126,14 @@ class ListPageState extends State<ListPage> with TickerProviderStateMixin {
         'Shows' => await getShow(item.id),
         _ => await getMovie(item.id),
       };
+
+      // Add item to the corresponding tab
       tabData[item.status]?.add(content);
       userEntryData[item.status]?.add(item);
+
+      // Add item to the All tab
+      tabData['All']?.add(content);
+      userEntryData['All']?.add(item);
     }
 
     for (var status in statuses) {
@@ -135,35 +142,7 @@ class ListPageState extends State<ListPage> with TickerProviderStateMixin {
 
     if (!mounted) return;
 
-    setState(() {
-      tabData['All'] = statuses.expand((s) => tabData[s] ?? []).toList();
-      userEntryData['All'] =
-          statuses.expand((s) => userEntryData[s] ?? []).toList();
-      isLoading['All'] = false;
-    });
-  }
-
-  Future<void> loadDataForStatus(String status) async {
-    try {
-      final userEntries = await getMediaByStatus(widget.listType, status);
-      List<dynamic> mediaEntries = [];
-
-      if (mounted) {
-        setState(() {
-          tabData[status] = mediaEntries;
-          userEntryData[status] = userEntries;
-          isLoading[status] = false;
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          tabData[status] = [];
-          userEntryData[status] = [];
-          isLoading[status] = false;
-        });
-      }
-    }
+    setState(() {});
   }
 
   @override

@@ -9,66 +9,79 @@ import 'package:omnirate/API/tmdb_api.dart';
 import 'package:omnirate/Database/model_game.dart';
 import 'package:omnirate/Database/model_movie.dart';
 import 'package:omnirate/Database/model_show.dart';
+import 'package:omnirate/Shared/firebase_service.dart';
 
 // ========== Main Functions ========== //
 
-Future<Game?> getGame(String inID, {bool refresh = false}) async {
-  if (refresh == false) {
-    // Search the database
-    final game = await HiveHelper.getGameByID(inID);
-    if (game != null) {
-      return game;
-    }
+Future<Game?> getGame(String inID) async {
+  // Look it up in the Hive database
+  final local = await HiveHelper.getGameByID(inID);
+  if (local != null) return local;
+
+  // Look it up in the cloud database
+  final firebaseService = FirebaseService();
+  final cloud =
+      await firebaseService.loadEntry("MediaType.game", inID) as Game?;
+  if (cloud != null) {
+    await HiveHelper.insertGame(cloud);
+    return cloud;
   }
 
   // Look it up using the API
-  Game? apiGame = await getGameEntry(inID);
-
-  // Add entry to the database
+  final apiGame = await getGameEntry(inID);
   if (apiGame != null) {
     await HiveHelper.insertGame(apiGame);
+    await firebaseService.saveEntry(apiGame);
     return apiGame;
   }
 
   return null;
 }
 
-Future<Show?> getShow(String inName, {bool refresh = false}) async {
-  if (refresh == false) {
-    // Search the database
-    final show = await HiveHelper.getShowByID(inName);
-    if (show != null) {
-      return show;
-    }
+Future<Show?> getShow(String inID) async {
+  // Look it up in the Hive database
+  final local = await HiveHelper.getShowByID(inID);
+  if (local != null) return local;
+
+  // Look it up in the cloud database
+  final firebaseService = FirebaseService();
+  final cloud =
+      await firebaseService.loadEntry("MediaType.show", inID) as Show?;
+  if (cloud != null) {
+    await HiveHelper.insertShow(cloud);
+    return cloud;
   }
 
   // Look it up using the API
-  final apiShow = await getShowEntry(inName);
-
-  // Add entry to the database
+  final apiShow = await getShowEntry(inID);
   if (apiShow != null) {
     await HiveHelper.insertShow(apiShow);
+    await firebaseService.saveEntry(apiShow);
     return apiShow;
   }
 
   return null;
 }
 
-Future<Movie?> getMovie(String inName, {bool refresh = false}) async {
-  if (refresh == false) {
-    // Search the database
-    final movie = await HiveHelper.getMovieByID(inName);
-    if (movie != null) {
-      return movie;
-    }
+Future<Movie?> getMovie(String inID) async {
+  // Look it up in the Hive database
+  final local = await HiveHelper.getMovieByID(inID);
+  if (local != null) return local;
+
+  // Look it up in the cloud database
+  final firebaseService = FirebaseService();
+  final cloud =
+      await firebaseService.loadEntry("MediaType.movie", inID) as Movie?;
+  if (cloud != null) {
+    await HiveHelper.insertMovie(cloud);
+    return cloud;
   }
 
   // Look it up using the API
-  final apiMovie = await getMovieEntry(inName);
-
-  // Add entry to the database
+  final apiMovie = await getMovieEntry(inID);
   if (apiMovie != null) {
     await HiveHelper.insertMovie(apiMovie);
+    await firebaseService.saveEntry(apiMovie);
     return apiMovie;
   }
 
@@ -112,6 +125,13 @@ class HiveHelper {
     await Hive.box<Game>(boxGames).clear();
     await Hive.box<Movie>(boxMovies).clear();
     await Hive.box<Show>(boxShows).clear();
+  }
+
+  static Future<Set<String>> getAllIDs() async {
+    final gameIDs = Hive.box<Game>(boxGames).keys.cast<String>();
+    final movieIDs = Hive.box<Movie>(boxMovies).keys.cast<String>();
+    final showIDs = Hive.box<Show>(boxShows).keys.cast<String>();
+    return {...gameIDs, ...movieIDs, ...showIDs};
   }
 
   // ========== Game Methods ========== //

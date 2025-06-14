@@ -17,7 +17,74 @@ class GameEntry extends EntryPageBase<Game> {
   GameEntryState createState() => GameEntryState();
 }
 
-class GameEntryState extends EntryPageBaseState {
+class GameEntryState extends EntryPageBaseState with TickerProviderStateMixin {
+  // ===== Lifecycle Methods ===== //
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Initialize animation controllers
+    entryAnimationController = AnimationController(
+      duration: const Duration(milliseconds: 200),
+      vsync: this,
+    );
+
+    entrySlideController = AnimationController(
+      duration: const Duration(milliseconds: 300),
+      vsync: this,
+    );
+
+    reviewSlideController = AnimationController(
+      duration: const Duration(milliseconds: 300),
+      vsync: this,
+    );
+
+    // Initialize animations
+    entryScaleAnimation = Tween<double>(begin: 1.0, end: 0.95).animate(
+      CurvedAnimation(
+        parent: entryAnimationController,
+        curve: Curves.easeInOut,
+      ),
+    );
+
+    // Entry slides left
+    entrySlideAnimation = Tween<Offset>(
+      begin: Offset.zero,
+      end: const Offset(-1.5, 0),
+    ).animate(
+      CurvedAnimation(
+        parent: entrySlideController,
+        curve: Curves.easeInOutCubic,
+      ),
+    );
+
+    // Reviews slide right
+    reviewSlideAnimation = Tween<Offset>(
+      begin: const Offset(1.5, 0),
+      end: Offset.zero,
+    ).animate(
+      CurvedAnimation(
+        parent: reviewSlideController,
+        curve: Curves.easeInOutCubic,
+      ),
+    );
+
+    // Initial state: show entry content, hide reviews content
+    entrySlideController.value = 0.0;
+    reviewSlideController.value = 0.0;
+
+    getReviews();
+  }
+
+  @override
+  void dispose() {
+    entryAnimationController.dispose();
+    entrySlideController.dispose();
+    reviewSlideController.dispose();
+    super.dispose();
+  }
+
   // ===== Class Widgets ===== //
 
   Widget gameInfo() {
@@ -30,9 +97,7 @@ class GameEntryState extends EntryPageBaseState {
         // Game info
         Container(
           decoration: containerDecoration(context),
-
           padding: const EdgeInsets.all(16),
-
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -60,10 +125,8 @@ class GameEntryState extends EntryPageBaseState {
           children: [
             // Label
             Text(label, style: TextStyle(fontSize: 14)),
-
             // Padding
             SizedBox(height: 8),
-
             // Time
             Text(
               time,
@@ -85,7 +148,7 @@ class GameEntryState extends EntryPageBaseState {
         sectionHeader(
           context,
           'Time to Beat',
-          "Average time to beat the game.",
+          "Average time to beat the game in hours.",
         ),
 
         // Times row
@@ -101,14 +164,12 @@ class GameEntryState extends EntryPageBaseState {
                     : (double.tryParse((widget.inEntry as Game).timeHaste) ??
                             0) >
                         999
-                    ? '999+ H'
-                    : '${(widget.inEntry as Game).timeHaste} H',
+                    ? '999+'
+                    : (widget.inEntry as Game).timeHaste,
               ),
             ),
-
             // Padding
             SizedBox(width: 8),
-
             // Normal time
             Expanded(
               child: buildCard(
@@ -118,13 +179,12 @@ class GameEntryState extends EntryPageBaseState {
                     : (double.tryParse((widget.inEntry as Game).timeNormal) ??
                             0) >
                         999
-                    ? '999+ H'
-                    : '${(widget.inEntry as Game).timeNormal} H',
+                    ? '999+'
+                    : (widget.inEntry as Game).timeNormal,
               ),
             ),
             // Padding
             SizedBox(width: 8),
-
             // Complete time
             Expanded(
               child: buildCard(
@@ -134,8 +194,8 @@ class GameEntryState extends EntryPageBaseState {
                     : (double.tryParse((widget.inEntry as Game).timeComplete) ??
                             0) >
                         999
-                    ? '999+ H'
-                    : '${(widget.inEntry as Game).timeComplete} H',
+                    ? '999+'
+                    : (widget.inEntry as Game).timeComplete,
               ),
             ),
           ],
@@ -150,14 +210,13 @@ class GameEntryState extends EntryPageBaseState {
       elevation: 4,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Container(
-        width: double.infinity, // Set width to fill the available space
+        width: double.infinity,
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text("Related Media:", style: TextStyle(fontSize: 16)),
             SizedBox(height: 8),
-
             SizedBox(
               height: 200,
               child: PageView.builder(
@@ -179,10 +238,8 @@ class GameEntryState extends EntryPageBaseState {
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
-
                       // Padding
                       SizedBox(height: 8),
-
                       // Title
                       Text(
                         "Entry $index",
@@ -202,47 +259,94 @@ class GameEntryState extends EntryPageBaseState {
     );
   }
 
+  Widget gameContent() {
+    return SlideTransition(
+      position: entrySlideAnimation,
+      child: Column(
+        children: [
+          // Add to list
+          addToList(),
+          // Padding
+          const SizedBox(height: 8),
+          // Game info
+          gameInfo(),
+          // Padding
+          const SizedBox(height: 8),
+          // Time to beat
+          timeToBeat(),
+          // Padding
+          // const SizedBox(height: 8),
+          // Related media
+          // relatedMedia(),
+          // Padding
+          const SizedBox(height: 90),
+        ],
+      ),
+    );
+  }
+
   // ===== Build Method ===== //
 
   @override
   Widget build(BuildContext context) {
-
-    
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(gradient: gradientBackground(context)),
+        child: Stack(
+          children: [
+            // Page content
+            SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(8, 80, 8, 0),
+                child: Column(
+                  children: [
+                    // Entry main
+                    entryMain(inCommentView: commentView),
 
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(8, 80, 8, 0),
-            child: Column(
-              children: [
-                // Entry
-                entryMain(),
+                    // Padding
+                    const SizedBox(height: 8),
 
-                // Padding
-                const SizedBox(height: 8),
-
-                // Add to list
-                addToList(),
-
-                // Padding
-                const SizedBox(height: 8),
-
-                // Game info
-                gameInfo(),
-
-                // Padding
-                const SizedBox(height: 8),
-
-                // Time to beat
-                timeToBeat(),
-
-                // Padding
-                const SizedBox(height: 40),
-              ],
+                    // Content switcher
+                    Stack(children: [gameContent(), commentContent()]),
+                  ],
+                ),
+              ),
             ),
-          ),
+
+            // FAB and NavBar
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 20,
+              child: Column(
+                children: [
+                  AnimatedSwitcher(
+                    duration: Duration(milliseconds: 300),
+                    transitionBuilder: (child, animation) {
+                      final offsetAnimation = Tween<Offset>(
+                        begin: Offset(0, 1),
+                        end: Offset(0, 0),
+                      ).animate(animation);
+                      return SlideTransition(
+                        position: offsetAnimation,
+                        child: child,
+                      );
+                    },
+                    child:
+                        commentView
+                            ? Column(
+                              children: [
+                                addCommentFAB(),
+                                const SizedBox(height: 8),
+                              ],
+                            )
+                            : SizedBox.shrink(),
+                  ),
+                  navigationBar(),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );
