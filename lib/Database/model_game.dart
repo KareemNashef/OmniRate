@@ -60,6 +60,15 @@ class Game implements MediaEntry {
   @HiveField(11)
   final String timeComplete;
 
+  @HiveField(12)
+  final List<String> expansions;
+
+  @HiveField(13)
+  final List<String> dlcs;
+
+  @HiveField(14)
+  final List<String> similarGames;
+
   // ===== MediaEntry Implementation =====
 
   @override
@@ -83,6 +92,9 @@ class Game implements MediaEntry {
     required this.timeHaste,
     required this.timeNormal,
     required this.timeComplete,
+    required this.expansions,
+    required this.dlcs,
+    required this.similarGames,
   });
 
   // Convert to map
@@ -102,6 +114,9 @@ class Game implements MediaEntry {
     'timeHaste': timeHaste,
     'timeNormal': timeNormal,
     'timeComplete': timeComplete,
+    'expansions': expansions.join(','),
+    'dlcs': dlcs.join(','),
+    'similarGames': similarGames.join(','),
   };
 
   // Convert from map
@@ -120,6 +135,9 @@ class Game implements MediaEntry {
     timeHaste: map['timeHaste'],
     timeNormal: map['timeNormal'],
     timeComplete: map['timeComplete'],
+    expansions: (map['expansions'] as String).split(','),
+    dlcs: (map['dlcs'] as String).split(','),
+    similarGames: (map['similarGames'] as String).split(','),
   );
 
   @override
@@ -137,6 +155,9 @@ class Game implements MediaEntry {
       Time (Haste): $timeHaste
       Time (Normal): $timeNormal
       Time (Complete): $timeComplete
+      Expansions: ${expansions.join(', ')}
+      DLCs: ${dlcs.join(', ')}
+      Similar Games: ${similarGames.join(', ')}
       ''';
   }
 }

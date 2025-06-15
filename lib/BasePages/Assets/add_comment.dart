@@ -12,7 +12,6 @@ class AddCommentModal extends StatefulWidget {
   // ===== Input Variables ===== //
   final void Function(String comment) onSubmit;
   final String mediaType;
-  final String mediaID;
   final String? existingComment; // For editing existing comments
 
   // ===== Constructor ===== //
@@ -20,7 +19,6 @@ class AddCommentModal extends StatefulWidget {
     super.key,
     required this.onSubmit,
     required this.mediaType,
-    required this.mediaID,
     this.existingComment,
   });
 
@@ -34,7 +32,7 @@ class _AddCommentModalState extends State<AddCommentModal> {
   final TextEditingController _commentController = TextEditingController();
   final FocusNode _commentFocusNode = FocusNode();
   bool isLoading = false;
-  
+
   // Character limits
   static const int maxCharacters = 500;
   static const int minCharacters = 10;
@@ -44,12 +42,12 @@ class _AddCommentModalState extends State<AddCommentModal> {
   @override
   void initState() {
     super.initState();
-    
+
     // Pre-fill if editing existing comment
     if (widget.existingComment != null) {
       _commentController.text = widget.existingComment!;
     }
-    
+
     // Auto-focus the text field
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _commentFocusNode.requestFocus();
@@ -84,6 +82,8 @@ class _AddCommentModalState extends State<AddCommentModal> {
     // Simulate submission delay (remove in production)
     Future.delayed(const Duration(milliseconds: 500), () {
       widget.onSubmit(_commentController.text.trim());
+
+      if (!mounted) return;
       Navigator.pop(context);
     });
   }
@@ -113,13 +113,14 @@ class _AddCommentModalState extends State<AddCommentModal> {
         maxLines: 6,
         maxLength: maxCharacters,
         textInputAction: TextInputAction.newline,
-        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-          height: 1.4,
-        ),
+        style: Theme.of(context).textTheme.bodyMedium?.copyWith(height: 1.4),
         decoration: InputDecoration(
-          hintText: 'Share your thoughts about this ${widget.mediaType.split('.').last}...',
+          hintText:
+              'Share your thoughts about this ${widget.mediaType.split('.').last}...',
           hintStyle: TextStyle(
-            color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
+            color: Theme.of(
+              context,
+            ).colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
           ),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(16),
@@ -127,7 +128,9 @@ class _AddCommentModalState extends State<AddCommentModal> {
           ),
           contentPadding: const EdgeInsets.all(16),
           counterStyle: TextStyle(
-            color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
+            color: Theme.of(
+              context,
+            ).colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
             fontSize: 12,
           ),
         ),
@@ -140,7 +143,9 @@ class _AddCommentModalState extends State<AddCommentModal> {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceContainer.withValues(alpha: 0.3),
+        color: Theme.of(
+          context,
+        ).colorScheme.surfaceContainer.withValues(alpha: 0.3),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.2),
@@ -152,14 +157,18 @@ class _AddCommentModalState extends State<AddCommentModal> {
           Icon(
             Icons.info_outline_rounded,
             size: 16,
-            color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
+            color: Theme.of(
+              context,
+            ).colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
           ),
           const SizedBox(width: 8),
           Expanded(
             child: Text(
               'Keep it respectful and constructive. Minimum $minCharacters characters required.',
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
+                color: Theme.of(
+                  context,
+                ).colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
                 height: 1.3,
               ),
             ),
@@ -173,21 +182,25 @@ class _AddCommentModalState extends State<AddCommentModal> {
     final currentLength = _commentController.text.length;
     final isValid = currentLength >= minCharacters;
     final isOverLimit = currentLength > maxCharacters;
-    
+
     Color counterColor;
     if (isOverLimit) {
       counterColor = Theme.of(context).colorScheme.error;
     } else if (isValid) {
       counterColor = Theme.of(context).colorScheme.primary;
     } else {
-      counterColor = Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.6);
+      counterColor = Theme.of(
+        context,
+      ).colorScheme.onSurfaceVariant.withValues(alpha: 0.6);
     }
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text(
-          isValid ? 'Ready to submit' : 'Need ${minCharacters - currentLength} more characters',
+          isValid
+              ? 'Ready to submit'
+              : 'Need ${minCharacters - currentLength} more characters',
           style: Theme.of(context).textTheme.bodySmall?.copyWith(
             color: counterColor,
             fontWeight: isValid ? FontWeight.w500 : FontWeight.normal,
@@ -217,7 +230,9 @@ class _AddCommentModalState extends State<AddCommentModal> {
                 borderRadius: BorderRadius.circular(20),
               ),
               side: BorderSide(
-                color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.4),
+                color: Theme.of(
+                  context,
+                ).colorScheme.outline.withValues(alpha: 0.4),
               ),
             ),
             child: Text(
@@ -245,26 +260,33 @@ class _AddCommentModalState extends State<AddCommentModal> {
                 child: Container(
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   child: Center(
-                    child: isLoading
-                        ? SizedBox(
-                            height: 20,
-                            width: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              valueColor: AlwaysStoppedAnimation<Color>(
-                                Theme.of(context).colorScheme.onPrimary,
+                    child:
+                        isLoading
+                            ? SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                  Theme.of(context).colorScheme.onPrimary,
+                                ),
+                              ),
+                            )
+                            : Text(
+                              widget.existingComment != null
+                                  ? 'Update Comment'
+                                  : 'Submit Comment',
+                              style: TextStyle(
+                                fontWeight: FontWeight.w600,
+                                color:
+                                    (!isCommentValid || isLoading)
+                                        ? Theme.of(context)
+                                            .colorScheme
+                                            .onSurface
+                                            .withValues(alpha: 0.4)
+                                        : null,
                               ),
                             ),
-                          )
-                        : Text(
-                            widget.existingComment != null ? 'Update Comment' : 'Submit Comment',
-                            style: TextStyle(
-                              fontWeight: FontWeight.w600,
-                              color: (!isCommentValid || isLoading)
-                                  ? Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.4)
-                                  : null,
-                            ),
-                          ),
                   ),
                 ),
               ),

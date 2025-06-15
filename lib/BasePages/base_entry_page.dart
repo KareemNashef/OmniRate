@@ -396,7 +396,7 @@ abstract class EntryPageBaseState<
                                   shape: BoxShape.circle,
                                   color: Theme.of(
                                     context,
-                                  ).colorScheme.primary.withOpacity(0.1),
+                                  ).colorScheme.primary.withValues(alpha: 0.1),
                                 ),
                               ),
                               SizedBox(
@@ -426,7 +426,7 @@ abstract class EntryPageBaseState<
                               fontSize: 14,
                               color: Theme.of(
                                 context,
-                              ).colorScheme.onSurface.withOpacity(0.6),
+                              ).colorScheme.onSurface.withValues(alpha: 0.6),
                             ),
                           ),
                         ],
@@ -448,12 +448,12 @@ abstract class EntryPageBaseState<
                           decoration: BoxDecoration(
                             color: Theme.of(
                               context,
-                            ).colorScheme.surface.withOpacity(0.3),
+                            ).colorScheme.surface.withValues(alpha: 0.3),
                             borderRadius: BorderRadius.circular(16),
                             border: Border.all(
                               color: Theme.of(
                                 context,
-                              ).colorScheme.outline.withOpacity(0.1),
+                              ).colorScheme.outline.withValues(alpha: 0.1),
                             ),
                           ),
                           child: Padding(
@@ -468,9 +468,10 @@ abstract class EntryPageBaseState<
                                       height: 32,
                                       decoration: BoxDecoration(
                                         shape: BoxShape.circle,
-                                        color: Theme.of(
-                                          context,
-                                        ).colorScheme.outline.withOpacity(0.2),
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .outline
+                                            .withValues(alpha: 0.2),
                                       ),
                                     ),
                                     const SizedBox(width: 12),
@@ -478,9 +479,10 @@ abstract class EntryPageBaseState<
                                       width: 80,
                                       height: 12,
                                       decoration: BoxDecoration(
-                                        color: Theme.of(
-                                          context,
-                                        ).colorScheme.outline.withOpacity(0.2),
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .outline
+                                            .withValues(alpha: 0.2),
                                         borderRadius: BorderRadius.circular(6),
                                       ),
                                     ),
@@ -489,9 +491,10 @@ abstract class EntryPageBaseState<
                                       width: 60,
                                       height: 20,
                                       decoration: BoxDecoration(
-                                        color: Theme.of(
-                                          context,
-                                        ).colorScheme.outline.withOpacity(0.2),
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .outline
+                                            .withValues(alpha: 0.2),
                                         borderRadius: BorderRadius.circular(10),
                                       ),
                                     ),
@@ -502,9 +505,8 @@ abstract class EntryPageBaseState<
                                   width: double.infinity,
                                   height: 10,
                                   decoration: BoxDecoration(
-                                    color: Theme.of(
-                                      context,
-                                    ).colorScheme.outline.withOpacity(0.2),
+                                    color: Theme.of(context).colorScheme.outline
+                                        .withValues(alpha: 0.2),
                                     borderRadius: BorderRadius.circular(5),
                                   ),
                                 ),
@@ -514,9 +516,8 @@ abstract class EntryPageBaseState<
                                       MediaQuery.of(context).size.width * 0.6,
                                   height: 10,
                                   decoration: BoxDecoration(
-                                    color: Theme.of(
-                                      context,
-                                    ).colorScheme.outline.withOpacity(0.2),
+                                    color: Theme.of(context).colorScheme.outline
+                                        .withValues(alpha: 0.2),
                                     borderRadius: BorderRadius.circular(5),
                                   ),
                                 ),
@@ -551,10 +552,9 @@ abstract class EntryPageBaseState<
                                 colors: [
                                   Theme.of(
                                     context,
-                                  ).colorScheme.primary.withOpacity(0.2),
-                                  Theme.of(
-                                    context,
-                                  ).colorScheme.secondary.withOpacity(0.1),
+                                  ).colorScheme.primary.withValues(alpha: 0.2),
+                                  Theme.of(context).colorScheme.secondary
+                                      .withValues(alpha: 0.1),
                                 ],
                               ),
                             ),
@@ -585,7 +585,7 @@ abstract class EntryPageBaseState<
                               fontWeight: FontWeight.w500,
                               color: Theme.of(
                                 context,
-                              ).colorScheme.onSurface.withOpacity(0.8),
+                              ).colorScheme.onSurface.withValues(alpha: 0.8),
                             ),
                             textAlign: TextAlign.center,
                           ),
@@ -695,7 +695,7 @@ abstract class EntryPageBaseState<
                                           Colors
                                               .primaries[index %
                                                   Colors.primaries.length]
-                                              .withOpacity(0.7),
+                                              .withValues(alpha: 0.7),
                                         ],
                                       ),
                                       boxShadow: [
@@ -703,13 +703,15 @@ abstract class EntryPageBaseState<
                                           color: Colors
                                               .primaries[index %
                                                   Colors.primaries.length]
-                                              .withOpacity(0.3),
+                                              .withValues(alpha: 0.3),
                                           blurRadius: 12,
                                           offset: const Offset(0, 3),
                                         ),
                                       ],
                                       border: Border.all(
-                                        color: Colors.white.withOpacity(0.2),
+                                        color: Colors.white.withValues(
+                                          alpha: 0.2,
+                                        ),
                                         width: 2,
                                       ),
                                     ),
@@ -752,7 +754,7 @@ abstract class EntryPageBaseState<
                                             color: Theme.of(context)
                                                 .colorScheme
                                                 .onSurface
-                                                .withOpacity(0.6),
+                                                .withValues(alpha: 0.6),
                                           ),
                                         ),
                                       ],
@@ -817,7 +819,7 @@ abstract class EntryPageBaseState<
                                                       rating.isEmpty
                                                   ? Colors.grey
                                                   : Colors.amber)
-                                              .withOpacity(0.25),
+                                              .withValues(alpha: 0.25),
                                           blurRadius: 12,
                                           offset: const Offset(0, 4),
                                         ),
@@ -865,26 +867,25 @@ abstract class EntryPageBaseState<
                                     colors: [
                                       Theme.of(context)
                                           .colorScheme
-                                          .surfaceVariant
-                                          .withOpacity(0.4),
+                                          .surfaceContainerHighest
+                                          .withValues(alpha: 0.4),
                                       Theme.of(context)
                                           .colorScheme
-                                          .surfaceVariant
-                                          .withOpacity(0.2),
+                                          .surfaceContainerHighest
+                                          .withValues(alpha: 0.2),
                                     ],
                                   ),
                                   borderRadius: BorderRadius.circular(16),
                                   border: Border.all(
-                                    color: Theme.of(
-                                      context,
-                                    ).colorScheme.outline.withOpacity(0.08),
+                                    color: Theme.of(context).colorScheme.outline
+                                        .withValues(alpha: 0.08),
                                     width: 1,
                                   ),
                                   boxShadow: [
                                     BoxShadow(
                                       color: Theme.of(
                                         context,
-                                      ).shadowColor.withOpacity(0.05),
+                                      ).shadowColor.withValues(alpha: 0.05),
                                       blurRadius: 8,
                                       offset: const Offset(0, 2),
                                     ),
@@ -893,9 +894,10 @@ abstract class EntryPageBaseState<
                                 child: Text(
                                   reviewText,
                                   style: TextStyle(
-                                    color: Theme.of(
-                                      context,
-                                    ).colorScheme.onSurface.withOpacity(0.9),
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .onSurface
+                                        .withValues(alpha: 0.9),
                                     fontSize: 16,
                                     height: 1.6,
                                     letterSpacing: 0.3,
@@ -936,15 +938,18 @@ abstract class EntryPageBaseState<
 
             onTap:
                 () => showModalBottomSheet(
-                  // TODO
                   context: context,
                   isScrollControlled: true,
                   backgroundColor: Colors.transparent,
                   builder:
                       (context) => AddCommentModal(
                         onSubmit: (review) => addReview(review),
-                        mediaType: 'Ass',
-                        mediaID: 'Ass',
+                        mediaType:
+                            widget.inEntry.mediaType == MediaType.game
+                                ? 'game'
+                                : widget.inEntry.mediaType == MediaType.movie
+                                ? 'movie'
+                                : 'show',
                       ),
                 ),
 
@@ -1002,7 +1007,7 @@ abstract class EntryPageBaseState<
       },
     );
   }
-  
+
   // ===== Build Method ===== //
 
   @override

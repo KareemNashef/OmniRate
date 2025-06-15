@@ -25,7 +25,7 @@ const String gamesPopscoreUrl = 'https://api.igdb.com/v4/popularity_primitives';
 
 // Common fields for list queries
 const String gamesCommonListFields =
-    'id, name, cover, rating, first_release_date, genres.name, summary, involved_companies, artworks';
+    'id, name, cover, rating, first_release_date, genres.name, summary, involved_companies, artworks, similar_games, dlcs, expansions';
 
 // Missing media URLs
 const String gamesMissingCoverUrl =

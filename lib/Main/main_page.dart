@@ -18,10 +18,11 @@ class MainPage extends StatefulWidget {
   State<MainPage> createState() => MainPageState();
 }
 
-class MainPageState extends State<MainPage> {
+class MainPageState extends State<MainPage>
+    with SingleTickerProviderStateMixin {
   // ===== Class Variables ===== //
 
-  // Index of the currently selected page
+  // Index of the currently selected page and the previous page
   int _currentIndex = 3;
 
   // Instances of the main pages
@@ -35,20 +36,9 @@ class MainPageState extends State<MainPage> {
 
   // Switches between main pages
   Widget pageSwitcher() {
-    return AnimatedSwitcher(
-      duration: Duration(milliseconds: 300),
-      transitionBuilder: (child, animation) {
-        return FadeTransition(opacity: animation, child: child);
-      },
-      child: IndexedStack(
-        index: _currentIndex,
-        children: [
-          _playMainPage,
-          _showsMainPage,
-          _moviesMainPage,
-          _homeMainPage,
-        ],
-      ),
+    return IndexedStack(
+      index: _currentIndex,
+      children: [_playMainPage, _showsMainPage, _moviesMainPage, _homeMainPage],
     );
   }
 

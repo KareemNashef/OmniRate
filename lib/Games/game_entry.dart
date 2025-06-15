@@ -2,11 +2,14 @@
 
 // Flutter imports
 import 'package:flutter/material.dart';
+import 'package:omnirate/API/igdb_api.dart';
 
 // Local imports
 import 'package:omnirate/BasePages/base_entry_page.dart';
+import 'package:omnirate/Database/model_entry.dart';
 import 'package:omnirate/Database/model_game.dart';
 import 'package:omnirate/Shared/utils.dart';
+import 'package:omnirate/BasePages/Assets/blank_carousel.dart';
 
 // ========== Game Entry Page Class ========== //
 
@@ -18,6 +21,15 @@ class GameEntry extends EntryPageBase<Game> {
 }
 
 class GameEntryState extends EntryPageBaseState with TickerProviderStateMixin {
+  // ===== Class variables ===== //
+
+  // Related lists
+  late Future<List<Game?>> futureExpansions;
+  late Future<List<Game?>> futureDlcs;
+  late Future<List<Game?>> futureSimilarGames;
+
+  bool relatedMediaLoaded = false;
+
   // ===== Lifecycle Methods ===== //
 
   @override
@@ -75,6 +87,36 @@ class GameEntryState extends EntryPageBaseState with TickerProviderStateMixin {
     reviewSlideController.value = 0.0;
 
     getReviews();
+    loadRelatedMedia();
+  }
+
+  void loadRelatedMedia() async {
+    final game = widget.inEntry as Game;
+
+    // Load expansions
+    List<Game?> currentExpansions = [];
+    if (game.expansions.isNotEmpty) {
+      currentExpansions = await getGamesByIDs(game.expansions);
+    }
+
+    // Load dlcs
+    List<Game?> currentDlcs = [];
+    if (game.dlcs.isNotEmpty) {
+      currentDlcs = await getGamesByIDs(game.dlcs);
+    }
+
+    // Load similar games
+    List<Game?> currentSimilarGames = [];
+    if (game.similarGames.isNotEmpty) {
+      currentSimilarGames = await getGamesByIDs(game.similarGames);
+    }
+
+    setState(() {
+      futureExpansions = Future.value(currentExpansions);
+      futureDlcs = Future.value(currentDlcs);
+      futureSimilarGames = Future.value(currentSimilarGames);
+      relatedMediaLoaded = true;
+    });
   }
 
   @override
@@ -86,6 +128,22 @@ class GameEntryState extends EntryPageBaseState with TickerProviderStateMixin {
   }
 
   // ===== Class Widgets ===== //
+
+  Widget blankCarousel(
+    String inType,
+    String inTitle,
+    String inSubtitle,
+    List<Game?> inEntries, {
+    bool inShowArrow = false,
+  }) {
+    return BlankCarousel(
+      inType: inType,
+      inTitle: inTitle,
+      inSubtitle: inSubtitle,
+      inEntries: inEntries.whereType<Game>().cast<MediaEntry>().toList(),
+      inShowArrow: inShowArrow,
+    );
+  }
 
   Widget gameInfo() {
     final game = widget.inEntry as Game;
@@ -204,61 +262,6 @@ class GameEntryState extends EntryPageBaseState with TickerProviderStateMixin {
     );
   }
 
-  Widget relatedMedia() {
-    return Card(
-      color: Theme.of(context).colorScheme.surfaceContainer,
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text("Related Media:", style: TextStyle(fontSize: 16)),
-            SizedBox(height: 8),
-            SizedBox(
-              height: 200,
-              child: PageView.builder(
-                itemCount: 5,
-                padEnds: false,
-                controller: PageController(viewportFraction: 0.3),
-                itemBuilder: (context, index) {
-                  return Column(
-                    children: [
-                      // Thumbnail
-                      Container(
-                        width: 90,
-                        height: 160,
-                        decoration: BoxDecoration(
-                          color:
-                              Colors.primaries[DateTime.now()
-                                      .millisecondsSinceEpoch %
-                                  Colors.primaries.length],
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      // Padding
-                      SizedBox(height: 8),
-                      // Title
-                      Text(
-                        "Entry $index",
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Theme.of(context).colorScheme.secondary,
-                        ),
-                      ),
-                    ],
-                  );
-                },
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   Widget gameContent() {
     return SlideTransition(
       position: entrySlideAnimation,
@@ -266,18 +269,73 @@ class GameEntryState extends EntryPageBaseState with TickerProviderStateMixin {
         children: [
           // Add to list
           addToList(),
+
           // Padding
           const SizedBox(height: 8),
+
           // Game info
           gameInfo(),
+
           // Padding
           const SizedBox(height: 8),
+
           // Time to beat
           timeToBeat(),
+
           // Padding
-          // const SizedBox(height: 8),
-          // Related media
-          // relatedMedia(),
+          const SizedBox(height: 8),
+
+          // Expansions
+          FutureBuilder<List<Game?>>(
+            future: futureExpansions,
+            builder: (context, snapshot) {
+              if (snapshot.hasData && snapshot.data!.isNotEmpty) {
+                return blankCarousel(
+                  "Games",
+                  "Expansions",
+                  "Add-ons and game content extensions",
+                  snapshot.data!,
+                );
+              } else {
+                return Container();
+              }
+            },
+          ),
+
+          // Dlcs
+          FutureBuilder<List<Game?>>(
+            future: futureDlcs,
+            builder: (context, snapshot) {
+              if (snapshot.hasData && snapshot.data!.isNotEmpty) {
+                return blankCarousel(
+                  "Games",
+                  "DLCs",
+                  "Downloadable content packs",
+                  snapshot.data!,
+                );
+              } else {
+                return Container();
+              }
+            },
+          ),
+
+          // Similar games
+          FutureBuilder<List<Game?>>(
+            future: futureSimilarGames,
+            builder: (context, snapshot) {
+              if (snapshot.hasData && snapshot.data!.isNotEmpty) {
+                return blankCarousel(
+                  "Games",
+                  "Similar Games",
+                  "Fans also enjoyed these titles",
+                  snapshot.data!,
+                );
+              } else {
+                return Container();
+              }
+            },
+          ),
+
           // Padding
           const SizedBox(height: 90),
         ],
@@ -289,6 +347,46 @@ class GameEntryState extends EntryPageBaseState with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
+    if (relatedMediaLoaded == false) {
+      return Scaffold(
+        body: Container(
+          decoration: BoxDecoration(gradient: gradientBackground(context)),
+          child: Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: buttonDecoration(context),
+                  child: CircularProgressIndicator(
+                    color: Theme.of(context).colorScheme.primary,
+                    strokeWidth: 3,
+                  ),
+                ),
+                const SizedBox(height: 24),
+                Text(
+                  "Loading game...",
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  "Please wait a moment",
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(gradient: gradientBackground(context)),

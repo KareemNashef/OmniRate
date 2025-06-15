@@ -111,7 +111,7 @@ class ListPageState extends State<ListPage> with TickerProviderStateMixin {
   }
 
   Future<void> loadAllData() async {
-    print(await HiveHelper.getAllIDs());
+    
     final statuses = ['All', 'Current', 'Planned', 'Completed', 'Dropped'];
     final allItems = await getMediaByType(widget.listType);
 

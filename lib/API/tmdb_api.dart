@@ -40,7 +40,6 @@ Future<Map<String, dynamic>> get(
 }
 
 Show showFromJson(Map<String, dynamic> json) {
-
   final genreMap = {for (var genre in genresShows) genre['id']: genre['name']};
   final genreIds = List<int>.from(json['genre_ids'] ?? []);
   final filteredSeasons =
@@ -105,7 +104,8 @@ Show showFromJson(Map<String, dynamic> json) {
 Movie movieFromJson(Map<String, dynamic> json) {
   final genreMap = {for (var genre in genresMovies) genre['id']: genre['name']};
 
-  final genreNames = (json['genres'] as List?)
+  final genreNames =
+      (json['genres'] as List?)
           ?.map((g) => genreMap[g['id']] ?? 'Unknown')
           .toList() ??
       [];
@@ -113,12 +113,14 @@ Movie movieFromJson(Map<String, dynamic> json) {
   return Movie(
     id: json['id'].toString(),
     name: json['title'] ?? 'N/A',
-    thumbnailUrl: json['poster_path'] != null
-        ? '$tmdbImageBaseUrl${json['poster_path']}'
-        : tmdbMissingThumbnail,
-    artworkUrl: json['backdrop_path'] != null
-        ? '$tmdbImageBaseUrl${json['backdrop_path']}'
-        : tmdbMissingPoster,
+    thumbnailUrl:
+        json['poster_path'] != null
+            ? '$tmdbImageBaseUrl${json['poster_path']}'
+            : tmdbMissingThumbnail,
+    artworkUrl:
+        json['backdrop_path'] != null
+            ? '$tmdbImageBaseUrl${json['backdrop_path']}'
+            : tmdbMissingPoster,
     rating: json['vote_average'].toString(),
     overview: json['overview'] ?? 'No overview available.',
     genres: genreNames.cast<String>(),
@@ -155,17 +157,18 @@ Future<List<Show>> getFilteredShows(
   String inCategory,
   String inMinRating,
 ) async {
-final genreIds = genresShows
-    .where((genre) => inGenres.contains(genre['name']))
-    .map((genre) => genre['id'].toString())
-    .toList();
+  final genreIds =
+      genresShows
+          .where((genre) => inGenres.contains(genre['name']))
+          .map((genre) => genre['id'].toString())
+          .toList();
 
-final params = {
-  'sort_by': inCategory,
-  'vote_average.gte': inMinRating,
-  'with_genres': genreIds.join(','),
-  'vote_count.gte': '100',
-};
+  final params = {
+    'sort_by': inCategory,
+    'vote_average.gte': inMinRating,
+    'with_genres': genreIds.join(','),
+    'vote_count.gte': '100',
+  };
 
   final data = await get('/discover/tv', params: params);
   final results = data['results'] as List;

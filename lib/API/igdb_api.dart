@@ -8,6 +8,7 @@ import 'dart:async';
 // Local imports
 import 'package:omnirate/Database/model_game.dart';
 import 'package:omnirate/Database/database_helper.dart';
+import 'package:omnirate/Shared/firebase_service.dart';
 import 'package:omnirate/Shared/utils.dart';
 import 'package:omnirate/API/api_helpers.dart';
 
@@ -53,8 +54,17 @@ Future<List<Game>> processAndCacheGameList(List<dynamic> rawGamesData) async {
       // Game found in cache, use its data directly
       readyGamesList.add(existingGame);
     } else {
-      // Game not in cache, add its raw data to the list for API processing
-      gamesToProcessFromApi.add(rawGameData);
+      // Game not in cache, Check if it is in FireBase
+      final firebaseService = FirebaseService();
+      final cloud =
+          await firebaseService.loadEntry("MediaType.game", id) as Game?;
+      if (cloud != null) {
+        await HiveHelper.insertGame(cloud);
+        readyGamesList.add(cloud);
+      } else {
+        // Game not in cache or FireBase, add to list
+        gamesToProcessFromApi.add(rawGameData);
+      }
     }
   }
 
@@ -147,6 +157,24 @@ Future<List<Game>> processAndCacheGameList(List<dynamic> rawGamesData) async {
         {'timeHaste': 'N/A', 'timeNormal': 'N/A', 'timeComplete': 'N/A'};
     final String developer = fetchedDeveloperNames[int.parse(gameId)] ?? 'N/A';
 
+    final List<String> expansions =
+        (gameData['expansions'] as List<dynamic>?)
+            ?.map((g) => g.toString())
+            .toList() ??
+        [];
+
+    final List<String> dlcs =
+        (gameData['dlcs'] as List<dynamic>?)
+            ?.map((g) => g.toString())
+            .toList() ??
+        [];
+
+    final List<String> similarGames =
+        (gameData['similar_games'] as List<dynamic>?)
+            ?.map((g) => g.toString())
+            .toList() ??
+        [];
+
     Game game = Game(
       id: gameId,
       name: name,
@@ -160,6 +188,9 @@ Future<List<Game>> processAndCacheGameList(List<dynamic> rawGamesData) async {
       timeHaste: times['timeHaste']!,
       timeNormal: times['timeNormal']!,
       timeComplete: times['timeComplete']!,
+      expansions: expansions,
+      dlcs: dlcs,
+      similarGames: similarGames,
     );
 
     // Add game to cache list
@@ -461,10 +492,28 @@ Future<Game?> getGameEntry(String inID) async {
           'N/A';
     }
 
-  // Fetch artwork
-  int artworkID = gameData['artworks'] != null ? gameData['artworks'][0] : 0;
+    // Fetch artwork
+    int artworkID = gameData['artworks'] != null ? gameData['artworks'][0] : 0;
     final String artworkUrl =
         (await batchFetchArtworkUrls([artworkID]))[artworkID] ?? '';
+
+    final List<String> expansions =
+        (gameData['expansions'] as List<dynamic>?)
+            ?.map((g) => g.toString())
+            .toList() ??
+        [];
+
+    final List<String> dlcs =
+        (gameData['dlcs'] as List<dynamic>?)
+            ?.map((g) => g.toString())
+            .toList() ??
+        [];
+
+    final List<String> similarGames =
+        (gameData['similar_games'] as List<dynamic>?)
+            ?.map((g) => g.toString())
+            .toList() ??
+        [];
 
     return Game(
       id: gameId.toString(),
@@ -479,6 +528,9 @@ Future<Game?> getGameEntry(String inID) async {
       timeHaste: timeHaste,
       timeNormal: timeNormal,
       timeComplete: timeComplete,
+      expansions: expansions,
+      dlcs: dlcs,
+      similarGames: similarGames,
     );
   } catch (e) {
     return null;
@@ -490,7 +542,7 @@ Future<List<Game>> searchGamesByName(String name) async {
   fields $gamesCommonListFields;
   search "$name";
   where rating_count > 10;
-  limit 10;
+  limit 30;
 ''';
 
   final response = await postRequest(gamesAPIUrl, query);
@@ -500,6 +552,22 @@ Future<List<Game>> searchGamesByName(String name) async {
     return await processAndCacheGameList(data);
   } else {
     throw Exception("Failed to search games by name");
+  }
+}
+
+Future<List<Game>> getGamesByIDs(List<String> gameIDs) async {
+  final query = '''
+  fields $gamesCommonListFields;
+  where id = (${gameIDs.join(',')});
+  limit ${gameIDs.length};
+''';
+
+  final response = await postRequest(gamesAPIUrl, query);
+  if (response.statusCode == 200) {
+    final List<dynamic> data = jsonDecode(response.body);
+    return await processAndCacheGameList(data);
+  } else {
+    throw Exception("Failed to fetch games by IDs");
   }
 }
 
