@@ -43,6 +43,7 @@ flutter:
   uses-material-design: true
   assets:
     - assets/settings/
+    - assets/ProfilePics/
     - assets/Debug/Games/
     - assets/Debug/Movies/
     - assets/Debug/Shows/

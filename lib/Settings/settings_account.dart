@@ -28,8 +28,11 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
 
   // Controllers
   final _usernameController = TextEditingController();
+  final _oldPasswordController = TextEditingController();
   final _newPasswordController = TextEditingController();
-  final _confirmPasswordController = TextEditingController();
+
+  // Avatar Index
+  int _avatarIndex = 0;
 
   // Loading
   bool _isLoadingUsername = false;
@@ -58,6 +61,7 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
       setState(() {
         _userData = _userBox?.get('user');
         _usernameController.text = _userData?.userName ?? '';
+        _avatarIndex = _userData?.avatarIndex ?? 0;
       });
     }
   }
@@ -65,8 +69,8 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
   @override
   void dispose() {
     _usernameController.dispose();
+    _oldPasswordController.dispose();
     _newPasswordController.dispose();
-    _confirmPasswordController.dispose();
     super.dispose();
   }
 
@@ -114,18 +118,37 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
     }
   }
 
+  Future<void> _changeAvatar() async {
+    // Check if user data is loaded
+    if (_userData == null) {
+      _showSnackBar('User data not loaded', isError: true);
+      return;
+    }
+
+    // Attempt to change avatar
+    try {
+      await _firebaseService.changeAvatar(_avatarIndex);
+      _showSnackBar('Avatar updated successfully');
+
+      // Update local user data in Hive
+      _userData!.avatarIndex = _avatarIndex;
+      await _userBox!.putAt(0, _userData!);
+
+      setState(() {});
+    } catch (e) {
+      _showSnackBar('Failed to update avatar: $e', isError: true);
+    }
+  }
+
   Future<void> _changePassword() async {
     // Check if the input is valid
-    if (_newPasswordController.text.isEmpty ||
-        _confirmPasswordController.text.isEmpty) {
+    if (_oldPasswordController.text.isEmpty ||
+        _newPasswordController.text.isEmpty) {
       _showSnackBar('Please fill in all password fields', isError: true);
       return;
     }
-    if (_newPasswordController.text != _confirmPasswordController.text) {
-      _showSnackBar('New passwords do not match', isError: true);
-      return;
-    }
-    if (_newPasswordController.text.length < 6) {
+    
+    if (_oldPasswordController.text.length < 6) {
       _showSnackBar('Password must be at least 6 characters', isError: true);
       return;
     }
@@ -137,10 +160,14 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
 
     // Attempt to change password
     try {
-      await _firebaseService.changePassword(_newPasswordController.text);
+      await _firebaseService.changePassword(
+        _userData!.email,
+        _oldPasswordController.text,
+        _newPasswordController.text,
+      );
       _showSnackBar('Password updated successfully');
+      _oldPasswordController.clear();
       _newPasswordController.clear();
-      _confirmPasswordController.clear();
     } catch (e) {
       _showSnackBar('Failed to update password: $e', isError: true);
     } finally {
@@ -332,6 +359,77 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
     );
   }
 
+  Widget avatarSection() {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      decoration: containerDecoration(context),
+
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: GridView.builder(
+          padding: EdgeInsets.zero,
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 4,
+            crossAxisSpacing: 16,
+            mainAxisSpacing: 16,
+          ),
+          itemCount: 16,
+          itemBuilder: (context, index) {
+            final isSelected = _avatarIndex == index;
+
+            return GestureDetector(
+              onTap: () {
+                setState(() {
+                  _avatarIndex = index;
+                  _changeAvatar();
+                });
+              },
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                transform: Matrix4.identity()..scale(isSelected ? 1.1 : 1.0),
+                transformAlignment: Alignment.center,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  // A simple border is MUCH faster than a shadow.
+                  border: Border.all(
+                    color:
+                        isSelected
+                            ? Theme.of(context).colorScheme.primary
+                            : Colors.transparent,
+                    width: isSelected ? 4 : 0,
+                  ),
+                ),
+                child: ClipOval(
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      Image.asset(
+                        'assets/ProfilePics/pic_${index + 1}.png',
+                        fit: BoxFit.cover,
+                      ),
+                      // A simple colored overlay is also much faster.
+                      if (isSelected)
+                        Container(
+                          color: Colors.black.withValues(alpha: 0.3),
+                          child: Icon(
+                            Icons.check,
+                            color: Colors.white,
+                            size: 32,
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+
   Widget passwordSection() {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
@@ -343,10 +441,10 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
           children: [
             // Password Inputs
             TextField(
-              controller: _newPasswordController,
+              controller: _oldPasswordController,
               obscureText: _obscureNewPassword,
               decoration: InputDecoration(
-                labelText: 'New Password',
+                labelText: 'Old Password',
                 prefixIcon: const Icon(Icons.lock),
                 suffixIcon: IconButton(
                   icon: Icon(
@@ -379,10 +477,10 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
 
             // Confirm Password Input
             TextField(
-              controller: _confirmPasswordController,
+              controller: _newPasswordController,
               obscureText: _obscureConfirmPassword,
               decoration: InputDecoration(
-                labelText: 'Confirm New Password',
+                labelText: 'New Password',
                 prefixIcon: const Icon(Icons.lock_outline),
                 suffixIcon: IconButton(
                   icon: Icon(
@@ -522,6 +620,10 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
               // Change Username Section
               sectionHeader(context, "Change Username", "Update your username"),
               usernameSection(),
+
+              // Change Avatar Section
+              sectionHeader(context, "Change Avatar", "Update your avatar"),
+              avatarSection(),
 
               // Change Password Section
               sectionHeader(context, "Change Password", "Update your password"),

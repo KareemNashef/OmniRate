@@ -114,9 +114,9 @@ class Game implements MediaEntry {
     'timeHaste': timeHaste,
     'timeNormal': timeNormal,
     'timeComplete': timeComplete,
-    'expansions': expansions.join(','),
-    'dlcs': dlcs.join(','),
-    'similarGames': similarGames.join(','),
+    'expansions': expansions,
+    'dlcs': dlcs,
+    'similarGames': similarGames,
   };
 
   // Convert from map
@@ -135,9 +135,9 @@ class Game implements MediaEntry {
     timeHaste: map['timeHaste'],
     timeNormal: map['timeNormal'],
     timeComplete: map['timeComplete'],
-    expansions: (map['expansions'] as String).split(','),
-    dlcs: (map['dlcs'] as String).split(','),
-    similarGames: (map['similarGames'] as String).split(','),
+    expansions: List<String>.from(map['expansions'] ?? []),
+    dlcs: List<String>.from(map['dlcs'] ?? []),
+    similarGames: List<String>.from(map['similarGames'] ?? []),
   );
 
   @override

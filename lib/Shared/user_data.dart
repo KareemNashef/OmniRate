@@ -23,6 +23,10 @@ class UserData {
   @HiveField(4)
   Map<String, UserMediaEntry> listMovies;
 
+  // Avatar index
+  @HiveField(5)
+  int avatarIndex = 0;
+
   // Constructor
   UserData({
     required this.userName,
@@ -30,6 +34,7 @@ class UserData {
     required this.listGames,
     required this.listShows,
     required this.listMovies,
+    required this.avatarIndex,
   });
 
   // Convert to map
@@ -39,6 +44,7 @@ class UserData {
     'listShows': listShows.map((k, v) => MapEntry(k, v.toMap())),
     'listMovies': listMovies.map((k, v) => MapEntry(k, v.toMap())),
     'email': email,
+    'avatarIndex': avatarIndex,
   };
 
   // Convert from map
@@ -63,12 +69,13 @@ class UserData {
         ) ??
         {},
     email: map['email'] ?? '',
+    avatarIndex: map['avatarIndex'] ?? 0,
   );
 
   // Convert to string
   @override
   String toString() {
-    return 'UserData(userName: $userName, listGames: $listGames, listShows: $listShows, listMovies: $listMovies, email: $email)';
+    return 'UserData(userName: $userName, listGames: $listGames, listShows: $listShows, listMovies: $listMovies, email: $email), avatarIndex: $avatarIndex)';
   }
 }
 

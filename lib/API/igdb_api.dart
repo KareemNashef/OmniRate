@@ -196,6 +196,10 @@ Future<List<Game>> processAndCacheGameList(List<dynamic> rawGamesData) async {
     // Add game to cache list
     gamesToCacheEventually.add(game);
 
+    // Add game to Firebase
+    final firebaseService = FirebaseService();
+    await firebaseService.saveEntry(game);
+
     // Add game to ready list
     readyGamesList.add(game);
   }
@@ -497,11 +501,10 @@ Future<Game?> getGameEntry(String inID) async {
     final String artworkUrl =
         (await batchFetchArtworkUrls([artworkID]))[artworkID] ?? '';
 
-    final List<String> expansions =
-        (gameData['expansions'] as List<dynamic>?)
-            ?.map((g) => g.toString())
-            .toList() ??
-        [];
+    final expansions =
+        List<String>.from(
+          gameData['expansions'] ?? [],
+        ).where((e) => e.trim().isNotEmpty).toList();
 
     final List<String> dlcs =
         (gameData['dlcs'] as List<dynamic>?)

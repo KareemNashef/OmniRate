@@ -247,88 +247,10 @@ class AnimatedBackgroundCardState extends State<AnimatedBackgroundCard>
                                         children: [
                                           const SizedBox(height: 16),
                                           // Enhanced rating badge
-                                          Container(
-                                            padding: const EdgeInsets.symmetric(
-                                              horizontal: 16,
-                                              vertical: 10,
-                                            ),
-                                            decoration: BoxDecoration(
-                                              gradient: LinearGradient(
-                                                colors: [
-                                                  Colors.amber.withValues(
-                                                    alpha: 0.3,
-                                                  ),
-                                                  Colors.orange.withValues(
-                                                    alpha: 0.2,
-                                                  ),
-                                                ],
-                                              ),
-                                              borderRadius:
-                                                  BorderRadius.circular(25),
-                                              border: Border.all(
-                                                color: Colors.white.withValues(
-                                                  alpha: 0.4,
-                                                ),
-                                                width: 1.5,
-                                              ),
-                                              boxShadow: [
-                                                BoxShadow(
-                                                  color: Colors.black
-                                                      .withValues(alpha: 0.3),
-                                                  blurRadius: 10,
-                                                  offset: const Offset(0, 4),
-                                                ),
-                                              ],
-                                            ),
-                                            child: Row(
-                                              mainAxisSize: MainAxisSize.min,
-                                              children: [
-                                                Icon(
-                                                  Icons.star_rounded,
-                                                  size: 22,
-                                                  color: Colors.amberAccent,
-                                                  shadows: [
-                                                    Shadow(
-                                                      color: Colors.black
-                                                          .withValues(
-                                                            alpha: 0.3,
-                                                          ),
-                                                      offset: const Offset(
-                                                        0,
-                                                        1,
-                                                      ),
-                                                      blurRadius: 2,
-                                                    ),
-                                                  ],
-                                                ),
-                                                const SizedBox(width: 8),
-                                                Text(
-                                                  double.tryParse(
-                                                        widget.inEntry.rating,
-                                                      )?.toStringAsFixed(1) ??
-                                                      'N/A',
-                                                  style: TextStyle(
-                                                    color: Colors.white,
-                                                    fontWeight: FontWeight.w700,
-                                                    fontSize: 16,
-                                                    letterSpacing: 0.5,
-                                                    shadows: [
-                                                      Shadow(
-                                                        color: Colors.black
-                                                            .withValues(
-                                                              alpha: 0.4,
-                                                            ),
-                                                        offset: const Offset(
-                                                          0,
-                                                          1,
-                                                        ),
-                                                        blurRadius: 3,
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
+                                          ratingsIndicator(
+                                            context,
+                                            widget.inEntry.rating.toString(),
+                                            opaque: true
                                           ),
                                         ],
                                       )

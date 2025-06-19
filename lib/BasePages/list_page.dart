@@ -111,7 +111,6 @@ class ListPageState extends State<ListPage> with TickerProviderStateMixin {
   }
 
   Future<void> loadAllData() async {
-    
     final statuses = ['All', 'Current', 'Planned', 'Completed', 'Dropped'];
     final allItems = await getMediaByType(widget.listType);
 
@@ -729,48 +728,7 @@ class ListPageState extends State<ListPage> with TickerProviderStateMixin {
                     Positioned(
                       top: 16,
                       right: 16,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 4,
-                        ),
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [
-                              Colors.amber.shade400,
-                              Colors.orange.shade500,
-                            ],
-                          ),
-                          borderRadius: BorderRadius.circular(12),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.2),
-                              blurRadius: 8,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            if (!(rating.toString() == '0.0'))
-                              const Icon(
-                                Icons.star_rounded,
-                                size: 14,
-                                color: Colors.white,
-                              ),
-                            const SizedBox(width: 4),
-                            Text(
-                              rating.toString() == '0.0' ? 'Not Rated' : rating,
-                              style: const TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w700,
-                                color: Colors.white,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
+                      child: ratingsIndicator(context, rating, opaque: true),
                     ),
                 ],
               ),
@@ -922,43 +880,7 @@ class ListPageState extends State<ListPage> with TickerProviderStateMixin {
                           // Rating
                           if (rating != null) ...[
                             const SizedBox(width: 8),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 4,
-                              ),
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  colors: [
-                                    Colors.amber.shade400,
-                                    Colors.orange.shade500,
-                                  ],
-                                ),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  if (!(rating.toString() == '0.0'))
-                                    const Icon(
-                                      Icons.star_rounded,
-                                      size: 12,
-                                      color: Colors.white,
-                                    ),
-                                  const SizedBox(width: 2),
-                                  Text(
-                                    rating.toString() == '0.0'
-                                        ? 'Not Rated'
-                                        : rating.toString(),
-                                    style: const TextStyle(
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.w700,
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
+                            ratingsIndicator(context, rating.toString()),
                           ],
                         ],
                       ],
@@ -966,6 +888,7 @@ class ListPageState extends State<ListPage> with TickerProviderStateMixin {
                   ],
                 ),
               ),
+
               // Arrow
               Container(
                 padding: const EdgeInsets.all(8),

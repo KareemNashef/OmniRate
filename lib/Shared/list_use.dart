@@ -189,3 +189,11 @@ Future<String?> getUsername() async {
   if (userData == null) return null;
   return userData.userName;
 }
+
+// Get the avatar index from Hive
+Future<int?> getAvatarIndex() async {
+  final box = await Hive.openBox<UserData>('userBox');
+  final userData = box.get('user');
+  if (userData == null) return null;
+  return userData.avatarIndex;
+}

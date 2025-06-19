@@ -2,6 +2,7 @@
 
 // Flutter imports
 import 'package:flutter/material.dart';
+import 'package:omnirate/Feed/feed_page.dart';
 
 // Local imports
 import 'package:omnirate/Games/games_main.dart';
@@ -23,14 +24,14 @@ class MainPageState extends State<MainPage>
   // ===== Class Variables ===== //
 
   // Index of the currently selected page and the previous page
-  int _currentIndex = 3;
+  int _currentIndex = 0;
 
   // Instances of the main pages
+  final HomeMainPage _homeMainPage = HomeMainPage();
   final GamesMainPage _playMainPage = GamesMainPage();
   final ShowsMainPage _showsMainPage = ShowsMainPage();
-  final HomeMainPage _homeMainPage = HomeMainPage();
   final MoviesMainPage _moviesMainPage = MoviesMainPage();
-  // final AssistantMainPage _assistantMainPage = AssistantMainPage();
+  final FeedPage _feedPage = FeedPage();
 
   // ===== Class Widgets ===== //
 
@@ -38,7 +39,13 @@ class MainPageState extends State<MainPage>
   Widget pageSwitcher() {
     return IndexedStack(
       index: _currentIndex,
-      children: [_playMainPage, _showsMainPage, _moviesMainPage, _homeMainPage],
+      children: [
+        _homeMainPage,
+        _playMainPage,
+        _showsMainPage,
+        _moviesMainPage,
+        _feedPage,
+      ],
     );
   }
 
@@ -46,14 +53,14 @@ class MainPageState extends State<MainPage>
   Widget navigationBar() {
     return AnimatedBottomBar(
       items: const [
+        AnimatedBottomBarItem(icon: Icons.home, title: 'Home'),
         AnimatedBottomBarItem(
           icon: Icons.videogame_asset_rounded,
           title: 'Games',
         ),
         AnimatedBottomBarItem(icon: Icons.tv, title: 'Shows'),
         AnimatedBottomBarItem(icon: Icons.movie, title: 'Movies'),
-        AnimatedBottomBarItem(icon: Icons.home, title: 'Home'),
-        // AnimatedBottomBarItem(icon: Icons.assistant, title: 'Assistant'),
+        AnimatedBottomBarItem(icon: Icons.group, title: 'Social'),
       ],
       initialIndex: _currentIndex,
       onTabSelected: (index) {

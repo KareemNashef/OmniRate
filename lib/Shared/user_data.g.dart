@@ -22,13 +22,14 @@ class UserDataAdapter extends TypeAdapter<UserData> {
       listGames: (fields[2] as Map).cast<String, UserMediaEntry>(),
       listShows: (fields[3] as Map).cast<String, UserMediaEntry>(),
       listMovies: (fields[4] as Map).cast<String, UserMediaEntry>(),
+      avatarIndex: fields[5] as int,
     );
   }
 
   @override
   void write(BinaryWriter writer, UserData obj) {
     writer
-      ..writeByte(5)
+      ..writeByte(6)
       ..writeByte(0)
       ..write(obj.userName)
       ..writeByte(1)
@@ -38,7 +39,9 @@ class UserDataAdapter extends TypeAdapter<UserData> {
       ..writeByte(3)
       ..write(obj.listShows)
       ..writeByte(4)
-      ..write(obj.listMovies);
+      ..write(obj.listMovies)
+      ..writeByte(5)
+      ..write(obj.avatarIndex);
   }
 
   @override

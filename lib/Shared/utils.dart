@@ -297,6 +297,62 @@ Widget sectionHeader(BuildContext context, String title, String subtitle) {
   );
 }
 
+Widget ratingsIndicator(
+  BuildContext context,
+  String inRating, {
+  bool opaque = false,
+}) {
+  // Parse and validate rating
+  final double? rating = double.tryParse(inRating);
+  final bool hasValidRating = rating != null && rating > 0.0;
+
+  return Container(
+    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+    decoration: BoxDecoration(
+      color:
+          hasValidRating
+              ? opaque
+                  ? Colors.amber.shade100.withValues(alpha: 0.75)
+                  : Colors.amber.withValues(alpha: 0.1)
+              : opaque
+              ? Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.75)
+              : Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+      borderRadius: BorderRadius.circular(8),
+      border: Border.all(
+        color:
+            hasValidRating
+                ? opaque
+                    ? Colors.amber.shade300.withValues(alpha: 0.75)
+                    : Colors.amber.withValues(alpha: 0.3)
+                : opaque
+                ? Theme.of(context).colorScheme.outline.withValues(alpha: 0.75)
+                : Theme.of(context).colorScheme.outline.withValues(alpha: 0.3),
+        width: 1,
+      ),
+    ),
+    child: Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (hasValidRating) ...[
+          Icon(Icons.star_rounded, size: 14, color: Colors.amber.shade700),
+          const SizedBox(width: 4),
+        ],
+        Text(
+          hasValidRating ? rating.toStringAsFixed(1) : 'Not Rated',
+          style: TextStyle(
+            fontSize: 11,
+            fontWeight: FontWeight.w600,
+            color:
+                hasValidRating
+                    ? Colors.amber.shade800
+                    : Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
 Widget buildImageFromUrl(String inURL) => CachedNetworkImage(
   imageUrl: inURL,
   fit: BoxFit.cover,

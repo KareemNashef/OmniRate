@@ -9,6 +9,7 @@ import 'package:omnirate/BasePages/Assets/add_comment.dart';
 import 'package:omnirate/BasePages/Assets/animated_entry.dart';
 import 'package:omnirate/BasePages/Assets/add_modal.dart';
 import 'package:omnirate/Database/model_entry.dart';
+import 'package:omnirate/Feed/review_model.dart';
 import 'package:omnirate/Main/animated_bar.dart';
 import 'package:omnirate/Shared/firebase_service.dart';
 import 'package:omnirate/Shared/list_use.dart';
@@ -49,7 +50,7 @@ abstract class EntryPageBaseState<
   bool isAnimating = false;
 
   // Reviews list
-  List<Map<String, dynamic>> reviews = [];
+  List<Review> reviews = [];
   bool reviewsLoaded = false;
 
   // ===== Class Methods ===== //
@@ -633,22 +634,13 @@ abstract class EntryPageBaseState<
 
                     // Review cards
                     ...List.generate(reviews.length, (index) {
+                      final firebaseService = FirebaseService();
                       final review = reviews[index];
-                      final userName = review['userName'] ?? 'Anonymous User';
-                      final userEmail = review['userEmail'] ?? '';
-                      final rating = review['rating']?.toString() ?? '0.0';
-                      final reviewText =
-                          review['review'] ?? 'No review text provided.';
-                      // Handle both DateTime and Firestore Timestamp
-                      DateTime? timestamp;
-                      final timestampData = review['timestamp'];
-                      if (timestampData is DateTime) {
-                        timestamp = timestampData;
-                      } else if (timestampData != null &&
-                          timestampData.runtimeType.toString() == 'Timestamp') {
-                        // Convert Firestore Timestamp to DateTime
-                        timestamp = timestampData.toDate();
-                      }
+                      final userName = review.userName;
+                      final userEmail = review.userEmail;
+                      final rating = review.rating;
+                      final reviewText = review.review;
+                      final timestamp = review.timestamp;
 
                       // Format timestamp
                       String formatTimestamp(DateTime? timestamp) {
@@ -680,52 +672,32 @@ abstract class EntryPageBaseState<
                               // User info header
                               Row(
                                 children: [
-                                  // Enhanced avatar with X template
-                                  Container(
-                                    width: 50,
-                                    height: 50,
-                                    decoration: BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      gradient: LinearGradient(
-                                        begin: Alignment.topLeft,
-                                        end: Alignment.bottomRight,
-                                        colors: [
-                                          Colors.primaries[index %
-                                              Colors.primaries.length],
-                                          Colors
-                                              .primaries[index %
-                                                  Colors.primaries.length]
-                                              .withValues(alpha: 0.7),
-                                        ],
-                                      ),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: Colors
-                                              .primaries[index %
-                                                  Colors.primaries.length]
-                                              .withValues(alpha: 0.3),
-                                          blurRadius: 12,
-                                          offset: const Offset(0, 3),
+                                  // Avatar
+                                  FutureBuilder<int?>(
+                                    future: firebaseService
+                                        .getAvatarIndexFirebase(review.userId),
+                                    builder: (context, snapshot) {
+                                      final index = snapshot.data ?? 0;
+                                      return CircleAvatar(
+                                        radius: 30,
+                                        backgroundColor:
+                                            Theme.of(
+                                              context,
+                                            ).colorScheme.primary,
+                                        child: CircleAvatar(
+                                          radius: 28,
+                                          backgroundImage: AssetImage(
+                                            'assets/ProfilePics/pic_${index + 1}.png',
+                                          ),
+                                          backgroundColor:
+                                              Theme.of(
+                                                context,
+                                              ).colorScheme.surface,
                                         ),
-                                      ],
-                                      border: Border.all(
-                                        color: Colors.white.withValues(
-                                          alpha: 0.2,
-                                        ),
-                                        width: 2,
-                                      ),
-                                    ),
-                                    child: const Center(
-                                      child: Text(
-                                        'X',
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                    ),
+                                      );
+                                    },
                                   ),
+
                                   const SizedBox(width: 12),
 
                                   // User details
@@ -768,7 +740,7 @@ abstract class EntryPageBaseState<
                                       child: Material(
                                         color: Colors.transparent,
                                         child: InkWell(
-                                          onTap: () => deleteReview(timestamp!),
+                                          onTap: () => deleteReview(timestamp),
                                           borderRadius: BorderRadius.circular(
                                             12,
                                           ),
@@ -793,64 +765,8 @@ abstract class EntryPageBaseState<
                                       ),
                                     ),
 
-                                  // Enhanced rating badge
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 16,
-                                      vertical: 10,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      gradient: LinearGradient(
-                                        colors:
-                                            rating == '0.0' || rating.isEmpty
-                                                ? [
-                                                  Colors.grey.shade300,
-                                                  Colors.grey.shade400,
-                                                ]
-                                                : [
-                                                  Colors.amber.shade300,
-                                                  Colors.orange.shade400,
-                                                ],
-                                      ),
-                                      borderRadius: BorderRadius.circular(20),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: (rating == '0.0' ||
-                                                      rating.isEmpty
-                                                  ? Colors.grey
-                                                  : Colors.amber)
-                                              .withValues(alpha: 0.25),
-                                          blurRadius: 12,
-                                          offset: const Offset(0, 4),
-                                        ),
-                                      ],
-                                    ),
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        if (rating != '0.0' &&
-                                            rating.isNotEmpty)
-                                          const Icon(
-                                            Icons.star_rounded,
-                                            size: 18,
-                                            color: Colors.white,
-                                          ),
-                                        if (rating != '0.0' &&
-                                            rating.isNotEmpty)
-                                          const SizedBox(width: 6),
-                                        Text(
-                                          rating == '0.0' || rating.isEmpty
-                                              ? 'Not Rated'
-                                              : rating,
-                                          style: const TextStyle(
-                                            fontSize: 14,
-                                            fontWeight: FontWeight.w800,
-                                            color: Colors.white,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
+                                  // Rating badge
+                                  ratingsIndicator(context, rating),
                                 ],
                               ),
 

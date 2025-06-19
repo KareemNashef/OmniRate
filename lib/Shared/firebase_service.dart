@@ -6,6 +6,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:omnirate/Database/model_game.dart';
 import 'package:omnirate/Database/model_movie.dart';
 import 'package:omnirate/Database/model_show.dart';
+import 'package:omnirate/Feed/friend_model.dart';
+import 'package:omnirate/Feed/review_model.dart';
 
 // Local imports
 import 'package:omnirate/Shared/user_data.dart';
@@ -55,10 +57,28 @@ class FirebaseService {
     }
   }
 
-  // Change password
-  Future<void> changePassword(String newPassword) async {
+  // Change avatar
+  Future<void> changeAvatar(int newAvatar) async {
     final user = _auth.currentUser;
     if (user != null) {
+      await _firestore.collection('users').doc(user.uid).update({
+        'avatarIndex': newAvatar,
+      });
+    }
+  }
+
+  Future<void> changePassword(
+    String email,
+    String currentPassword,
+    String newPassword,
+  ) async {
+    final user = _auth.currentUser;
+    if (user != null) {
+      final cred = EmailAuthProvider.credential(
+        email: email,
+        password: currentPassword,
+      );
+      await user.reauthenticateWithCredential(cred);
       await user.updatePassword(newPassword);
     }
   }
@@ -90,19 +110,40 @@ class FirebaseService {
 
   // ===== Reviews ===== //
 
-  // Get all reviews
-  Future<List<Map<String, dynamic>>> getReviews(MediaEntry inEntry) async {
+  Future<int?> getAvatarIndexFirebase(String uid) async {
     final doc =
+        await FirebaseFirestore.instance.collection('users').doc(uid).get();
+    return doc.data()?['avatarIndex'] as int?;
+  }
+
+  // Get all reviews for a media entry
+  Future<List<Review>> getReviews(MediaEntry inEntry) async {
+    final query =
         await _firestore
             .collection('reviews')
             .doc(inEntry.mediaType.toString())
+            .collection(inEntry.id)
+            .orderBy('timestamp', descending: false)
             .get();
-    final data = doc.data();
-    if (data == null || data[inEntry.id] == null) return [];
-    return List<Map<String, dynamic>>.from(data[inEntry.id]);
+
+    return query.docs.map((doc) {
+      final data = doc.data();
+      return Review(
+        entryId: data['entryId'] ?? inEntry.id,
+        mediaType: data['mediaType'] ?? inEntry.mediaType.toString(),
+        entryName: inEntry.name,
+        rating: data['rating'] ?? '',
+        review: data['review'] ?? '',
+        reviewId: doc.id,
+        timestamp: (data['timestamp'] as Timestamp).toDate(),
+        userEmail: data['userEmail'] ?? '',
+        userId: data['userId'] ?? '',
+        userName: data['userName'] ?? '',
+      );
+    }).toList();
   }
 
-  // Add review
+  // Add a review as a document under both media and user
   Future<void> addReview(
     MediaEntry inEntry,
     String inRating,
@@ -115,47 +156,342 @@ class FirebaseService {
     final userName =
         userDoc.data()?['userName'] ?? user.displayName ?? 'Unknown';
 
+    final reviewId = _firestore.collection('dummy').doc().id; // generate ID
+
     final reviewData = {
+      'userId': user.uid,
       'userEmail': user.email,
       'userName': userName,
       'rating': inRating,
       'review': inReview,
       'timestamp': DateTime.now(),
+      'mediaType': inEntry.mediaType.toString(),
+      'entryId': inEntry.id,
+      'reviewId': reviewId,
+      'entryName': inEntry.name,
     };
 
-    await _firestore
+    final batch = _firestore.batch();
+
+    final mediaRef = _firestore
         .collection('reviews')
         .doc(inEntry.mediaType.toString())
-        .set({
-          inEntry.id: FieldValue.arrayUnion([reviewData]),
-        }, SetOptions(merge: true));
+        .collection(inEntry.id)
+        .doc(reviewId);
+
+    final userRef = _firestore
+        .collection('users')
+        .doc(user.uid)
+        .collection('reviews')
+        .doc(reviewId);
+
+    batch.set(mediaRef, reviewData);
+    batch.set(userRef, reviewData);
+    await batch.commit();
   }
 
+  // Delete review by matching user and timestamp
   Future<void> deleteReview(MediaEntry inEntry, DateTime inTime) async {
     final user = FirebaseAuth.instance.currentUser;
-    final doc =
+    if (user == null) return;
+
+    final query =
         await _firestore
             .collection('reviews')
             .doc(inEntry.mediaType.toString())
+            .collection(inEntry.id)
+            .where('userId', isEqualTo: user.uid)
+            .where('timestamp', isEqualTo: Timestamp.fromDate(inTime))
             .get();
 
-    final comments = List<Map<String, dynamic>>.from(
-      doc.data()?[inEntry.id] ?? [],
-    );
+    for (var doc in query.docs) {
+      final reviewId = doc.id;
 
-    comments.removeWhere((c) {
-      final ts = c['timestamp'];
-      if (ts is Timestamp) {
-        final tsDate = ts.toDate();
-        return c['userEmail'] == user?.email && tsDate == inTime;
-      }
-      return false;
+      final mediaRef = doc.reference;
+      final userRef = _firestore
+          .collection('users')
+          .doc(user.uid)
+          .collection('reviews')
+          .doc(reviewId);
+
+      final batch = _firestore.batch();
+      batch.delete(mediaRef);
+      batch.delete(userRef);
+      await batch.commit();
+    }
+  }
+
+  // Get all reviews by a user (from user profile)
+  Future<List<Review>> getUserReviews(String uid) async {
+    final query =
+        await _firestore
+            .collection('users')
+            .doc(uid)
+            .collection('reviews')
+            .orderBy('timestamp', descending: true)
+            .get();
+
+    return query.docs.map((doc) {
+      final data = doc.data();
+      return Review(
+        entryId: data['entryId'],
+        mediaType: data['mediaType'],
+        entryName: data['entryName'],
+        rating: data['rating'] ?? '',
+        review: data['review'] ?? '',
+        reviewId: doc.id,
+        timestamp: (data['timestamp'] as Timestamp).toDate(),
+        userEmail: data['userEmail'] ?? '',
+        userId: data['userId'] ?? '',
+        userName: data['userName'] ?? '',
+      );
+    }).toList();
+  }
+
+  // ===== Friends ===== //
+
+  // Send a friend request
+  Future<void> sendFriendRequest(String friendId) async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    // Get current user's info
+    final userDoc = await _firestore.collection('users').doc(user.uid).get();
+    final userName =
+        userDoc.data()?['userName'] ?? user.displayName ?? 'Unknown';
+
+    // Get friend's info
+    final friendDoc = await _firestore.collection('users').doc(friendId).get();
+    final friendName = friendDoc.data()?['userName'] ?? 'Unknown';
+
+    final batch = _firestore.batch();
+
+    // Add to current user's "sent requests" (requested status)
+    final currentUserFriendRef = _firestore
+        .collection('users')
+        .doc(user.uid)
+        .collection('friends')
+        .doc(friendId);
+
+    batch.set(currentUserFriendRef, {
+      'id': friendId,
+      'name': friendName,
+      'status': 'requested',
+      'timestamp': FieldValue.serverTimestamp(),
     });
 
-    await _firestore
-        .collection('reviews')
-        .doc(inEntry.mediaType.toString())
-        .set({inEntry.id: comments}, SetOptions(merge: true));
+    // Add to friend's "received requests" (pending status)
+    final friendUserFriendRef = _firestore
+        .collection('users')
+        .doc(friendId)
+        .collection('friends')
+        .doc(user.uid);
+
+    batch.set(friendUserFriendRef, {
+      'id': user.uid,
+      'name': userName,
+      'status': 'pending',
+      'timestamp': FieldValue.serverTimestamp(),
+    });
+
+    await batch.commit();
+  }
+
+  // Accept a friend request
+  Future<void> acceptFriendRequest(Friend friend) async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    final batch = _firestore.batch();
+
+    // Update current user's friend status to accepted
+    final currentUserFriendRef = _firestore
+        .collection('users')
+        .doc(user.uid)
+        .collection('friends')
+        .doc(friend.id);
+
+    batch.update(currentUserFriendRef, {
+      'status': 'accepted',
+      'acceptedAt': FieldValue.serverTimestamp(),
+    });
+
+    // Update friend's status to accepted (they sent the request, so it was "requested")
+    final friendUserFriendRef = _firestore
+        .collection('users')
+        .doc(friend.id)
+        .collection('friends')
+        .doc(user.uid);
+
+    batch.update(friendUserFriendRef, {
+      'status': 'accepted',
+      'acceptedAt': FieldValue.serverTimestamp(),
+    });
+
+    await batch.commit();
+  }
+
+  // Decline a friend request
+  Future<void> declineFriendRequest(Friend friend) async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    final batch = _firestore.batch();
+
+    // Remove from current user's friends collection
+    final currentUserFriendRef = _firestore
+        .collection('users')
+        .doc(user.uid)
+        .collection('friends')
+        .doc(friend.id);
+
+    batch.delete(currentUserFriendRef);
+
+    // Remove from friend's friends collection
+    final friendUserFriendRef = _firestore
+        .collection('users')
+        .doc(friend.id)
+        .collection('friends')
+        .doc(user.uid);
+
+    batch.delete(friendUserFriendRef);
+
+    await batch.commit();
+  }
+
+  // Remove/Unfriend someone
+  Future<void> removeFriend(Friend friend) async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    final batch = _firestore.batch();
+
+    // Remove from current user's friends collection
+    final currentUserFriendRef = _firestore
+        .collection('users')
+        .doc(user.uid)
+        .collection('friends')
+        .doc(friend.id);
+
+    batch.delete(currentUserFriendRef);
+
+    // Remove from friend's friends collection
+    final friendUserFriendRef = _firestore
+        .collection('users')
+        .doc(friend.id)
+        .collection('friends')
+        .doc(user.uid);
+
+    batch.delete(friendUserFriendRef);
+
+    await batch.commit();
+  }
+
+  // Cancel a sent friend request
+  Future<void> cancelFriendRequest(Friend friend) async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    final batch = _firestore.batch();
+
+    // Remove from current user's friends collection
+    final currentUserFriendRef = _firestore
+        .collection('users')
+        .doc(user.uid)
+        .collection('friends')
+        .doc(friend.id);
+
+    batch.delete(currentUserFriendRef);
+
+    // Remove from friend's friends collection
+    final friendUserFriendRef = _firestore
+        .collection('users')
+        .doc(friend.id)
+        .collection('friends')
+        .doc(user.uid);
+
+    batch.delete(friendUserFriendRef);
+
+    await batch.commit();
+  }
+
+  // Get all friends with different statuses
+  Future<List<Friend>> getFriends() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return [];
+
+    final snapshot =
+        await _firestore
+            .collection('users')
+            .doc(user.uid)
+            .collection('friends')
+            .get();
+
+    return snapshot.docs.map((doc) {
+      final data = doc.data();
+      return Friend(
+        id: data['id'] ?? doc.id,
+        name: data['name'] ?? 'Unknown',
+        status: _stringToFriendStatus(data['status'] ?? 'pending'),
+      );
+    }).toList();
+  }
+
+  // Check if friendship exists and what status
+  Future<FriendStatus?> getFriendshipStatus(String friendId) async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return null;
+
+    final doc =
+        await _firestore
+            .collection('users')
+            .doc(user.uid)
+            .collection('friends')
+            .doc(friendId)
+            .get();
+
+    if (!doc.exists) return null;
+
+    final status = doc.data()?['status'];
+    return _stringToFriendStatus(status);
+  }
+
+  // Search for users to add as friends
+  Future<List<Map<String, dynamic>>> searchUsers(String query) async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return [];
+
+    // Search by username (you might want to add more search criteria)
+    final querySnapshot =
+        await _firestore
+            .collection('users')
+            .where('userName', isEqualTo: query)
+            .limit(10)
+            .get();
+
+    return querySnapshot.docs
+        .where((doc) => doc.id != user.uid) // Exclude current user
+        .map(
+          (doc) => {
+            'id': doc.id,
+            'userName': doc.data()['userName'] ?? 'Unknown',
+          },
+        )
+        .toList();
+  }
+
+  // Helper function to convert string to FriendStatus enum
+  FriendStatus _stringToFriendStatus(String? status) {
+    switch (status?.toLowerCase()) {
+      case 'accepted':
+        return FriendStatus.accepted;
+      case 'pending':
+        return FriendStatus.pending;
+      case 'requested':
+        return FriendStatus.requested;
+      default:
+        return FriendStatus.pending;
+    }
   }
 
   // ===== Shared Database ===== //

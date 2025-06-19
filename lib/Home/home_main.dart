@@ -115,6 +115,14 @@ class HomeMainPageState extends MediaPageBaseState with RouteAware {
     super.dispose();
   }
 
+  Future<String> getTimeBasedGreeting() async {
+    final hour = DateTime.now().hour;
+    if (hour < 12) return "Good morning";
+    if (hour < 17) return "Good afternoon";
+    if (hour < 21) return "Good evening";
+    return "Good night";
+  }
+
   // ===== Class Widgets ===== //
 
   Widget buildProgressCard(String type, IconData icon, Color color) {
@@ -201,81 +209,115 @@ class HomeMainPageState extends MediaPageBaseState with RouteAware {
   Widget buildWelcomeHeader() {
     return Container(
       // Padding
-      padding: const EdgeInsets.all(24),
-      margin: const EdgeInsets.symmetric(horizontal: 16),
+      margin: const EdgeInsets.symmetric(horizontal: 12),
 
       // Theme
       decoration: containerDecoration(context),
 
       // Content
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                FutureBuilder<String?>(
-                  future: getUsername(),
-                  builder: (context, snapshot) {
-                    return Text(
-                      'Welcome back,',
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    );
-                  },
-                ),
-                const SizedBox(height: 4),
-                FutureBuilder<String?>(
-                  future: getUsername(),
-                  builder: (context, snapshot) {
-                    final name = snapshot.data ?? 'User';
-                    return Text(
-                      name,
-                      style: TextStyle(
-                        fontSize: 32,
-                        fontWeight: FontWeight.bold,
-                        color: Theme.of(context).colorScheme.primary,
-                        letterSpacing: -0.5,
-                      ),
-                    );
-                  },
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Ready to explore your media?',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Theme.of(
-                      context,
-                    ).colorScheme.onSurfaceVariant.withValues(alpha: 0.8),
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Row(
+          children: [
+            // Avatar
+            FutureBuilder<int?>(
+              future: getAvatarIndex(),
+              builder: (context, snapshot) {
+                final index = snapshot.data ?? 0;
+                return CircleAvatar(
+                  radius: 30,
+                  backgroundColor: Theme.of(context).colorScheme.primary,
+                  child: CircleAvatar(
+                    radius: 28,
+                    backgroundImage: AssetImage(
+                      'assets/ProfilePics/pic_${index + 1}.png',
+                    ),
+                    backgroundColor: Theme.of(context).colorScheme.surface,
                   ),
-                ),
-              ],
-            ),
-          ),
-          // Enhanced Settings Button
-          Container(
-            decoration: buttonDecoration(context),
-            child: IconButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const SettingsPage()),
                 );
               },
-              icon: Icon(
-                Icons.settings_rounded,
-                color: Theme.of(context).colorScheme.onPrimaryContainer,
-                size: 28,
-              ),
-              padding: const EdgeInsets.all(12),
             ),
-          ),
-        ],
+
+            // Padding
+            const SizedBox(width: 16),
+
+            // Greeting
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Time
+                  FutureBuilder<String>(
+                    future: getTimeBasedGreeting(),
+                    builder: (context, snapshot) {
+                      final greeting = snapshot.data ?? 'Welcome back';
+                      return Text(
+                        greeting,
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        ),
+                      );
+                    },
+                  ),
+
+                  // Name
+                  FutureBuilder<String?>(
+                    future: getUsername(),
+                    builder: (context, snapshot) {
+                      final name = snapshot.data ?? 'User';
+                      return ShaderMask(
+                        shaderCallback:
+                            (bounds) => LinearGradient(
+                              colors: [
+                                Theme.of(context).colorScheme.primary,
+                                Theme.of(context).colorScheme.secondary,
+                              ],
+                            ).createShader(bounds),
+                        child: Text(
+                          name,
+                          style: const TextStyle(
+                            fontSize: 28,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white,
+                            letterSpacing: -0.8,
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ),
+
+            // Settings
+            Container(
+              // Padding
+              margin: const EdgeInsets.only(right: 8),
+
+              // Theme
+              decoration: buttonDecoration(context),
+
+              // Content
+              child: IconButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const SettingsPage()),
+                  );
+                },
+                icon: Icon(
+                  Icons.settings_rounded,
+                  color: Theme.of(context).colorScheme.onPrimaryContainer,
+                  size: 26,
+                ),
+                padding: const EdgeInsets.all(10),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
