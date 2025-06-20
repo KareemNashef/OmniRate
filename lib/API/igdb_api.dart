@@ -48,7 +48,6 @@ Future<List<Game>> processAndCacheGameList(List<dynamic> rawGamesData) async {
     if (id == null || id == '0') {
       continue;
     }
-
     Game? existingGame = await HiveHelper.getGameByID(id);
     if (existingGame != null) {
       // Game found in cache, use its data directly

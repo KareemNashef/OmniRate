@@ -6,6 +6,7 @@ import 'package:omnirate/API/igdb_api.dart';
 
 // Local imports
 import 'package:omnirate/BasePages/base_entry_page.dart';
+import 'package:omnirate/Database/database_helper.dart';
 import 'package:omnirate/Database/model_entry.dart';
 import 'package:omnirate/Database/model_game.dart';
 import 'package:omnirate/Shared/utils.dart';
@@ -30,11 +31,16 @@ class GameEntryState extends EntryPageBaseState with TickerProviderStateMixin {
 
   bool relatedMediaLoaded = false;
 
+  // Entry
+  late Game currentEntry;
+
   // ===== Lifecycle Methods ===== //
 
   @override
   void initState() {
     super.initState();
+
+    currentEntry = widget.inEntry as Game;
 
     // Initialize animation controllers
     entryAnimationController = AnimationController(
@@ -91,24 +97,22 @@ class GameEntryState extends EntryPageBaseState with TickerProviderStateMixin {
   }
 
   void loadRelatedMedia() async {
-    final game = widget.inEntry as Game;
-
     // Load expansions
     List<Game?> currentExpansions = [];
-    if (game.expansions.isNotEmpty) {
-      currentExpansions = await getGamesByIDs(game.expansions);
+    if (currentEntry.expansions.isNotEmpty) {
+      currentExpansions = await getGamesByIDs(currentEntry.expansions);
     }
 
     // Load dlcs
     List<Game?> currentDlcs = [];
-    if (game.dlcs.isNotEmpty) {
-      currentDlcs = await getGamesByIDs(game.dlcs);
+    if (currentEntry.dlcs.isNotEmpty) {
+      currentDlcs = await getGamesByIDs(currentEntry.dlcs);
     }
 
     // Load similar games
     List<Game?> currentSimilarGames = [];
-    if (game.similarGames.isNotEmpty) {
-      currentSimilarGames = await getGamesByIDs(game.similarGames);
+    if (currentEntry.similarGames.isNotEmpty) {
+      currentSimilarGames = await getGamesByIDs(currentEntry.similarGames);
     }
 
     setState(() {
@@ -146,7 +150,6 @@ class GameEntryState extends EntryPageBaseState with TickerProviderStateMixin {
   }
 
   Widget gameInfo() {
-    final game = widget.inEntry as Game;
     return Column(
       children: [
         // Section header
@@ -159,13 +162,16 @@ class GameEntryState extends EntryPageBaseState with TickerProviderStateMixin {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              infoLine('Release date:', game.releaseDate),
+              infoLine('Release date:', currentEntry.releaseDate),
               divider(),
-              infoLine('Developer:', game.developer),
+              infoLine('Developer:', currentEntry.developer),
               divider(),
-              infoLine('Genres:', game.genres.join(', ')),
+              infoLine('Genres:', currentEntry.genres.join(', ')),
               divider(),
-              ExpandableText(label: 'Overview: ', content: game.overview),
+              ExpandableText(
+                label: 'Overview: ',
+                content: currentEntry.overview,
+              ),
             ],
           ),
         ),
@@ -217,13 +223,11 @@ class GameEntryState extends EntryPageBaseState with TickerProviderStateMixin {
             Expanded(
               child: buildCard(
                 'Hastily',
-                (widget.inEntry as Game).timeHaste == 'N/A'
+                currentEntry.timeHaste == 'N/A'
                     ? 'N/A'
-                    : (double.tryParse((widget.inEntry as Game).timeHaste) ??
-                            0) >
-                        999
+                    : (double.tryParse(currentEntry.timeHaste) ?? 0) > 999
                     ? '999+'
-                    : (widget.inEntry as Game).timeHaste,
+                    : currentEntry.timeHaste,
               ),
             ),
             // Padding
@@ -232,13 +236,11 @@ class GameEntryState extends EntryPageBaseState with TickerProviderStateMixin {
             Expanded(
               child: buildCard(
                 'Normally',
-                (widget.inEntry as Game).timeNormal == 'N/A'
+                currentEntry.timeNormal == 'N/A'
                     ? 'N/A'
-                    : (double.tryParse((widget.inEntry as Game).timeNormal) ??
-                            0) >
-                        999
+                    : (double.tryParse(currentEntry.timeNormal) ?? 0) > 999
                     ? '999+'
-                    : (widget.inEntry as Game).timeNormal,
+                    : currentEntry.timeNormal,
               ),
             ),
             // Padding
@@ -247,13 +249,11 @@ class GameEntryState extends EntryPageBaseState with TickerProviderStateMixin {
             Expanded(
               child: buildCard(
                 'Completely',
-                (widget.inEntry as Game).timeComplete == 'N/A'
+                currentEntry.timeComplete == 'N/A'
                     ? 'N/A'
-                    : (double.tryParse((widget.inEntry as Game).timeComplete) ??
-                            0) >
-                        999
+                    : (double.tryParse(currentEntry.timeComplete) ?? 0) > 999
                     ? '999+'
-                    : (widget.inEntry as Game).timeComplete,
+                    : currentEntry.timeComplete,
               ),
             ),
           ],
@@ -387,64 +387,70 @@ class GameEntryState extends EntryPageBaseState with TickerProviderStateMixin {
       );
     }
 
-    return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(gradient: gradientBackground(context)),
-        child: Stack(
-          children: [
-            // Page content
-            SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(8, 80, 8, 0),
+    return RefreshIndicator(
+      onRefresh: () async {
+        currentEntry = (await getGame(currentEntry.id, forceUpdate: true))!;
+        setState(() {});
+      },
+      child: Scaffold(
+        body: Container(
+          decoration: BoxDecoration(gradient: gradientBackground(context)),
+          child: Stack(
+            children: [
+              // Page content
+              SingleChildScrollView(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(8, 80, 8, 0),
+                  child: Column(
+                    children: [
+                      // Entry main
+                      entryMain(inCommentView: commentView),
+
+                      // Padding
+                      const SizedBox(height: 8),
+
+                      // Content switcher
+                      Stack(children: [gameContent(), commentContent()]),
+                    ],
+                  ),
+                ),
+              ),
+
+              // FAB and NavBar
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: 20,
                 child: Column(
                   children: [
-                    // Entry main
-                    entryMain(inCommentView: commentView),
-
-                    // Padding
-                    const SizedBox(height: 8),
-
-                    // Content switcher
-                    Stack(children: [gameContent(), commentContent()]),
+                    AnimatedSwitcher(
+                      duration: Duration(milliseconds: 300),
+                      transitionBuilder: (child, animation) {
+                        final offsetAnimation = Tween<Offset>(
+                          begin: Offset(0, 1),
+                          end: Offset(0, 0),
+                        ).animate(animation);
+                        return SlideTransition(
+                          position: offsetAnimation,
+                          child: child,
+                        );
+                      },
+                      child:
+                          commentView
+                              ? Column(
+                                children: [
+                                  addCommentFAB(),
+                                  const SizedBox(height: 8),
+                                ],
+                              )
+                              : SizedBox.shrink(),
+                    ),
+                    navigationBar(),
                   ],
                 ),
               ),
-            ),
-
-            // FAB and NavBar
-            Positioned(
-              left: 0,
-              right: 0,
-              bottom: 20,
-              child: Column(
-                children: [
-                  AnimatedSwitcher(
-                    duration: Duration(milliseconds: 300),
-                    transitionBuilder: (child, animation) {
-                      final offsetAnimation = Tween<Offset>(
-                        begin: Offset(0, 1),
-                        end: Offset(0, 0),
-                      ).animate(animation);
-                      return SlideTransition(
-                        position: offsetAnimation,
-                        child: child,
-                      );
-                    },
-                    child:
-                        commentView
-                            ? Column(
-                              children: [
-                                addCommentFAB(),
-                                const SizedBox(height: 8),
-                              ],
-                            )
-                            : SizedBox.shrink(),
-                  ),
-                  navigationBar(),
-                ],
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

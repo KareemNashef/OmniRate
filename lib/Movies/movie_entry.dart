@@ -324,65 +324,71 @@ class MovieEntryState extends EntryPageBaseState with TickerProviderStateMixin {
       );
     }
 
-    return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(gradient: gradientBackground(context)),
+    return RefreshIndicator(
+      onRefresh: () async {
+        currentMovie = (await getMovie(currentMovie.id, forceUpdate: true))!;
+        setState(() {});
+      },
+      child: Scaffold(
+        body: Container(
+          decoration: BoxDecoration(gradient: gradientBackground(context)),
 
-        child: Stack(
-          children: [
-            // Page content
-            SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(8, 80, 8, 0),
+          child: Stack(
+            children: [
+              // Page content
+              SingleChildScrollView(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(8, 80, 8, 0),
+                  child: Column(
+                    children: [
+                      // Entry main
+                      entryMain(inCommentView: commentView),
+
+                      // Padding
+                      const SizedBox(height: 8),
+
+                      // Content switcher
+                      Stack(children: [movieContent(), commentContent()]),
+                    ],
+                  ),
+                ),
+              ),
+
+              // FAB and NavBar
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: 20,
                 child: Column(
                   children: [
-                    // Entry main
-                    entryMain(inCommentView: commentView),
-
-                    // Padding
-                    const SizedBox(height: 8),
-
-                    // Content switcher
-                    Stack(children: [movieContent(), commentContent()]),
+                    AnimatedSwitcher(
+                      duration: Duration(milliseconds: 300),
+                      transitionBuilder: (child, animation) {
+                        final offsetAnimation = Tween<Offset>(
+                          begin: Offset(0, 1),
+                          end: Offset(0, 0),
+                        ).animate(animation);
+                        return SlideTransition(
+                          position: offsetAnimation,
+                          child: child,
+                        );
+                      },
+                      child:
+                          commentView
+                              ? Column(
+                                children: [
+                                  addCommentFAB(),
+                                  const SizedBox(height: 8),
+                                ],
+                              )
+                              : SizedBox.shrink(),
+                    ),
+                    navigationBar(),
                   ],
                 ),
               ),
-            ),
-
-            // FAB and NavBar
-            Positioned(
-              left: 0,
-              right: 0,
-              bottom: 20,
-              child: Column(
-                children: [
-                  AnimatedSwitcher(
-                    duration: Duration(milliseconds: 300),
-                    transitionBuilder: (child, animation) {
-                      final offsetAnimation = Tween<Offset>(
-                        begin: Offset(0, 1),
-                        end: Offset(0, 0),
-                      ).animate(animation);
-                      return SlideTransition(
-                        position: offsetAnimation,
-                        child: child,
-                      );
-                    },
-                    child:
-                        commentView
-                            ? Column(
-                              children: [
-                                addCommentFAB(),
-                                const SizedBox(height: 8),
-                              ],
-                            )
-                            : SizedBox.shrink(),
-                  ),
-                  navigationBar(),
-                ],
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
