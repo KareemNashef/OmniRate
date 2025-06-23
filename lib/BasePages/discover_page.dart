@@ -192,6 +192,7 @@ class DiscoverPageState extends State<DiscoverPage> {
         return Icons.explore;
     }
   }
+  
   // ===== Class Widgets ===== //
 
   Widget listGrid() {

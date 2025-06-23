@@ -152,6 +152,27 @@ class HiveHelper {
     return box.get(id);
   }
 
+  // Get a list of games by their IDs
+  static Future<Map<String, Game>> getGamesByIDs(List<String> ids) async {
+    final box = Hive.box<Game>(boxGames);
+    final Map<String, Game> foundGames = {};
+    for (final id in ids) {
+      final game = box.get(id);
+      if (game != null) {
+        foundGames[id] = game;
+      }
+    }
+    return foundGames;
+  }
+
+  // Insert a list of games
+  static Future<void> insertAllGames(List<Game> games) async {
+    if (games.isEmpty) return;
+    final box = Hive.box<Game>(boxGames);
+    final Map<String, Game> gamesMap = {for (var g in games) g.id: g};
+    await box.putAll(gamesMap);
+  }
+
   // Update a game
   static Future<void> updateGame(Game game) async {
     await insertGame(game);

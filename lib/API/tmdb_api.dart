@@ -141,6 +141,11 @@ Future<Show?> getShowEntry(String inID) async {
   return showFromJson(detailsData);
 }
 
+Future<List<Show?>> getShowsByIDs(List<String> ids) async {
+  final futures = ids.map((id) => getShowEntry(id)).toList();
+  return await Future.wait(futures);
+}
+
 Future<List<Show>> searchShowsByName(String query) async {
   final searchData = await get('/search/tv', params: {'query': query});
   final results = searchData['results'] as List;
@@ -192,6 +197,11 @@ Future<Movie?> getMovieEntry(String inID) async {
   final detailsData = await get('/movie/$inID');
 
   return movieFromJson(detailsData);
+}
+
+Future<List<Movie?>> getMoviesByIDs(List<String> ids) async {
+  final futures = ids.map((id) => getMovieEntry(id)).toList();
+  return await Future.wait(futures);
 }
 
 Future<List<Movie>> searchMoviesByName(String query) async {

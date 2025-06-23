@@ -496,31 +496,77 @@ class FirebaseService {
 
   // ===== Shared Database ===== //
 
-  // Save entry to database
+  // Save entry to the appropriate collection
   Future<void> saveEntry(MediaEntry entry) async {
-    await _firestore.collection('database').doc(entry.mediaType.toString()).set(
-      {entry.id: entry.toMap()},
-      SetOptions(merge: true),
-    );
+    // Determine the collection name from the media type
+    String collectionName;
+    switch (entry.mediaType) {
+      case MediaType.game:
+        collectionName = 'games';
+        break;
+      case MediaType.movie:
+        collectionName = 'movies';
+        break;
+      case MediaType.show:
+        collectionName = 'shows';
+        break;
+    }
+
+    // Set the document with the entry's ID in the correct collection
+    await _firestore
+        .collection(collectionName)
+        .doc(entry.id)
+        .set(entry.toMap());
   }
 
-  // Load entry from database
+  // Load a single entry from its specific document
   Future<MediaEntry?> loadEntry(String type, String id) async {
-    final doc = await _firestore.collection('database').doc(type).get();
-    final data = doc.data();
-    if (data == null || !data.containsKey(id)) return null;
+    // Use the new, more descriptive type string like 'games'
+    final doc = await _firestore.collection(type).doc(id).get();
 
-    final entryData = data[id];
+    if (!doc.exists || doc.data() == null) {
+      return null;
+    }
 
+    final entryData = doc.data()!;
+
+    // The 'type' parameter should now be 'games', 'movies', etc.
     switch (type) {
-      case 'MediaType.game':
+      case 'games':
         return Game.fromMap(entryData);
-      case 'MediaType.show':
+      case 'shows':
         return Show.fromMap(entryData);
-      case 'MediaType.movie':
+      case 'movies':
         return Movie.fromMap(entryData);
       default:
         return null;
     }
+  }
+
+  Future<Map<String, Game>> loadMultipleGames(List<String> ids) async {
+    if (ids.isEmpty) return {};
+
+    final Map<String, Game> foundGames = {};
+
+    // Firestore's 'whereIn' query is limited to 30 elements per query.
+    // We need to break our list of IDs into chunks of 30.
+    for (var i = 0; i < ids.length; i += 30) {
+      final chunk = ids.sublist(i, i + 30 > ids.length ? ids.length : i + 30);
+
+      // This is the optimized query. It makes ONE network request for each chunk.
+      final querySnapshot =
+          await _firestore
+              .collection('games')
+              .where(FieldPath.documentId, whereIn: chunk)
+              .get();
+
+      for (final doc in querySnapshot.docs) {
+        if (doc.exists) {
+          foundGames[doc.id] = Game.fromMap(doc.data());
+        }
+      }
+    }
+
+    return foundGames;
   }
 }

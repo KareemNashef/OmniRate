@@ -44,17 +44,20 @@ class BlankCarousel extends StatelessWidget {
     List<MediaEntry> inEntries,
   ) {
     final pageMap = {
-      "Games": () => DiscoverPage(
+      "Games":
+          () => DiscoverPage(
             inType: "Games",
             getFilteredItems: getFilteredGames,
             inDisplayItems: inEntries,
           ),
-      "Shows": () => DiscoverPage(
+      "Shows":
+          () => DiscoverPage(
             inType: "Shows",
             getFilteredItems: getFilteredShows,
             inDisplayItems: inEntries,
           ),
-      "Movies": () => DiscoverPage(
+      "Movies":
+          () => DiscoverPage(
             inType: "Movies",
             getFilteredItems: getFilteredMovies,
             inDisplayItems: inEntries,
@@ -62,12 +65,9 @@ class BlankCarousel extends StatelessWidget {
     };
 
     final page = pageMap[inType]?.call();
-if (page != null) {
-  Navigator.push(
-    context,
-    MaterialPageRoute(builder: (context) => page),
-  );
-}
+    if (page != null) {
+      Navigator.push(context, MaterialPageRoute(builder: (context) => page));
+    }
   }
 
   void _navigateToEntry(BuildContext context, String inType, MediaEntry entry) {
@@ -136,9 +136,10 @@ if (page != null) {
         // Carousel
         SizedBox(
           height: 240,
-          child: inEntries.isEmpty
-              ? _buildEmptyState(context, emptyMessage)
-              : _buildCarouselList(context, inType, inEntries, inShowArrow),
+          child:
+              inEntries.isEmpty
+                  ? _buildEmptyState(context, emptyMessage)
+                  : _buildCarouselList(context, inType, inEntries, inShowArrow),
         ),
       ],
     );
@@ -163,7 +164,9 @@ if (page != null) {
           style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w500,
-            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.8),
+            color: Theme.of(
+              context,
+            ).colorScheme.onSurface.withValues(alpha: 0.8),
           ),
         ),
       ),
@@ -204,14 +207,7 @@ if (page != null) {
           borderRadius: BorderRadius.circular(20),
           onTap: () => _navigateToFullList(context, inType, inEntries),
           child: Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(20),
-              color: Theme.of(context).colorScheme.primaryContainer,
-              border: Border.all(
-                color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.2),
-                width: 1,
-              ),
-            ),
+            decoration: containerDecoration(context),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -219,7 +215,9 @@ if (page != null) {
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.2),
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.primary.withValues(alpha: 0.2),
                   ),
                   child: Icon(
                     Icons.arrow_forward_rounded,
@@ -288,7 +286,9 @@ if (page != null) {
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(12),
-                  color: Theme.of(context).colorScheme.surfaceContainerHigh.withValues(alpha: 0.5),
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.surfaceContainerHigh.withValues(alpha: 0.5),
                 ),
                 child: Text(
                   entry.name,

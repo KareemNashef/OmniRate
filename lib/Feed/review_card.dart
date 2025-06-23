@@ -93,7 +93,7 @@ class ReviewCard extends StatelessWidget {
       decoration: containerDecoration(context),
       margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(15),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

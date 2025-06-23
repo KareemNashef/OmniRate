@@ -11,6 +11,7 @@ import 'package:omnirate/Database/database_helper.dart';
 import 'package:omnirate/Database/model_game.dart';
 import 'package:omnirate/Database/model_movie.dart';
 import 'package:omnirate/Database/model_show.dart';
+import 'package:omnirate/Home/ai_discovery_page.dart';
 import 'package:omnirate/Settings/settings_main.dart';
 import 'package:omnirate/Shared/firebase_service.dart';
 import 'package:omnirate/Shared/user_data.dart';
@@ -27,8 +28,15 @@ class HomeMainPage extends MediaPageBase {
   HomeMainPageState createState() => HomeMainPageState();
 }
 
-class HomeMainPageState extends MediaPageBaseState with RouteAware {
+class HomeMainPageState extends MediaPageBaseState
+    with RouteAware, TickerProviderStateMixin {
   // ===== Class variables ===== //
+
+  // Controllers
+  late AnimationController _sparkleAnimationController;
+  late AnimationController _arrowAnimationController;
+  late Animation<double> _sparkleAnimation;
+  late Animation<double> _arrowAnimation;
 
   // Media lists
   late Future<List<UserMediaEntry>> futureGames;
@@ -48,6 +56,32 @@ class HomeMainPageState extends MediaPageBaseState with RouteAware {
   @override
   void initState() {
     super.initState();
+
+    // Sparkle rotation animation
+    _sparkleAnimationController = AnimationController(
+      duration: const Duration(seconds: 3),
+      vsync: this,
+    )..repeat();
+
+    _sparkleAnimation = Tween<double>(begin: 0, end: 1).animate(
+      CurvedAnimation(
+        parent: _sparkleAnimationController,
+        curve: Curves.linear,
+      ),
+    );
+
+    // Arrow bounce animation
+    _arrowAnimationController = AnimationController(
+      duration: const Duration(milliseconds: 1500),
+      vsync: this,
+    )..repeat(reverse: true);
+
+    _arrowAnimation = Tween<double>(begin: 0, end: 1).animate(
+      CurvedAnimation(
+        parent: _arrowAnimationController,
+        curve: Curves.easeInOut,
+      ),
+    );
 
     initOngoingMedia();
   }
@@ -111,6 +145,8 @@ class HomeMainPageState extends MediaPageBaseState with RouteAware {
 
   @override
   void dispose() {
+    _sparkleAnimationController.dispose();
+    _arrowAnimationController.dispose();
     routeObserver.unsubscribe(this);
     super.dispose();
   }
@@ -124,87 +160,6 @@ class HomeMainPageState extends MediaPageBaseState with RouteAware {
   }
 
   // ===== Class Widgets ===== //
-
-  Widget buildProgressCard(String type, IconData icon, Color color) {
-    return GestureDetector(
-      onTap: () {
-        Navigator.of(context)
-            .push(
-              MaterialPageRoute<void>(
-                builder: (context) => ListPage(listType: type),
-              ),
-            )
-            .then((_) => setState(() {}));
-      },
-      child: FutureBuilder<List<UserMediaEntry>?>(
-        future: getMediaByType(type),
-        builder: (context, snapshot) {
-          final count = snapshot.data?.length ?? 0;
-          return Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  color.withValues(alpha: 0.1),
-                  color.withValues(alpha: 0.05),
-                ],
-              ),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: color.withValues(alpha: 0.2), width: 1),
-              boxShadow: [
-                BoxShadow(
-                  color: color.withValues(alpha: 0.1),
-                  blurRadius: 10,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
-            child: Column(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: color.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(15),
-                  ),
-                  child: Icon(icon, color: color, size: 24),
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  '$count',
-                  style: TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
-                    color: color,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  type,
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
-                ),
-                Text(
-                  'Tracked',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Theme.of(
-                      context,
-                    ).colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
-                  ),
-                ),
-              ],
-            ),
-          );
-        },
-      ),
-    );
-  }
 
   Widget buildWelcomeHeader() {
     return Container(
@@ -322,6 +277,87 @@ class HomeMainPageState extends MediaPageBaseState with RouteAware {
     );
   }
 
+  Widget buildProgressCard(String type, IconData icon, Color color) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.of(context)
+            .push(
+              MaterialPageRoute<void>(
+                builder: (context) => ListPage(listType: type),
+              ),
+            )
+            .then((_) => setState(() {}));
+      },
+      child: FutureBuilder<List<UserMediaEntry>?>(
+        future: getMediaByType(type),
+        builder: (context, snapshot) {
+          final count = snapshot.data?.length ?? 0;
+          return Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  color.withValues(alpha: 0.1),
+                  color.withValues(alpha: 0.05),
+                ],
+              ),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: color.withValues(alpha: 0.2), width: 1),
+              boxShadow: [
+                BoxShadow(
+                  color: color.withValues(alpha: 0.1),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Column(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: color.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(15),
+                  ),
+                  child: Icon(icon, color: color, size: 24),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  '$count',
+                  style: TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                    color: color,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  type,
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                ),
+                Text(
+                  'Tracked',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+
   Widget buildProgressStats() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -350,6 +386,155 @@ class HomeMainPageState extends MediaPageBaseState with RouteAware {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget buildDiscoverButton() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: GestureDetector(
+        onTap: () {
+          Navigator.of(context)
+              .push(
+                MaterialPageRoute<void>(
+                  builder: (context) => AIDiscoveryPage(),
+                ),
+              )
+              .then((_) => setState(() {}));
+        },
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [Color(0xFF667EEA), Color(0xFF764BA2), Color(0xFF667EEA)],
+              stops: [0.0, 0.5, 1.0],
+            ),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: Colors.white.withValues(alpha: 0.2),
+              width: 1,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF667EEA).withValues(alpha: 0.3),
+                blurRadius: 20,
+                offset: const Offset(0, 8),
+                spreadRadius: 2,
+              ),
+              BoxShadow(
+                color: Colors.white.withValues(alpha: 0.1),
+                blurRadius: 10,
+                offset: const Offset(-2, -2),
+              ),
+            ],
+          ),
+          child: Stack(
+            children: [
+              // Animated background particles
+              Positioned.fill(child: CustomPaint(painter: ParticlesPainter())),
+              // Main content
+              Row(
+                children: [
+                  // AI Icon with pulsing effect
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(15),
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.3),
+                        width: 1,
+                      ),
+                    ),
+                    child: Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        // Pulsing glow effect
+                        Container(
+                          width: 32,
+                          height: 32,
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.2),
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                        ),
+                        // Main AI icon
+                        const Icon(
+                          Icons.auto_awesome,
+                          color: Colors.white,
+                          size: 24,
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  // Text content
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            const Text(
+                              'AI Discovery',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            // Animated sparkle
+                            AnimatedBuilder(
+                              animation: _sparkleAnimation,
+                              builder: (context, child) {
+                                return Transform.rotate(
+                                  angle: _sparkleAnimation.value * 2 * 3.14159,
+                                  child: const Icon(
+                                    Icons.stars,
+                                    color: Colors.white,
+                                    size: 16,
+                                  ),
+                                );
+                              },
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Personalized recommendations',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.white.withValues(alpha: 0.9),
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  // Arrow with subtle animation
+                  AnimatedBuilder(
+                    animation: _arrowAnimation,
+                    builder: (context, child) {
+                      return Transform.translate(
+                        offset: Offset(_arrowAnimation.value * 2, 0),
+                        child: Icon(
+                          Icons.arrow_forward_ios_rounded,
+                          color: Colors.white.withValues(alpha: 0.8),
+                          size: 16,
+                        ),
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -498,7 +683,10 @@ class HomeMainPageState extends MediaPageBaseState with RouteAware {
                 const SizedBox(height: 8),
 
                 buildProgressStats(),
-                const SizedBox(height: 32),
+                const SizedBox(height: 12),
+
+                buildDiscoverButton(),
+                const SizedBox(height: 12),
 
                 if (ongoingGames.isNotEmpty ||
                     ongoingShows.isNotEmpty ||
@@ -548,4 +736,41 @@ class HomeMainPageState extends MediaPageBaseState with RouteAware {
       ),
     );
   }
+}
+
+class ParticlesPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint =
+        Paint()
+          ..color = Colors.white.withValues(alpha: 0.1)
+          ..style = PaintingStyle.fill;
+
+    // Draw floating particles
+    final particles = [
+      Offset(size.width * 0.2, size.height * 0.3),
+      Offset(size.width * 0.7, size.height * 0.2),
+      Offset(size.width * 0.8, size.height * 0.7),
+      Offset(size.width * 0.3, size.height * 0.8),
+      Offset(size.width * 0.9, size.height * 0.4),
+    ];
+
+    for (final particle in particles) {
+      canvas.drawCircle(particle, 2, paint);
+    }
+
+    // Draw connecting lines
+    final linePaint =
+        Paint()
+          ..color = Colors.white.withValues(alpha: 0.05)
+          ..strokeWidth = 0.5
+          ..style = PaintingStyle.stroke;
+
+    canvas.drawLine(particles[0], particles[1], linePaint);
+    canvas.drawLine(particles[1], particles[2], linePaint);
+    canvas.drawLine(particles[3], particles[4], linePaint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

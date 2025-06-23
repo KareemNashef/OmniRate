@@ -33,84 +33,99 @@ String timestampToDate(int? timestamp) {
 }
 
 Future<List<Game>> processAndCacheGameList(List<dynamic> rawGamesData) async {
-  // Initialize list
+  final stopwatch = Stopwatch()..start();
+
+  if (rawGamesData.isEmpty) {
+    stopwatch.stop();
+    return [];
+  }
+
+  // Final list of games to be returned
   List<Game> readyGamesList = [];
-  if (rawGamesData.isEmpty) return readyGamesList;
+  // Games found in Firebase or fetched from API that need to be saved to local Hive cache
+  List<Game> gamesToCacheInHive = [];
 
-  // Initialize lists
-  List<Game> gamesToCacheEventually = []; // Games to cache eventually
-  List<dynamic> gamesToProcessFromApi = []; // Games to fetch from API
+  // Create a map of the raw data for easy lookup by ID later
+  final Map<int, dynamic> rawGamesMap = {
+    for (var g in rawGamesData)
+      if (g['id'] != null) g['id']: g,
+  };
+  final allGameIds = rawGamesMap.keys.map((id) => id.toString()).toList();
 
-  // Step 1: Check if any game is in cache
-  for (var rawGameData in rawGamesData) {
-    final String? id = rawGameData['id']?.toString();
+  // ----- Step 1: Batch check local Hive cache -----
+  final Map<String, Game> hiveCacheHits = await HiveHelper.getGamesByIDs(
+    allGameIds,
+  );
+  readyGamesList.addAll(hiveCacheHits.values);
 
-    if (id == null || id == '0') {
-      continue;
-    }
-    Game? existingGame = await HiveHelper.getGameByID(id);
-    if (existingGame != null) {
-      // Game found in cache, use its data directly
-      readyGamesList.add(existingGame);
-    } else {
-      // Game not in cache, Check if it is in FireBase
-      final firebaseService = FirebaseService();
-      final cloud =
-          await firebaseService.loadEntry("MediaType.game", id) as Game?;
-      if (cloud != null) {
-        await HiveHelper.insertGame(cloud);
-        readyGamesList.add(cloud);
-      } else {
-        // Game not in cache or FireBase, add to list
-        gamesToProcessFromApi.add(rawGameData);
-      }
-    }
+  final idsNotInHive =
+      allGameIds.where((id) => !hiveCacheHits.containsKey(id)).toList();
+
+  // If all games were in the local cache, we are done.
+  if (idsNotInHive.isEmpty) {
+    stopwatch.stop();
+    // The list is already sorted by the original API response order, so we need to re-sort it.
+    return readyGamesList..sort(
+      (a, b) => allGameIds.indexOf(a.id).compareTo(allGameIds.indexOf(b.id)),
+    );
   }
 
-  // If all games were found in cache, we're done with API calls for this list
-  if (gamesToProcessFromApi.isEmpty) {
-    return readyGamesList;
+  // ----- Step 2: Batch check Firebase (cloud) cache -----
+  final firebaseService = FirebaseService();
+  final Map<String, Game> firebaseCacheHits = await firebaseService
+      .loadMultipleGames(idsNotInHive);
+
+  readyGamesList.addAll(firebaseCacheHits.values);
+  gamesToCacheInHive.addAll(
+    firebaseCacheHits.values,
+  ); // Queue these to be saved in Hive later
+
+  final idsToFetchFromApi =
+      idsNotInHive.where((id) => !firebaseCacheHits.containsKey(id)).toList();
+
+  // If all remaining games were found in Firebase, we just need to cache them and return.
+  if (idsToFetchFromApi.isEmpty) {
+    if (gamesToCacheInHive.isNotEmpty) {
+      await HiveHelper.insertAllGames(gamesToCacheInHive);
+    }
+    stopwatch.stop();
+    return readyGamesList..sort(
+      (a, b) => allGameIds.indexOf(a.id).compareTo(allGameIds.indexOf(b.id)),
+    );
   }
 
-  // Step 2: Batch fetch game data from API
+  // ----- Step 3: Prepare and Batch fetch remaining games from IGDB API -----
+  final List<dynamic> gamesToProcessFromApi =
+      idsToFetchFromApi.map((id) => rawGamesMap[int.parse(id)]!).toList();
+
+  // Prepare all the necessary ID lists for batch fetching
   List<int> gameIdsToFetch =
       gamesToProcessFromApi.map<int>((g) => g['id'] as int).toList();
   List<int> coverIdsToFetch =
       gamesToProcessFromApi.map<int>((g) => (g['cover'] ?? 0) as int).toList();
   List<int> artworkIdsToFetch =
-      gamesToProcessFromApi.map<int>((g) {
-        final arts = g['artworks'];
-        return (arts != null && arts.isNotEmpty ? arts[0] : 0) as int;
-      }).toList();
+      gamesToProcessFromApi
+          .map<int>(
+            (g) =>
+                (g['artworks'] != null && g['artworks'].isNotEmpty
+                        ? g['artworks'][0]
+                        : 0)
+                    as int,
+          )
+          .toList();
+  Map<int, List<int>> gameToInvolvedCompanyIdsMapForFetching = {
+    for (var gameData in gamesToProcessFromApi)
+      gameData['id'] as int: List<int>.from(
+        gameData['involved_companies'] ?? [],
+      ),
+  };
 
-  Map<int, List<int>> gameToInvolvedCompanyIdsMapForFetching = {};
-  for (var gameData in gamesToProcessFromApi) {
-    if (gameData['id'] != null && gameData['involved_companies'] != null) {
-      gameToInvolvedCompanyIdsMapForFetching[gameData['id']
-          as int] = List<int>.from(gameData['involved_companies']);
-    } else if (gameData['id'] != null) {
-      gameToInvolvedCompanyIdsMapForFetching[gameData['id'] as int] = [];
-    }
-  }
-
-  // Perform batch fetches concurrently for the filtered list
-  final EagerFuture<Map<int, String>> coverUrlsFuture = EagerFuture(
-    batchFetchCoverUrls(coverIdsToFetch),
-  );
-  final EagerFuture<Map<int, String>> artworkUrlsFuture = EagerFuture(
-    batchFetchArtworkUrls(artworkIdsToFetch),
-  );
-  final EagerFuture<Map<int, Map<String, String>>> gameTimesFuture =
-      EagerFuture(batchFetchGameTimes(gameIdsToFetch));
-  final EagerFuture<Map<int, String>> developerNamesFuture = EagerFuture(
-    batchFetchDeveloperNames(gameToInvolvedCompanyIdsMapForFetching),
-  );
-
+  // Perform all API fetches concurrently
   final results = await Future.wait([
-    coverUrlsFuture,
-    artworkUrlsFuture,
-    gameTimesFuture,
-    developerNamesFuture,
+    batchFetchCoverUrls(coverIdsToFetch),
+    batchFetchArtworkUrls(artworkIdsToFetch),
+    batchFetchGameTimes(gameIdsToFetch),
+    batchFetchDeveloperNames(gameToInvolvedCompanyIdsMapForFetching),
   ]);
 
   final Map<int, String> fetchedCoverUrls = results[0] as Map<int, String>;
@@ -119,96 +134,82 @@ Future<List<Game>> processAndCacheGameList(List<dynamic> rawGamesData) async {
       results[2] as Map<int, Map<String, String>>;
   final Map<int, String> fetchedDeveloperNames = results[3] as Map<int, String>;
 
-  // ----- Step 3: Construct Game objects for API-fetched games and add to cache list -----
+  // ----- Step 4: Construct Game objects and save to Firebase -----
+  List<Game> newlyFetchedGames = [];
+  List<Future> firebaseSaveFutures = [];
+
   for (var gameData in gamesToProcessFromApi) {
-    final String gameId = gameData['id'].toString();
-    final String name = gameData['name'] ?? 'N/A';
-
-    // Data from initial fetch (gamesToProcessFromApi contains this)
-    final String rating =
-        gameData['rating'] != null
-            ? (double.parse(gameData['rating'].toString()) / 10)
-                .toStringAsFixed(1)
-            : '0.0';
-
-    final List<String> genres =
-        (gameData['genres'] as List<dynamic>?)
-            ?.map((g) => g['name'].toString())
-            .toList() ??
-        [];
-
-    final String overview = gameData['summary'] ?? 'N/A';
-
-    final String releaseDate = timestampToDate(gameData['first_release_date']);
-
-    // Data from batch fetches
-    final String thumbnailUrl =
-        fetchedCoverUrls[gameData['cover'] ?? 0] ?? gamesMissingCoverUrl;
-    final String artworkUrl =
-        fetchedArtworkUrls[(gameData['artworks'] != null &&
-                gameData['artworks'].isNotEmpty
-            ? gameData['artworks'][0]
-            : 0)] ??
-        'N/A';
-
-    final Map<String, String> times =
-        fetchedGameTimes[int.parse(gameId)] ??
+    final gameId = gameData['id'];
+    final times =
+        fetchedGameTimes[gameId] ??
         {'timeHaste': 'N/A', 'timeNormal': 'N/A', 'timeComplete': 'N/A'};
-    final String developer = fetchedDeveloperNames[int.parse(gameId)] ?? 'N/A';
-
-    final List<String> expansions =
-        (gameData['expansions'] as List<dynamic>?)
-            ?.map((g) => g.toString())
-            .toList() ??
-        [];
-
-    final List<String> dlcs =
-        (gameData['dlcs'] as List<dynamic>?)
-            ?.map((g) => g.toString())
-            .toList() ??
-        [];
-
-    final List<String> similarGames =
-        (gameData['similar_games'] as List<dynamic>?)
-            ?.map((g) => g.toString())
-            .toList() ??
-        [];
 
     Game game = Game(
-      id: gameId,
-      name: name,
-      thumbnailUrl: thumbnailUrl,
-      artworkUrl: artworkUrl,
-      rating: rating,
-      releaseDate: releaseDate,
-      developer: developer,
-      genres: genres,
-      overview: overview,
+      id: gameId.toString(),
+      name: gameData['name'] ?? 'N/A',
+      thumbnailUrl:
+          fetchedCoverUrls[gameData['cover'] ?? 0] ?? gamesMissingCoverUrl,
+      artworkUrl:
+          fetchedArtworkUrls[(gameData['artworks'] != null &&
+                  gameData['artworks'].isNotEmpty
+              ? gameData['artworks'][0]
+              : 0)] ??
+          'N/A',
+      rating:
+          gameData['rating'] != null
+              ? (double.parse(gameData['rating'].toString()) / 10)
+                  .toStringAsFixed(1)
+              : '0.0',
+      releaseDate: timestampToDate(gameData['first_release_date']),
+      developer: fetchedDeveloperNames[gameId] ?? 'N/A',
+      genres:
+          (gameData['genres'] as List<dynamic>?)
+              ?.map((g) => g['name'].toString())
+              .toList() ??
+          [],
+      overview: gameData['summary'] ?? 'N/A',
       timeHaste: times['timeHaste']!,
       timeNormal: times['timeNormal']!,
       timeComplete: times['timeComplete']!,
-      expansions: expansions,
-      dlcs: dlcs,
-      similarGames: similarGames,
+      expansions:
+          (gameData['expansions'] as List<dynamic>?)
+              ?.map((g) => g.toString())
+              .toList() ??
+          [],
+      dlcs:
+          (gameData['dlcs'] as List<dynamic>?)
+              ?.map((g) => g.toString())
+              .toList() ??
+          [],
+      similarGames:
+          (gameData['similar_games'] as List<dynamic>?)
+              ?.map((g) => g.toString())
+              .toList() ??
+          [],
     );
 
-    // Add game to cache list
-    gamesToCacheEventually.add(game);
-
-    // Add game to Firebase
-    final firebaseService = FirebaseService();
-    await firebaseService.saveEntry(game);
-
-    // Add game to ready list
-    readyGamesList.add(game);
+    newlyFetchedGames.add(game);
+    // Add the save operation to a list of futures to run them concurrently
+    firebaseSaveFutures.add(firebaseService.saveEntry(game));
   }
 
-  // ----- Step 4: Cache all newly fetched games -----
-  for (var game in gamesToCacheEventually) {
-    await HiveHelper.insertGame(game);
+  // Wait for all Firebase saves to complete
+  await Future.wait(firebaseSaveFutures);
+
+  readyGamesList.addAll(newlyFetchedGames);
+  gamesToCacheInHive.addAll(newlyFetchedGames);
+
+  // ----- Step 5: Batch write all new games to local Hive cache -----
+  if (gamesToCacheInHive.isNotEmpty) {
+    await HiveHelper.insertAllGames(gamesToCacheInHive);
   }
 
-  return readyGamesList;
+  stopwatch.stop();
+
+  // Re-sort the final list to match the original order from the initial API call
+  return readyGamesList..sort(
+    (a, b) => allGameIds.indexOf(a.id).compareTo(allGameIds.indexOf(b.id)),
+  );
 }
 
 // ========== Batch Fetch Functions ========== //
@@ -293,90 +294,55 @@ Future<Map<int, String>> batchFetchDeveloperNames(
 ) async {
   if (gameToInvolvedCompanyIdsMap.isEmpty) return {};
 
-  // Initialize the map
   Map<int, String> gameDeveloperMap = {};
+  // Initialize all games with 'N/A' to handle cases where no developer is found
+  for (var gameId in gameToInvolvedCompanyIdsMap.keys) {
+    gameDeveloperMap[gameId] = 'N/A';
+  }
 
-  // Get a list of unique ids
   List<int> allInvolvedCompanyIds =
       gameToInvolvedCompanyIdsMap.values.expand((ids) => ids).toSet().toList();
 
-  // Return 'N/A' to all if there are no companies
   if (allInvolvedCompanyIds.isEmpty) {
-    for (var gameId in gameToInvolvedCompanyIdsMap.keys) {
-      gameDeveloperMap[gameId] = 'N/A';
-    }
-    return gameDeveloperMap;
+    return gameDeveloperMap; // Already initialized to 'N/A'
   }
 
-  // 1. Fetch company IDs from involved_company IDs
-  final involvedQuery = '''
-    fields id, company, developer; 
+  // 1. Fetch involved company info AND the company name in a single call.
+  // We expand the 'company' field to get its 'name'.
+  final query = '''
+    fields game, company.name; 
     where id = (${allInvolvedCompanyIds.join(',')}) & developer = true;
     limit ${allInvolvedCompanyIds.length};
   ''';
-  final involvedResponse = await postRequest(
-    gamesInvolvedCompaniesUrl,
-    involvedQuery,
-  );
-  if (involvedResponse.statusCode != 200) {
-    for (var gameId in gameToInvolvedCompanyIdsMap.keys) {
-      gameDeveloperMap[gameId] = 'N/A';
-    }
-    return gameDeveloperMap;
+
+  final response = await postRequest(gamesInvolvedCompaniesUrl, query);
+  if (response.statusCode != 200) {
+    return gameDeveloperMap; // Return the map with 'N/A' values
   }
 
-  final List<dynamic> involvedDataList = jsonDecode(involvedResponse.body);
-  Map<int, int> involvedIdToCompanyIdMap = {};
+  final List<dynamic> involvedDataList = jsonDecode(response.body);
+
+  // 2. Build a map of Game ID -> List of Developer Names
+  Map<int, List<String>> tempGameToDevsMap = {};
   for (var involvedItem in involvedDataList) {
-    if (involvedItem['id'] != null && involvedItem['company'] != null) {
-      involvedIdToCompanyIdMap[involvedItem['id']] = involvedItem['company'];
+    // Ensure the required fields exist and are not null
+    if (involvedItem['game'] != null &&
+        involvedItem['company'] != null &&
+        involvedItem['company']['name'] != null) {
+      final int gameId = involvedItem['game'];
+      final String devName = involvedItem['company']['name'];
+
+      // Initialize the list if it doesn't exist for this gameId
+      tempGameToDevsMap.putIfAbsent(gameId, () => []);
+      tempGameToDevsMap[gameId]!.add(devName);
     }
   }
 
-  final List<int> companyIds = involvedIdToCompanyIdMap.values.toSet().toList();
-  if (companyIds.isEmpty) {
-    for (var gameId in gameToInvolvedCompanyIdsMap.keys) {
-      gameDeveloperMap[gameId] = 'N/A';
+  // 3. Join the developer names for each game and update the final map.
+  tempGameToDevsMap.forEach((gameId, devNames) {
+    if (devNames.isNotEmpty) {
+      gameDeveloperMap[gameId] = devNames.join(', ');
     }
-    return gameDeveloperMap;
-  }
-
-  // 2. Fetch company names from company IDs
-  final companyQuery = '''
-    fields id, name;
-    where id = (${companyIds.join(',')});
-    limit ${companyIds.length};
-  ''';
-  final companyResponse = await postRequest(gamesCompanyNamesUrl, companyQuery);
-  if (companyResponse.statusCode != 200) {
-    for (var gameId in gameToInvolvedCompanyIdsMap.keys) {
-      gameDeveloperMap[gameId] = 'N/A';
-    }
-    return gameDeveloperMap;
-  }
-
-  final List<dynamic> companiesData = jsonDecode(companyResponse.body);
-  Map<int, String> companyIdToNameMap = {}; // company.id -> company.name
-  for (var companyItem in companiesData) {
-    if (companyItem['id'] != null && companyItem['name'] != null) {
-      companyIdToNameMap[companyItem['id']] = companyItem['name'];
-    }
-  }
-
-  // 3. Map back to games
-  gameToInvolvedCompanyIdsMap.forEach((gameId, invCompanyIds) {
-    List<String> devNamesForGame = [];
-    for (int invId in invCompanyIds) {
-      int? compId = involvedIdToCompanyIdMap[invId];
-      if (compId != null) {
-        String? devName = companyIdToNameMap[compId];
-        if (devName != null) {
-          devNamesForGame.add(devName);
-        }
-      }
-    }
-    gameDeveloperMap[gameId] =
-        devNamesForGame.isNotEmpty ? devNamesForGame.join(', ') : 'N/A';
   });
 
   return gameDeveloperMap;
@@ -433,90 +399,86 @@ Future<Map<int, Map<String, String>>> batchFetchGameTimes(
 
 Future<Game?> getGameEntry(String inID) async {
   try {
-    // 1. Fetch basic game info
+    // 1. Fetch the main game data first, as it contains IDs for other fetches.
     final query = '''
       fields $gamesCommonListFields; 
       where id = $inID;
       limit 1;
     ''';
     final gameResponse = await postRequest(gamesAPIUrl, query);
-    if (gameResponse.statusCode != 200) {
+    if (gameResponse.statusCode != 200 || gameResponse.body == '[]') {
       return null;
     }
 
-    Map<String, dynamic> gameData = jsonDecode(gameResponse.body)[0];
+    final gameData = jsonDecode(gameResponse.body)[0];
 
+    // 2. Extract all necessary IDs and basic data from the first response.
     final int gameId = gameData['id'];
-    final String name = gameData['name'];
-
+    final String name = gameData['name'] ?? 'N/A';
+    final String overview = gameData['summary'] ?? 'N/A';
+    final String releaseDate = timestampToDate(gameData['first_release_date']);
     final String rating =
         gameData['rating'] != null
             ? (double.parse(gameData['rating'].toString()) / 10)
                 .toStringAsFixed(1)
             : '0.0';
-
     final List<String> genres =
         (gameData['genres'] as List<dynamic>?)
             ?.map((g) => g['name'].toString())
             .toList() ??
         [];
-    final String overview = gameData['summary'] ?? 'N/A';
 
-    // Fetching individual pieces
-
-    // Fetch thumbnail
     final int coverID = gameData['cover'] ?? 0;
-    final String thumbnailUrl =
-        (await batchFetchCoverUrls([coverID]))[coverID] ?? '';
+    final int artworkID =
+        (gameData['artworks'] != null && gameData['artworks'].isNotEmpty)
+            ? gameData['artworks'][0]
+            : 0;
+    final List<int> involvedCompanyIds =
+        gameData['involved_companies'] != null
+            ? List<int>.from(gameData['involved_companies'])
+            : [];
 
-    // Fetch release date
-    final String releaseDate =
-        gameData['first_release_date'] != null
-            ? timestampToDate(gameData['first_release_date'])
-            : 'N/A';
+    final expansions = List<String>.from(
+      gameData['expansions']?.map((e) => e.toString()) ?? [],
+    );
+    final dlcs = List<String>.from(
+      gameData['dlcs']?.map((e) => e.toString()) ?? [],
+    );
+    final similarGames = List<String>.from(
+      gameData['similar_games']?.map((e) => e.toString()) ?? [],
+    );
 
-    // Fetch game times
-    final Map<String, String> gameTimes =
-        (await batchFetchGameTimes([gameId]))[gameId] ?? {};
-    final String timeHaste = gameTimes['timeHaste'] ?? 'N/A';
-    final String timeNormal = gameTimes['timeNormal'] ?? 'N/A';
-    final String timeComplete = gameTimes['timeComplete'] ?? 'N/A';
+    // 3. Create a list of all futures to run in parallel.
+    final futures = [
+      batchFetchCoverUrls([coverID]),
+      batchFetchArtworkUrls([artworkID]),
+      batchFetchGameTimes([gameId]),
+      if (involvedCompanyIds.isNotEmpty)
+        batchFetchDeveloperNames({gameId: involvedCompanyIds}),
+    ];
 
-    // Fetch developer
+    // 4. Await all of them concurrently.
+    final results = await Future.wait(futures);
+
+    // 5. Process the results.
+    final Map<int, String> coverUrls = results[0] as Map<int, String>;
+    final Map<int, String> artworkUrls = results[1] as Map<int, String>;
+    final Map<int, Map<String, String>> gameTimesMap =
+        results[2] as Map<int, Map<String, String>>;
+
     String developer = 'N/A';
-    if (gameData['involved_companies'] != null) {
-      final List<int> involvedCompanyIds = List<int>.from(
-        gameData['involved_companies'],
-      );
-      developer =
-          (await batchFetchDeveloperNames({
-            gameId: involvedCompanyIds,
-          }))[gameId] ??
-          'N/A';
+    if (involvedCompanyIds.isNotEmpty) {
+      final Map<int, String> developerNames = results[3] as Map<int, String>;
+      developer = developerNames[gameId] ?? 'N/A';
     }
 
-    // Fetch artwork
-    int artworkID = gameData['artworks'] != null ? gameData['artworks'][0] : 0;
-    final String artworkUrl =
-        (await batchFetchArtworkUrls([artworkID]))[artworkID] ?? '';
+    final String thumbnailUrl = coverUrls[coverID] ?? gamesMissingCoverUrl;
+    final String artworkUrl = artworkUrls[artworkID] ?? gamesMissingArtworkUrl;
+    final Map<String, String> gameTimes =
+        gameTimesMap[gameId] ??
+        {'timeHaste': 'N/A', 'timeNormal': 'N/A', 'timeComplete': 'N/A'};
 
-    final expansions =
-        List<String>.from(
-          gameData['expansions'] ?? [],
-        ).where((e) => e.trim().isNotEmpty).toList();
-
-    final List<String> dlcs =
-        (gameData['dlcs'] as List<dynamic>?)
-            ?.map((g) => g.toString())
-            .toList() ??
-        [];
-
-    final List<String> similarGames =
-        (gameData['similar_games'] as List<dynamic>?)
-            ?.map((g) => g.toString())
-            .toList() ??
-        [];
-
+    // 6. Construct and return the Game object.
     return Game(
       id: gameId.toString(),
       name: name,
@@ -527,14 +489,15 @@ Future<Game?> getGameEntry(String inID) async {
       developer: developer,
       genres: genres,
       overview: overview,
-      timeHaste: timeHaste,
-      timeNormal: timeNormal,
-      timeComplete: timeComplete,
+      timeHaste: gameTimes['timeHaste']!,
+      timeNormal: gameTimes['timeNormal']!,
+      timeComplete: gameTimes['timeComplete']!,
       expansions: expansions,
       dlcs: dlcs,
       similarGames: similarGames,
     );
   } catch (e) {
+    // Add logging here to see what fails
     return null;
   }
 }
@@ -575,7 +538,7 @@ Future<List<Game>> getGamesByIDs(List<String> gameIDs) async {
 
 Future<List<Game>> getFilteredGames(
   List<String> inGenresNames,
-  String inCategoryId, // Changed from inCategory to inCategoryId
+  String inCategoryId,
   String inMinRating,
 ) async {
   // Convert genre names to IDs

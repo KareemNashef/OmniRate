@@ -3,6 +3,8 @@
 // Flutter imports
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:omnirate/API/igdb_api.dart';
+import 'package:omnirate/API/tmdb_api.dart';
 
 // Local imports
 import 'package:omnirate/Database/database_helper.dart';
@@ -112,7 +114,20 @@ class ListPageState extends State<ListPage> with TickerProviderStateMixin {
 
   Future<void> loadAllData() async {
     final statuses = ['All', 'Current', 'Planned', 'Completed', 'Dropped'];
+
+    // Get the user's list
     final allItems = await getMediaByType(widget.listType);
+
+    // Get the data for each item
+    final allIDs = allItems.map((item) => item.id).toList();
+    final allEntries = switch (widget.listType) {
+      'Games' => await getGamesByIDs(allIDs),
+      'Shows' => await getShowsByIDs(allIDs),
+      _ => await getMoviesByIDs(allIDs),
+    };
+
+    // Create a map of all entries
+    final allEntriesMap = {for (var entry in allEntries) entry?.id: entry};
 
     for (final status in statuses) {
       tabData[status] = [];
@@ -120,11 +135,9 @@ class ListPageState extends State<ListPage> with TickerProviderStateMixin {
     }
 
     for (final item in allItems) {
-      final content = switch (widget.listType) {
-        'Games' => await getGame(item.id),
-        'Shows' => await getShow(item.id),
-        _ => await getMovie(item.id),
-      };
+      // Get the corresponding entry
+      final content = allEntriesMap[item.id];
+      if (content == null) continue;
 
       // Add item to the corresponding tab
       tabData[item.status]?.add(content);

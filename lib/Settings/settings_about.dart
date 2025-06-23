@@ -3,9 +3,11 @@
 // Flutter imports
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'dart:math';
+
+// Local imports
 import 'package:omnirate/Database/database_helper.dart';
 import 'package:omnirate/Shared/utils.dart';
-import 'dart:math';
 
 // ========== About Page Class ========== //
 
@@ -17,11 +19,20 @@ class AboutPage extends StatefulWidget {
 }
 
 class _AboutPageState extends State<AboutPage> with TickerProviderStateMixin {
+  // ===== Class variables ===== //
+
+  // Controllers
   late AnimationController _rotationController;
   late Animation<double> _rotationAnimation;
+
+  // Easter egg
   List<String> _easterEggs = [];
   String _currentEasterEgg = "";
+
+  // Random
   final Random _random = Random();
+
+  // ===== Lifecycle Methods ===== //
 
   @override
   void initState() {
@@ -41,6 +52,8 @@ class _AboutPageState extends State<AboutPage> with TickerProviderStateMixin {
     _rotationController.dispose();
     super.dispose();
   }
+
+  // ===== Class Methods ===== //
 
   Future<void> _loadEasterEggs() async {
     try {
@@ -265,141 +278,135 @@ class _AboutPageState extends State<AboutPage> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      // Background
-      decoration: BoxDecoration(gradient: gradientBackground(context)),
-
-      // Foreground
-      child: Scaffold(
-        backgroundColor: Colors.transparent,
-
-        // Body
-        body: Container(
-          decoration: BoxDecoration(gradient: gradientBackground(context)),
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.only(top: 100, bottom: 32),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                // App Logo and Name
-                _buildAppLogo(context),
-                const SizedBox(height: 24),
-
-                Text(
-                  "OmniRate",
-                  style: TextStyle(
-                    fontSize: 32,
-                    fontWeight: FontWeight.bold,
-                    color: Theme.of(context).colorScheme.onSurface,
-                  ),
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+    
+      // Body
+      body: Container(
+        decoration: BoxDecoration(gradient: gradientBackground(context)),
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.only(top: 100, bottom: 32),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              // App Logo and Name
+              _buildAppLogo(context),
+              const SizedBox(height: 24),
+    
+              Text(
+                "OmniRate",
+                style: TextStyle(
+                  fontSize: 32,
+                  fontWeight: FontWeight.bold,
+                  color: Theme.of(context).colorScheme.onSurface,
                 ),
-                const SizedBox(height: 8),
-
-                Text(
-                  "Your Ultimate Entertainment Tracker",
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Theme.of(
-                      context,
-                    ).colorScheme.onSurface.withAlpha(180),
-                  ),
+              ),
+              const SizedBox(height: 8),
+    
+              Text(
+                "Your Ultimate Entertainment Tracker",
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.onSurface.withAlpha(180),
                 ),
-
-                const SizedBox(height: 32),
-
-                // Features Section
-                sectionHeader(
-                  context,
-                  "What OmniRate Does",
-                  "Track, discover, and organize your entertainment",
-                ),
-                const SizedBox(height: 16),
-
-                _buildInfoCard(
-                  context,
-                  icon: Icons.videogame_asset,
-                  title: "Video Games",
-                  description:
-                      "Discover new games, track your progress, and build your gaming library",
-                ),
-
-                _buildInfoCard(
-                  context,
-                  icon: Icons.tv,
-                  title: "TV Shows",
-                  description:
-                      "Keep track of episodes, seasons, and your favorite series",
-                ),
-
-                _buildInfoCard(
-                  context,
-                  icon: Icons.movie,
-                  title: "Movies",
-                  description:
-                      "Rate movies, create watchlists, and never forget what to watch next",
-                ),
-
-                _buildInfoCard(
-                  context,
-                  icon: Icons.list_alt,
-                  title: "Personal Lists",
-                  description:
-                      "Organize your entertainment with custom lists and progress tracking",
-                ),
-
-                const SizedBox(height: 32),
-
-                // Data Sources Section
-                sectionHeader(
-                  context,
-                  "Powered By",
-                  "Quality data from trusted sources",
-                ),
-                const SizedBox(height: 16),
-
-                _buildDataSourceCard(
-                  context,
-                  name: "IGDB",
-                  description:
-                      "Internet Game Database - Comprehensive video game information and metadata",
-                  url: "api.igdb.com",
-                ),
-
-                _buildDataSourceCard(
-                  context,
-                  name: "TMDB",
-                  description:
-                      "The Movie Database - Extensive movie and TV show data",
-                  url: "api.themoviedb.org",
-                ),
-
-                const SizedBox(height: 32),
-
-                // Version Info
-                GestureDetector(
-                  onDoubleTap: () {
-                    HiveHelper.clearAllData();
-                  },
-
-                  child: Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 16),
-                    padding: const EdgeInsets.all(16),
-                    decoration: containerDecoration(context),
-                    child: Text(
-                      "Made with ❤️ for entertainment enthusiasts",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Theme.of(
-                          context,
-                        ).colorScheme.onSurface.withAlpha(160),
-                        fontStyle: FontStyle.italic,
-                      ),
+              ),
+    
+              const SizedBox(height: 32),
+    
+              // Features Section
+              sectionHeader(
+                context,
+                "What OmniRate Does",
+                "Track, discover, and organize your entertainment",
+              ),
+              const SizedBox(height: 16),
+    
+              _buildInfoCard(
+                context,
+                icon: Icons.videogame_asset,
+                title: "Video Games",
+                description:
+                    "Discover new games, track your progress, and build your gaming library",
+              ),
+    
+              _buildInfoCard(
+                context,
+                icon: Icons.tv,
+                title: "TV Shows",
+                description:
+                    "Keep track of episodes, seasons, and your favorite series",
+              ),
+    
+              _buildInfoCard(
+                context,
+                icon: Icons.movie,
+                title: "Movies",
+                description:
+                    "Rate movies, create watchlists, and never forget what to watch next",
+              ),
+    
+              _buildInfoCard(
+                context,
+                icon: Icons.list_alt,
+                title: "Personal Lists",
+                description:
+                    "Organize your entertainment with custom lists and progress tracking",
+              ),
+    
+              const SizedBox(height: 32),
+    
+              // Data Sources Section
+              sectionHeader(
+                context,
+                "Powered By",
+                "Quality data from trusted sources",
+              ),
+              const SizedBox(height: 16),
+    
+              _buildDataSourceCard(
+                context,
+                name: "IGDB",
+                description:
+                    "Internet Game Database - Comprehensive video game information and metadata",
+                url: "api.igdb.com",
+              ),
+    
+              _buildDataSourceCard(
+                context,
+                name: "TMDB",
+                description:
+                    "The Movie Database - Extensive movie and TV show data",
+                url: "api.themoviedb.org",
+              ),
+    
+              const SizedBox(height: 32),
+    
+              // Version Info
+              GestureDetector(
+                onDoubleTap: () {
+                  HiveHelper.clearAllData();
+                },
+    
+                child: Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 16),
+                  padding: const EdgeInsets.all(16),
+                  decoration: containerDecoration(context),
+                  child: Text(
+                    "Made with ❤️ for entertainment enthusiasts",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.onSurface.withAlpha(160),
+                      fontStyle: FontStyle.italic,
                     ),
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),
