@@ -51,24 +51,22 @@ class Particle {
   });
 }
 
-class FuturisticLoadingIndicator extends StatefulWidget {
-  const FuturisticLoadingIndicator({super.key});
+class LoadingIndicator extends StatefulWidget {
+  const LoadingIndicator({super.key});
 
   @override
-  State<FuturisticLoadingIndicator> createState() =>
-      FuturisticLoadingIndicatorState();
+  State<LoadingIndicator> createState() => _LoadingIndicatorState();
 }
 
-class FuturisticLoadingIndicatorState extends State<FuturisticLoadingIndicator>
+class _LoadingIndicatorState extends State<LoadingIndicator>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _animation;
   int _textIndex = 0;
   final _loadingTexts = [
-    '// ANALYZING MOOD VECTORS...',
-    '// CROSS-REFERENCING UNIVERSE CATALOG...',
-    '// CALIBRATING TASTE PROFILE...',
-    '// SYNTHESIZING RECOMMENDATIONS...',
+    'Analyzing preferences...',
+    'Finding matches...',
+    'Preparing results...',
   ];
 
   @override
@@ -87,9 +85,10 @@ class FuturisticLoadingIndicatorState extends State<FuturisticLoadingIndicator>
 
   void _startTextAnimation() {
     Future.doWhile(() async {
-      await Future.delayed(const Duration(seconds: 1));
-      if (mounted)
+      await Future.delayed(const Duration(milliseconds: 1500));
+      if (mounted) {
         setState(() => _textIndex = (_textIndex + 1) % _loadingTexts.length);
+      }
       return mounted;
     });
   }
@@ -105,31 +104,36 @@ class FuturisticLoadingIndicatorState extends State<FuturisticLoadingIndicator>
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
+        const SizedBox(height: 200),
+
         AnimatedBuilder(
           animation: _animation,
           builder:
               (context, child) => CustomPaint(
                 painter: LoadingPainter(_animation.value),
-                size: const Size(150, 150),
+                size: const Size(120, 120),
               ),
         ),
-        const SizedBox(height: 40),
+
+        const SizedBox(height: 32),
+
         AnimatedSwitcher(
-          duration: const Duration(milliseconds: 500),
+          duration: const Duration(milliseconds: 400),
           transitionBuilder:
               (child, animation) =>
                   FadeTransition(opacity: animation, child: child),
           child: Text(
             _loadingTexts[_textIndex],
             key: ValueKey<int>(_textIndex),
-            style: const TextStyle(
+            style: TextStyle(
               color: kPrimaryBlue,
-              fontSize: 16,
-              fontFamily: 'monospace',
-              letterSpacing: 1.2,
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
             ),
           ),
         ),
+
+        const SizedBox(height: 200),
       ],
     );
   }
@@ -143,40 +147,39 @@ class LoadingPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final center = Offset(size.width / 2, size.height / 2);
     final radius = size.width / 2;
-    final glowPaint =
-        Paint()
-          ..color = kPrimaryBlue.withOpacity(
-            0.1 + (0.2 * (sin(animationValue * pi * 2) + 1) / 2),
-          )
-          ..style = PaintingStyle.fill
-          ..maskFilter = MaskFilter.blur(BlurStyle.normal, radius * 0.5);
-    canvas.drawCircle(center, radius, glowPaint);
 
+    // Subtle background circle
+    final bgPaint =
+        Paint()
+          ..color = const Color(0xFF3B82F6).withValues(alpha: 0.1)
+          ..style = PaintingStyle.fill;
+    canvas.drawCircle(center, radius, bgPaint);
+
+    // Main rotating arcs
     final arcPaint =
         Paint()
           ..style = PaintingStyle.stroke
-          ..strokeWidth = 2.0;
-    double arcStart = animationValue * 2 * pi;
+          ..strokeWidth = 3.0
+          ..strokeCap = StrokeCap.round;
+
+    double rotation = animationValue * 2 * pi;
+
+    // Outer arc
     canvas.drawArc(
-      Rect.fromCircle(center: center, radius: radius * 0.9),
-      arcStart,
-      pi * 0.8,
-      false,
-      arcPaint..color = kPrimaryBlue.withOpacity(0.8),
-    );
-    canvas.drawArc(
-      Rect.fromCircle(center: center, radius: radius * 0.7),
-      -arcStart * 1.5,
+      Rect.fromCircle(center: center, radius: radius * 0.85),
+      rotation,
       pi * 1.2,
       false,
-      arcPaint..color = kPrimaryPurple.withOpacity(0.6),
+      arcPaint..color = const Color(0xFF3B82F6).withValues(alpha: 0.8),
     );
+
+    // Inner arc (counter-rotating)
     canvas.drawArc(
-      Rect.fromCircle(center: center, radius: radius * 0.5),
-      arcStart * 2,
-      pi * 0.6,
+      Rect.fromCircle(center: center, radius: radius * 0.65),
+      -rotation * 0.7,
+      pi * 0.8,
       false,
-      arcPaint..color = kPrimaryBlue.withOpacity(0.4),
+      arcPaint..color = const Color(0xFF6366F1).withValues(alpha: 0.6),
     );
   }
 

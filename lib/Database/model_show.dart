@@ -12,7 +12,7 @@ part 'model_show.g.dart';
 // ========== Show entry model ==========
 
 @HiveType(typeId: 3)
-class Show implements MediaEntry{
+class Show implements MediaEntry {
   // ===== Class variables =====
 
   // Main data
@@ -78,11 +78,18 @@ class Show implements MediaEntry{
   @HiveField(17)
   final List<String> seasonsRatings;
 
+  // Cast
+  @HiveField(18)
+  final List<String> castNames;
+
+  // Crew
+  @HiveField(19)
+  final List<String> castImageUrls;
+
   // ===== MediaEntry Implementation =====
 
   @override
   MediaType get mediaType => MediaType.show;
-
 
   // ===== Class methods =====
 
@@ -108,6 +115,9 @@ class Show implements MediaEntry{
     required this.seasonsEpisodeCounts,
     required this.seasonsOverviews,
     required this.seasonsRatings,
+
+    required this.castNames,
+    required this.castImageUrls,
   });
 
   // Convert to map
@@ -133,6 +143,9 @@ class Show implements MediaEntry{
     'seasonsEpisodeCounts': seasonsEpisodeCounts.join(','),
     'seasonsOverviews': seasonsOverviews.join(','),
     'seasonsRatings': seasonsRatings.join(','),
+
+    'castNames': castNames.join(','),
+    'castImageUrls': castImageUrls.join(','),
   };
 
   // Convert from map
@@ -159,5 +172,8 @@ class Show implements MediaEntry{
             .toList(),
     seasonsOverviews: (map['seasonsOverviews'] as String).split(','),
     seasonsRatings: (map['seasonsRatings'] as String).split(','),
+
+    castNames: (map['castNames'] as String).split(','),
+    castImageUrls: (map['castImageUrls'] as String).split(','),
   );
 }

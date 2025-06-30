@@ -3,6 +3,7 @@
 // Flutter imports
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -29,6 +30,9 @@ void main() async {
   Hive.registerAdapter(UserMediaEntryAdapter());
   await Hive.openBox<UserData>('userBox');
   await HiveHelper.init();
+
+  // Dotenv initialization
+  await dotenv.load();
 
   runApp(
     MultiProvider(

@@ -38,18 +38,26 @@ class DiscoverPage extends StatefulWidget {
   State<DiscoverPage> createState() => DiscoverPageState();
 }
 
-class DiscoverPageState extends State<DiscoverPage> {
+class DiscoverPageState extends State<DiscoverPage>
+    with TickerProviderStateMixin {
   // ===== Class Variables ===== //
 
   // State Variables
   List<MediaEntry> displayItems = [];
   bool isLoading = false;
   String? errorMessage;
+  bool hasFiltersApplied = false;
+  bool showQuickFilters = false;
+
+  // Animation Controllers
+  late AnimationController _filterButtonController;
+  late AnimationController _quickFiltersController;
 
   // Filter Variables
   int? _lastCategoryId;
   double? _lastRatingValue;
   Set<int>? _lastSelectedGenreIds;
+  List<String> _appliedFilters = [];
 
   // Genre data for lookup
   static final Map<String, List<Map<String, dynamic>>> _genresByType = {
@@ -58,12 +66,46 @@ class DiscoverPageState extends State<DiscoverPage> {
     "Movies": genresMovies,
   };
 
+  // Quick filter options
+  final Map<String, List<String>> quickFilterOptions = {
+    "Games": ["Popular", "New Releases", "Indie", "Multiplayer"],
+    "Shows": ["Trending", "Binge-worthy", "Comedy", "Drama"],
+    "Movies": ["Popular", "Recent", "Action", "Comedy", "Drama"],
+  };
+
   // ===== Lifecycle Methods ===== //
 
   @override
   void initState() {
     super.initState();
     displayItems = widget.inDisplayItems;
+
+    _filterButtonController = AnimationController(
+      duration: const Duration(milliseconds: 300),
+      vsync: this,
+    );
+
+    _quickFiltersController = AnimationController(
+      duration: const Duration(milliseconds: 400),
+      vsync: this,
+    );
+
+    // Show welcome animation
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (displayItems.isEmpty) {
+        setState(() {
+          showQuickFilters = true;
+        });
+        _quickFiltersController.forward();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _filterButtonController.dispose();
+    _quickFiltersController.dispose();
+    super.dispose();
   }
 
   // ===== Class Methods ===== //
@@ -80,15 +122,75 @@ class DiscoverPageState extends State<DiscoverPage> {
       errorMessage = null;
     });
 
-    final results = await widget.getFilteredItems!(
-      genreNames,
-      categoryName,
-      minRating,
-    );
+    try {
+      final results = await widget.getFilteredItems!(
+        genreNames,
+        categoryName,
+        minRating,
+      );
+
+      setState(() {
+        displayItems = results;
+        isLoading = false;
+        hasFiltersApplied =
+            genreNames.isNotEmpty || categoryName != '0' || minRating != '0.0';
+
+        // Update applied filters display
+        _appliedFilters = [];
+        if (genreNames.isNotEmpty) _appliedFilters.addAll(genreNames);
+        if (categoryName != '0') _appliedFilters.add('Category: $categoryName');
+        if (minRating != '0.0') _appliedFilters.add('Rating: $minRating+');
+      });
+
+      _filterButtonController.forward();
+    } catch (e) {
+      setState(() {
+        isLoading = false;
+        errorMessage = 'Failed to load results. Please try again.';
+      });
+    }
+  }
+
+  Future<void> applyQuickFilter(String filterName) async {
+    // Convert quick filter to appropriate filter parameters
+    List<String> genreNames = [];
+    String categoryName = '0';
+    String minRating = '0.0';
+
+    switch (filterName) {
+      case "Popular":
+        minRating = '7.0';
+        break;
+      case "New Releases":
+      case "Recent":
+        // This would need to be handled by your backend
+        categoryName = '1'; // Assuming 1 = recent
+        break;
+      case "Trending":
+        minRating = '6.0';
+        break;
+      case "Binge-worthy":
+        genreNames = ["Drama", "Thriller"];
+        break;
+      default:
+        genreNames = [filterName];
+    }
+
+    await applyFilters(genreNames, categoryName, minRating);
+  }
+
+  void clearFilters() async {
     setState(() {
-      displayItems = results;
-      isLoading = false;
+      hasFiltersApplied = false;
+      _appliedFilters = [];
+      displayItems = widget.inDisplayItems;
     });
+
+    _lastCategoryId = null;
+    _lastRatingValue = null;
+    _lastSelectedGenreIds = null;
+
+    _filterButtonController.reverse();
   }
 
   void showFilterDialog() async {
@@ -134,12 +236,10 @@ class DiscoverPageState extends State<DiscoverPage> {
 
     // Apply the filters if user didn't cancel
     if (result != null) {
-      // Additional safety checks
       final genreNames = result['genreNames'];
       final categoryId = result['categoryId'];
       final minRating = result['minRating'];
 
-      // Ensure we have the right types
       List<String> safeGenreNames = [];
       if (genreNames is List) {
         safeGenreNames = genreNames.cast<String>();
@@ -175,7 +275,6 @@ class DiscoverPageState extends State<DiscoverPage> {
       final genre = genres.firstWhere((genre) => genre['name'] == genreName);
       return genre['id'] as int?;
     } catch (e) {
-      // Genre not found
       return null;
     }
   }
@@ -192,8 +291,187 @@ class DiscoverPageState extends State<DiscoverPage> {
         return Icons.explore;
     }
   }
-  
+
   // ===== Class Widgets ===== //
+
+  Widget quickFiltersSection() {
+    if (!showQuickFilters || hasFiltersApplied) return const SizedBox.shrink();
+
+    return AnimatedBuilder(
+      animation: _quickFiltersController,
+      builder: (context, child) {
+        return SlideTransition(
+          position: Tween<Offset>(
+            begin: const Offset(0, 0.5),
+            end: Offset.zero,
+          ).animate(
+            CurvedAnimation(
+              parent: _quickFiltersController,
+              curve: Curves.easeOutBack,
+            ),
+          ),
+          child: FadeTransition(
+            opacity: _quickFiltersController,
+            child: Container(
+              margin: const EdgeInsets.symmetric(horizontal: 20),
+              padding: const EdgeInsets.all(20),
+              decoration: containerDecoration(context),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "Quick Filters",
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      color: Theme.of(context).colorScheme.onPrimaryContainer,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    "Get started with these popular choices:",
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.onPrimaryContainer.withValues(alpha: 0.8),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children:
+                        quickFilterOptions[widget.inType]!.map((filter) {
+                          return GestureDetector(
+                            onTap: () => applyQuickFilter(filter),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 8,
+                              ),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(20),
+                                border: Border.all(
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.outline.withValues(alpha: 0.3),
+                                ),
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.surface.withValues(alpha: 0.5),
+                              ),
+                              child: Text(
+                                filter,
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
+                                  color:
+                                      Theme.of(context).colorScheme.onSurface,
+                                ),
+                              ),
+                            ),
+                          );
+                        }).toList(),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget appliedFiltersSection() {
+    if (!hasFiltersApplied || _appliedFilters.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 20),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        color: Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.3),
+        border: Border.all(
+          color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.2),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                Icons.filter_alt,
+                size: 18,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+              const SizedBox(width: 8),
+              Text(
+                "Active Filters",
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+              ),
+              const Spacer(),
+              GestureDetector(
+                onTap: clearFilters,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(12),
+                    color: Theme.of(context).colorScheme.error.withValues(alpha: 0.1),
+                  ),
+                  child: Text(
+                    "Clear All",
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Theme.of(context).colorScheme.error,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 6,
+            runSpacing: 4,
+            children:
+                _appliedFilters.map((filter) {
+                  return Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(8),
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.primary.withValues(alpha: 0.1),
+                    ),
+                    child: Text(
+                      filter,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
+                    ),
+                  );
+                }).toList(),
+          ),
+        ],
+      ),
+    );
+  }
 
   Widget listGrid() {
     // Loading screen
@@ -255,94 +533,6 @@ class DiscoverPageState extends State<DiscoverPage> {
                 style: TextStyle(color: Colors.red),
               ),
             ],
-          ),
-        ),
-      );
-    }
-
-    // Empty screen
-    if (displayItems.isEmpty) {
-      return Padding(
-        padding: const EdgeInsets.all(16),
-        child: Center(
-          child: Container(
-            // Decoration
-            decoration: containerDecoration(context),
-            padding: const EdgeInsets.all(40),
-
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Search Icon
-                Container(
-                  padding: const EdgeInsets.all(24),
-                  decoration: BoxDecoration(
-                    // Border
-                    border: Border.all(
-                      color: Theme.of(
-                        context,
-                      ).colorScheme.outline.withValues(alpha: 0.2),
-                    ),
-
-                    // Background
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [
-                        Theme.of(
-                          context,
-                        ).colorScheme.primaryContainer.withValues(alpha: 0.8),
-                        Theme.of(
-                          context,
-                        ).colorScheme.tertiaryContainer.withValues(alpha: 0.8),
-                      ],
-                    ),
-
-                    // Shape
-                    shape: BoxShape.circle,
-                  ),
-
-                  child: Icon(
-                    Icons.search,
-                    size: 48,
-                    color: Theme.of(
-                      context,
-                    ).colorScheme.onPrimaryContainer.withValues(alpha: 0.8),
-                  ),
-                ),
-
-                // Padding
-                const SizedBox(height: 32),
-
-                // Title
-                Text(
-                  "Ready to explore?",
-                  style: TextStyle(
-                    fontSize: 24,
-                    color: Theme.of(
-                      context,
-                    ).colorScheme.onPrimaryContainer.withValues(alpha: 0.9),
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-
-                // Padding
-                const SizedBox(height: 16),
-
-                // Subtitle
-                Text(
-                  "Use filters to discover amazing ${widget.inType.toLowerCase()} tailored to your taste.",
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Theme.of(
-                      context,
-                    ).colorScheme.onPrimaryContainer.withValues(alpha: 0.8),
-                    height: 1.5,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-              ],
-            ),
           ),
         ),
       );
@@ -493,128 +683,61 @@ class DiscoverPageState extends State<DiscoverPage> {
     );
   }
 
-  Widget filterButton() {
-    return SizedBox(
-      width: double.infinity,
-      child: ElevatedButton.icon(
-        icon: Icon(Icons.filter_list),
-        label: Text('Filters'),
-        style: ElevatedButton.styleFrom(
-          padding: EdgeInsets.symmetric(vertical: 16),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-        ),
-        onPressed: () async {
-          Map<String, dynamic>? result;
-
-          if (widget.inType == "Games") {
-            result = await showModalBottomSheet<Map<String, dynamic>>(
-              context: context,
-              isScrollControlled: true,
-              builder:
-                  (context) => SizedBox(
-                    height: MediaQuery.of(context).size.height * 0.8,
-                    child: GamesFilterPage(),
-                  ),
-            );
-          } else if (widget.inType == "Shows") {
-            result = await showModalBottomSheet<Map<String, dynamic>>(
-              context: context,
-              isScrollControlled: true,
-              builder:
-                  (context) => SizedBox(
-                    height: MediaQuery.of(context).size.height * 0.8,
-                    child: ShowsFilterPage(),
-                  ),
-            );
-          } else if (widget.inType == "Movies") {
-            result = await showModalBottomSheet<Map<String, dynamic>>(
-              context: context,
-              isScrollControlled: true,
-              builder:
-                  (context) => SizedBox(
-                    height: MediaQuery.of(context).size.height * 0.8,
-                    child: MoviesFilterPage(),
-                  ),
-            );
-          }
-
-          // Apply the filters if user didn't cancel
-          if (result != null) {
-            // Additional safety checks
-            final genreNames = result['genreNames'];
-            final categoryId = result['categoryId'];
-            final minRating = result['minRating'];
-
-            // Ensure we have the right types
-            List<String> safeGenreNames = [];
-            if (genreNames is List) {
-              safeGenreNames = genreNames.cast<String>();
-            } else if (genreNames is String) {
-              safeGenreNames = [genreNames];
-            }
-
-            String safeCategoryId = categoryId?.toString() ?? '0';
-            String safeMinRating = minRating?.toString() ?? '0.0';
-
-            await applyFilters(safeGenreNames, safeCategoryId, safeMinRating);
-          }
-        },
-      ),
-    );
-  }
-
   Widget customFloatingActionButton() {
-    return Container(
-      // Theme
-      decoration: buttonDecoration(context),
-
-      // Logic
-      child: FloatingActionButton.extended(
-        onPressed: showFilterDialog,
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-
-        // Text
-        label: Text(
-          "Filters",
-          style: TextStyle(
-            fontWeight: FontWeight.w700,
-            fontSize: 16,
-            color: Theme.of(context).colorScheme.onPrimaryContainer,
+    return AnimatedBuilder(
+      animation: _filterButtonController,
+      builder: (context, child) {
+        return Container(
+          decoration: buttonDecoration(context),
+          child: FloatingActionButton.extended(
+            onPressed: showFilterDialog,
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            label: Text(
+              hasFiltersApplied ? "Edit Filters" : "Advanced Filters",
+              style: TextStyle(
+                fontWeight: FontWeight.w600,
+                fontSize: 15,
+                color: Theme.of(context).colorScheme.onPrimaryContainer,
+              ),
+            ),
+            icon: AnimatedRotation(
+              turns: _filterButtonController.value * 0.5,
+              duration: const Duration(milliseconds: 300),
+              child: Icon(
+                hasFiltersApplied ? Icons.tune : Icons.filter_list,
+                color: Theme.of(context).colorScheme.onPrimaryContainer,
+                size: 22,
+              ),
+            ),
           ),
-        ),
-
-        // Icon
-        icon: Icon(
-          Icons.tune_rounded,
-          color: Theme.of(context).colorScheme.onPrimaryContainer,
-          size: 24,
-        ),
-      ),
+        );
+      },
     );
   }
 
   Widget customHeader() {
+    final bool isInitialState = displayItems.isEmpty && !hasFiltersApplied;
+
     return Container(
       decoration: containerDecoration(context),
+      margin: const EdgeInsets.symmetric(horizontal: 20),
       padding: const EdgeInsets.all(24),
       child: Column(
         children: [
-          // Icon
           Icon(
             getTypeIcon(),
             size: 48,
-            color: Theme.of(
-              context,
-            ).colorScheme.onPrimaryContainer.withValues(alpha: 0.9),
+            color: Theme.of(context).colorScheme.onPrimaryContainer,
+            shadows: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.15),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
           ),
-
-          // Padding
           const SizedBox(height: 16),
-
-          // Title
           Text(
             "Discover ${widget.inType}",
             style: TextStyle(
@@ -623,21 +746,45 @@ class DiscoverPageState extends State<DiscoverPage> {
               color: Theme.of(context).colorScheme.onPrimaryContainer,
               letterSpacing: -0.5,
             ),
+            textAlign: TextAlign.center,
           ),
-
-          // Padding
           const SizedBox(height: 8),
-
-          // Subtitle
-          Text(
-            "Find your next favorite ${widget.inType.toLowerCase()}",
-            style: TextStyle(
-              fontSize: 16,
-              color: Theme.of(
-                context,
-              ).colorScheme.onPrimaryContainer.withValues(alpha: 0.9),
-              fontWeight: FontWeight.w400,
-            ),
+          Text.rich(
+            isInitialState
+                ? TextSpan(
+                  // Default style for the paragraph
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.onPrimaryContainer.withValues(alpha: 0.8),
+                    height: 1.4,
+                  ),
+                  children: [
+                    const TextSpan(text: "Use "),
+                    TextSpan(
+                      text: "advanced filters",
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Theme.of(context).colorScheme.onPrimaryContainer,
+                      ),
+                    ),
+                    const TextSpan(text: " to narrow down your results."),
+                  ],
+                )
+                : TextSpan(
+                  text:
+                      "Find your next favorite ${widget.inType.toLowerCase()}",
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.onPrimaryContainer.withValues(alpha: 0.9),
+                    fontWeight: FontWeight.w400,
+                    height: 1.4,
+                  ),
+                ),
+            textAlign: TextAlign.center,
           ),
         ],
       ),
@@ -649,23 +796,22 @@ class DiscoverPageState extends State<DiscoverPage> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      // Background
       decoration: BoxDecoration(gradient: gradientBackground(context)),
-
-      // Foreground
       child: Scaffold(
         backgroundColor: Colors.transparent,
-
-        // Floating Action Button
         floatingActionButton: customFloatingActionButton(),
         floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-
-        // Body
         body: SingleChildScrollView(
           physics: const BouncingScrollPhysics(),
-          padding: const EdgeInsets.only(top: 100, bottom: 80),
+          padding: const EdgeInsets.only(top: 100, bottom: 100),
           child: Column(
-            children: [customHeader(), const SizedBox(height: 40), listGrid()],
+            children: [
+              customHeader(),
+              const SizedBox(height: 24),
+              appliedFiltersSection(),
+              const SizedBox(height: 8),
+              listGrid(),
+            ],
           ),
         ),
       ),

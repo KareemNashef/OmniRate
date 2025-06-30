@@ -521,6 +521,11 @@ Future<List<Game>> searchGamesByName(String name) async {
 }
 
 Future<List<Game>> getGamesByIDs(List<String> gameIDs) async {
+ // Empty check
+  if (gameIDs.isEmpty) {
+    return [];
+  }
+
   final query = '''
   fields $gamesCommonListFields;
   where id = (${gameIDs.join(',')});

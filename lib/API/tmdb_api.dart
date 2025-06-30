@@ -2,6 +2,7 @@
 
 // Flutter imports
 import 'dart:convert';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 
 // Local imports
@@ -17,7 +18,7 @@ Future<Map<String, dynamic>> get(
   Map<String, String>? params,
 }) async {
   final queryParameters = {
-    'api_key': tmdbAPIKey,
+    'api_key': dotenv.env['TMDB_API_KEY'] ?? '',
     if (params != null) ...params,
   };
 
@@ -98,6 +99,23 @@ Show showFromJson(Map<String, dynamic> json) {
         filteredSeasons
             .map<String>((s) => s['vote_average'].toString())
             .toList(),
+    castNames:
+        (json['credits']?['cast'] as List?)
+            ?.take(10)
+            .map((c) => c['name']?.toString() ?? 'Unknown')
+            .toList() ??
+        [],
+    castImageUrls:
+        (json['credits']?['cast'] as List?)
+            ?.take(10)
+            .map(
+              (c) =>
+                  c['profile_path'] != null
+                      ? '$tmbdCastImageBaseUrl${c['profile_path']}'
+                      : tmdbMissingThumbnail,
+            )
+            .toList() ??
+        [],
   );
 }
 
@@ -127,6 +145,23 @@ Movie movieFromJson(Map<String, dynamic> json) {
     releaseStatus: json['release_date'] ?? 'N/A',
     budget: json['budget']?.toString() ?? 'N/A',
     revenue: json['revenue']?.toString() ?? 'N/A',
+    castNames:
+        (json['credits']?['cast'] as List?)
+            ?.take(10)
+            .map((c) => c['name']?.toString() ?? 'Unknown')
+            .toList() ??
+        [],
+    castImageUrls:
+        (json['credits']?['cast'] as List?)
+            ?.take(10)
+            .map(
+              (c) =>
+                  c['profile_path'] != null
+                      ? '$tmbdCastImageBaseUrl${c['profile_path']}'
+                      : tmdbMissingThumbnail,
+            )
+            .toList() ??
+        [],
   );
 }
 
@@ -135,7 +170,7 @@ Movie movieFromJson(Map<String, dynamic> json) {
 Future<Show?> getShowEntry(String inID) async {
   final detailsData = await get(
     '/tv/$inID',
-    params: {'append_to_response': 'seasons'},
+    params: {'append_to_response': 'seasons,credits'},
   );
 
   return showFromJson(detailsData);
@@ -194,7 +229,10 @@ Future<List<Show>> getTopRatedShows() => _getShowList('/tv/top_rated');
 // ========== Main Functions - Movies ==========
 
 Future<Movie?> getMovieEntry(String inID) async {
-  final detailsData = await get('/movie/$inID');
+  final detailsData = await get(
+    '/movie/$inID',
+    params: {'append_to_response': 'credits'},
+  );
 
   return movieFromJson(detailsData);
 }

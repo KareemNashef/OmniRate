@@ -7,7 +7,6 @@ import 'package:omnirate/API/igdb_api.dart';
 import 'package:omnirate/API/tmdb_api.dart';
 
 // Local imports
-import 'package:omnirate/Database/database_helper.dart';
 import 'package:omnirate/Database/model_game.dart';
 import 'package:omnirate/Database/model_movie.dart';
 import 'package:omnirate/Database/model_show.dart';

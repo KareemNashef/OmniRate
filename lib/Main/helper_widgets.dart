@@ -2,6 +2,7 @@
 
 // Flutter imports
 import 'package:flutter/material.dart';
+import 'package:omnirate/Settings/settings_theme.dart';
 import 'dart:async';
 import 'package:provider/provider.dart';
 
@@ -140,123 +141,394 @@ class LoginContent extends StatefulWidget {
   State<LoginContent> createState() => LoginContentState();
 }
 
-class LoginContentState extends State<LoginContent> {
+class LoginContentState extends State<LoginContent>
+    with TickerProviderStateMixin {
+  // ===== Class Variables ===== //
+
+  // Controllers
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+
+  // Form Key
+  final _formKey = GlobalKey<FormState>();
+
+  // State
   bool _isSigningIn = false;
+  bool _isPasswordVisible = false;
+
+  // Animations
+  late AnimationController _fadeController;
+  late AnimationController _slideController;
+  late Animation<double> _fadeAnimation;
+  late Animation<Offset> _slideAnimation;
+
+  // ===== Lifecycle Methods ===== //
+
+  @override
+  void initState() {
+    super.initState();
+    _fadeController = AnimationController(
+      duration: const Duration(milliseconds: 800),
+      vsync: this,
+    );
+    _slideController = AnimationController(
+      duration: const Duration(milliseconds: 600),
+      vsync: this,
+    );
+
+    _fadeAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(parent: _fadeController, curve: Curves.easeOut));
+    _slideAnimation = Tween<Offset>(
+      begin: const Offset(0, 0.3),
+      end: Offset.zero,
+    ).animate(
+      CurvedAnimation(parent: _slideController, curve: Curves.easeOutCubic),
+    );
+
+    _fadeController.forward();
+    _slideController.forward();
+  }
 
   @override
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
+    _fadeController.dispose();
+    _slideController.dispose();
     super.dispose();
   }
 
+  // ===== Class Methods ===== //
+
   Future<void> _handleLocalSignIn() async {
-    if (_isSigningIn) return;
+    if (_isSigningIn || !_formKey.currentState!.validate()) return;
+
     setState(() => _isSigningIn = true);
-    await widget.onSignIn(
-      _emailController.text.trim(),
-      _passwordController.text.trim(),
-    );
-    if (mounted) {
-      setState(() => _isSigningIn = false);
+
+    try {
+      await widget.onSignIn(
+        _emailController.text.trim(),
+        _passwordController.text.trim(),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _isSigningIn = false);
+      }
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
+  // ===== Class Widgets ===== //
+
+  Widget _buildLoginCard(BuildContext context, ColorScheme scheme) {
+    return GlassContainer(
+      child: Form(
+        key: _formKey,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Image.asset('assets/settings/logo.png', height: 120),
-            const SizedBox(height: 24),
-            const Text(
-              "Welcome!",
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 8),
-            const Text(
-              "Sign in to continue",
-              style: TextStyle(color: Colors.white70, fontSize: 16),
-            ),
+            _buildHeader(scheme),
             const SizedBox(height: 40),
-            StyledTextField(
-              controller: _emailController,
-              labelText: 'Email',
-              icon: Icons.email,
-            ),
-            const SizedBox(height: 16),
-            StyledTextField(
-              controller: _passwordController,
-              labelText: 'Password',
-              icon: Icons.password,
-              obscureText: true,
-            ),
+            _buildEmailField(),
+            const SizedBox(height: 20),
+            _buildPasswordField(),
+            const SizedBox(height: 32),
+            _buildSignInButton(),
             const SizedBox(height: 24),
-            SizedBox(
-              width: double.infinity,
-              child: Container(
-                decoration: buttonDecoration(context),
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.transparent,
-                    shadowColor: Colors.transparent,
-                    foregroundColor: Theme.of(context).colorScheme.onSurface,
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                  ),
-                  onPressed: _isSigningIn ? null : _handleLocalSignIn,
-                  child:
-                      _isSigningIn
-                          ? const SizedBox(
-                            height: 20,
-                            width: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: Colors.white,
-                            ),
-                          )
-                          : const Text(
-                            'Sign In',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Text(
-                  "Don't have an account? ",
-                  style: TextStyle(color: Colors.white70),
-                ),
-                TextButton(
-                  onPressed: widget.onSignUp,
-                  child: Text(
-                    'Sign up',
-                    style: TextStyle(
-                      color: Theme.of(context).colorScheme.primary,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
+            _buildSignUpPrompt(),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHeader(ColorScheme scheme) {
+    return Column(
+      children: [
+        // App logo
+        Container(
+          // Padding
+          padding: const EdgeInsets.all(16),
+
+          // Theme
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Theme.of(
+                  context,
+                ).colorScheme.primaryContainer.withValues(alpha: 0.8),
+                Theme.of(
+                  context,
+                ).colorScheme.tertiaryContainer.withValues(alpha: 0.8),
               ],
             ),
+            border: Border.all(
+              color: Colors.white.withValues(alpha: 0.3),
+              width: 1,
+            ),
+          ),
+
+          // Logo
+          child: Image.asset(
+            'assets/settings/logo.png',
+            height: 64,
+            width: 64,
+            errorBuilder:
+                (context, error, stackTrace) => Icon(
+                  Icons.lock_outline,
+                  size: 64,
+                  color: Colors.white.withValues(alpha: 0.9),
+                ),
+          ),
+        ),
+
+        // Padding
+        const SizedBox(height: 24),
+
+        // Title
+        Text(
+          "Welcome Back",
+          style: TextStyle(
+            fontSize: 28,
+            fontWeight: FontWeight.w700,
+            color: Colors.white,
+            shadows: [
+              Shadow(
+                offset: const Offset(0, 2),
+                blurRadius: 4,
+                color: Colors.black.withValues(alpha: 0.3),
+              ),
+            ],
+          ),
+        ),
+
+        // Padding
+        const SizedBox(height: 8),
+
+        // Subtitle
+        Text(
+          "Sign in to continue your journey",
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w400,
+            color: Colors.white.withValues(alpha: 0.8),
+            shadows: [
+              Shadow(
+                offset: const Offset(0, 1),
+                blurRadius: 2,
+                color: Colors.black.withValues(alpha: 0.3),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildEmailField() {
+    return _buildGlassTextField(
+      controller: _emailController,
+      labelText: 'Email Address',
+      icon: Icons.email_outlined,
+      validator: (value) {
+        if (value?.isEmpty ?? true) return 'Email is required';
+        if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value!)) {
+          return 'Enter a valid email';
+        }
+        return null;
+      },
+    );
+  }
+
+  Widget _buildPasswordField() {
+    return _buildGlassTextField(
+      controller: _passwordController,
+      labelText: 'Password',
+      icon: Icons.lock_outlined,
+      obscureText: !_isPasswordVisible,
+      suffixIcon: IconButton(
+        icon: Icon(
+          _isPasswordVisible
+              ? Icons.visibility_off_outlined
+              : Icons.visibility_outlined,
+          color: Colors.white.withValues(alpha: 0.7),
+        ),
+        onPressed:
+            () => setState(() => _isPasswordVisible = !_isPasswordVisible),
+      ),
+      validator: (value) {
+        if (value?.isEmpty ?? true) return 'Password is required';
+        if (value!.length < 6) return 'Password must be at least 6 characters';
+        return null;
+      },
+    );
+  }
+
+  Widget _buildGlassTextField({
+    required TextEditingController controller,
+    required String labelText,
+    required IconData icon,
+    bool obscureText = false,
+    Widget? suffixIcon,
+    String? Function(String?)? validator,
+  }) {
+    return Container(
+      // Theme
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        gradient: LinearGradient(
+          colors: [
+            Colors.white.withValues(alpha: 0.1),
+            Colors.white.withValues(alpha: 0.05),
           ],
+        ),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.2),
+          width: 1,
+        ),
+      ),
+
+      // Content
+      child: TextFormField(
+        controller: controller,
+        obscureText: obscureText,
+        style: TextStyle(
+          color: Colors.white,
+          fontSize: 16,
+          fontWeight: FontWeight.w500,
+        ),
+        validator: validator,
+        decoration: InputDecoration(
+          labelText: labelText,
+          hintText: labelText,
+          prefixIcon: Icon(icon, color: Colors.white.withValues(alpha: 0.6)),
+          suffixIcon: suffixIcon,
+          floatingLabelBehavior: FloatingLabelBehavior.never,
+          hintStyle: const TextStyle(color: Colors.white),
+          labelStyle: const TextStyle(color: Colors.white),
+          filled: true,
+          fillColor: Colors.transparent,
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(16),
+            borderSide: BorderSide.none,
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(16),
+            borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.7)),
+          ),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 20,
+            vertical: 16,
+          ),
+          errorStyle: TextStyle(
+            color: Colors.red.shade300,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSignInButton() {
+    return Container(
+      width: double.infinity,
+      height: 56,
+      decoration: buttonDecoration(context),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(16),
+          onTap: _isSigningIn ? null : _handleLocalSignIn,
+          child: Container(
+            alignment: Alignment.center,
+            child:
+                _isSigningIn
+                    ? SizedBox(
+                      height: 24,
+                      width: 24,
+                      child: CircularProgressIndicator(strokeWidth: 3),
+                    )
+                    : Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.login, size: 20),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Sign In',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSignUpPrompt() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        // Text
+        Text(
+          "Don't have an account? ",
+          style: TextStyle(
+            fontSize: 14,
+            color: Colors.white.withValues(alpha: 0.8),
+          ),
+        ),
+
+        // Padding
+        const SizedBox(width: 4),
+
+        // Button
+        TextButton(
+          onPressed: widget.onSignUp,
+          style: TextButton.styleFrom(
+            foregroundColor: Colors.white,
+            backgroundColor: Colors.white.withValues(alpha: 0.15),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+          child: const Text(
+            "Sign Up",
+            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+          ),
+        ),
+      ],
+    );
+  }
+
+  // ===== Build Method ===== //
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      body: SafeArea(
+        child: Center(
+          child: SingleChildScrollView(
+            physics: const BouncingScrollPhysics(),
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+            child: FadeTransition(
+              opacity: _fadeAnimation,
+              child: SlideTransition(
+                position: _slideAnimation,
+                child: _buildLoginCard(context, scheme),
+              ),
+            ),
+          ),
         ),
       ),
     );
@@ -275,9 +547,6 @@ class OnboardingContent extends StatefulWidget {
     required String password,
     required String username,
     required int avatarIndex,
-    required Set<int> gameGenres,
-    required Set<int> showGenres,
-    required Set<int> movieGenres,
   })
   onComplete;
   final VoidCallback onBackToLogin;
@@ -286,23 +555,66 @@ class OnboardingContent extends StatefulWidget {
   State<OnboardingContent> createState() => OnboardingContentState();
 }
 
-class OnboardingContentState extends State<OnboardingContent> {
+class OnboardingContentState extends State<OnboardingContent>
+    with TickerProviderStateMixin {
+  // ===== Class Variables ===== //
+
+  // Controllers
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _usernameController = TextEditingController();
+
+  // State
   int _selectedAvatarIndex = 0;
-  final Set<int> _selectedGameGenres = {};
-  final Set<int> _selectedShowGenres = {};
-  final Set<int> _selectedMovieGenres = {};
   bool _isSigningUp = false;
+  bool _isPasswordVisible = false;
+
+  // Animations
+  late AnimationController _fadeController;
+  late AnimationController _slideController;
+  late Animation<double> _fadeAnimation;
+  late Animation<Offset> _slideAnimation;
+
+  // ===== Lifecycle Methods ===== //
+
+  @override
+  void initState() {
+    super.initState();
+    _fadeController = AnimationController(
+      duration: const Duration(milliseconds: 800),
+      vsync: this,
+    );
+    _slideController = AnimationController(
+      duration: const Duration(milliseconds: 600),
+      vsync: this,
+    );
+
+    _fadeAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(parent: _fadeController, curve: Curves.easeOut));
+    _slideAnimation = Tween<Offset>(
+      begin: const Offset(0, 0.3),
+      end: Offset.zero,
+    ).animate(
+      CurvedAnimation(parent: _slideController, curve: Curves.easeOutCubic),
+    );
+
+    _fadeController.forward();
+    _slideController.forward();
+  }
 
   @override
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
     _usernameController.dispose();
+    _fadeController.dispose();
+    _slideController.dispose();
     super.dispose();
   }
+
+  // ===== Class Methods ===== //
 
   Future<void> _handleLocalOnboardingComplete() async {
     if (_isSigningUp) return;
@@ -313,9 +625,6 @@ class OnboardingContentState extends State<OnboardingContent> {
       password: _passwordController.text.trim(),
       username: _usernameController.text.trim(),
       avatarIndex: _selectedAvatarIndex,
-      gameGenres: _selectedGameGenres,
-      showGenres: _selectedShowGenres,
-      movieGenres: _selectedMovieGenres,
     );
 
     if (mounted) {
@@ -323,271 +632,415 @@ class OnboardingContentState extends State<OnboardingContent> {
     }
   }
 
-  Widget _buildGenreCard(
-    String title,
-    List<Map<String, dynamic>> options,
-    Set<int> selected,
-  ) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.05),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
-      ),
+  // ===== Class Widgets ===== //
+
+  Widget _buildOnboardingCard(BuildContext context, ColorScheme scheme) {
+    return GlassContainer(
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Text(
-            title,
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              color: Colors.white,
-            ),
-          ),
-          const SizedBox(height: 12),
-          _buildFiltersRow(options, selected),
+          _buildHeader(scheme),
+          const SizedBox(height: 40),
+          _buildEmailField(),
+          const SizedBox(height: 20),
+          _buildPasswordField(),
+          const SizedBox(height: 20),
+          _buildUsernameField(),
+          const SizedBox(height: 20),
+          _buildAvatarSelector(),
+          const SizedBox(height: 20),
+          _buildContinueButton(),
+          const SizedBox(height: 20),
+          _buildBackToLoginPrompt(),
         ],
       ),
     );
   }
 
-  Widget _buildFiltersRow(
-    List<Map<String, dynamic>> genres,
-    Set<int> selectedSet,
-  ) {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: Row(
-        children:
-            genres.map((genre) {
-              final bool isSelected = selectedSet.contains(genre['id']);
-              return Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                child: FilterChip(
-                  label: Text(
-                    genre['name'],
-                    style: TextStyle(
-                      color:
-                          isSelected
-                              ? Theme.of(context).colorScheme.onPrimary
-                              : Theme.of(context).colorScheme.primary,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  selected: isSelected,
-                  onSelected: (selected) {
-                    setState(() {
-                      if (selected) {
-                        selectedSet.add(genre['id']);
-                      } else {
-                        selectedSet.remove(genre['id']);
-                      }
-                    });
-                  },
+  Widget _buildHeader(ColorScheme scheme) {
+    return Column(
+      children: [
+        // App logo
+        Container(
+          // Padding
+          padding: const EdgeInsets.all(16),
 
-                  backgroundColor: Color.fromRGBO(255, 255, 255, 0.1),
-                  selectedColor: Theme.of(context).colorScheme.primary,
-                  checkmarkColor: Theme.of(context).colorScheme.onPrimary,
-                  side: BorderSide(
-                    color:
-                        isSelected
-                            ? Theme.of(context).colorScheme.primary
-                            : Color.fromRGBO(255, 255, 255, 0.3),
-                  ),
+          // Theme
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Theme.of(
+                  context,
+                ).colorScheme.primaryContainer.withValues(alpha: 0.8),
+                Theme.of(
+                  context,
+                ).colorScheme.tertiaryContainer.withValues(alpha: 0.8),
+              ],
+            ),
+            border: Border.all(
+              color: Colors.white.withValues(alpha: 0.3),
+              width: 1,
+            ),
+          ),
+
+          // Logo
+          child: Image.asset(
+            'assets/settings/logo.png',
+            height: 64,
+            width: 64,
+            errorBuilder:
+                (context, error, stackTrace) => Icon(
+                  Icons.lock_outline,
+                  size: 64,
+                  color: Colors.white.withValues(alpha: 0.9),
                 ),
-              );
-            }).toList(),
+          ),
+        ),
+
+        // Padding
+        const SizedBox(height: 24),
+
+        // Title
+        Text(
+          "Welcome aboard!",
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: 28,
+            fontWeight: FontWeight.w700,
+            color: Colors.white,
+            shadows: [
+              Shadow(
+                offset: const Offset(0, 2),
+                blurRadius: 4,
+                color: Colors.black.withValues(alpha: 0.3),
+              ),
+            ],
+          ),
+        ),
+
+        // Padding
+        const SizedBox(height: 8),
+
+        // Subtitle
+        Text(
+          "We just need a little info to get started.",
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w400,
+            color: Colors.white.withValues(alpha: 0.8),
+            shadows: [
+              Shadow(
+                offset: const Offset(0, 1),
+                blurRadius: 2,
+                color: Colors.black.withValues(alpha: 0.3),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildEmailField() {
+    return _buildGlassTextField(
+      controller: _emailController,
+      labelText: 'Email Address',
+      icon: Icons.email_outlined,
+      validator: (value) {
+        if (value?.isEmpty ?? true) return 'Email is required';
+        if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value!)) {
+          return 'Enter a valid email';
+        }
+        return null;
+      },
+    );
+  }
+
+  Widget _buildPasswordField() {
+    return _buildGlassTextField(
+      controller: _passwordController,
+      labelText: 'Password',
+      icon: Icons.lock_outlined,
+      obscureText: !_isPasswordVisible,
+      suffixIcon: IconButton(
+        icon: Icon(
+          _isPasswordVisible
+              ? Icons.visibility_off_outlined
+              : Icons.visibility_outlined,
+          color: Colors.white.withValues(alpha: 0.7),
+        ),
+        onPressed:
+            () => setState(() => _isPasswordVisible = !_isPasswordVisible),
+      ),
+      validator: (value) {
+        if (value?.isEmpty ?? true) return 'Password is required';
+        if (value!.length < 6) return 'Password must be at least 6 characters';
+        return null;
+      },
+    );
+  }
+
+  Widget _buildUsernameField() {
+    return _buildGlassTextField(
+      controller: _usernameController,
+      labelText: 'Username',
+      icon: Icons.person_outlined,
+      validator: (value) {
+        if (value?.isEmpty ?? true) return 'Username is required';
+        if (value!.length < 3) return 'Username must be at least 3 characters';
+        return null;
+      },
+    );
+  }
+
+  Widget _buildGlassTextField({
+    required TextEditingController controller,
+    required String labelText,
+    required IconData icon,
+    bool obscureText = false,
+    Widget? suffixIcon,
+    String? Function(String?)? validator,
+  }) {
+    return Container(
+      // Theme
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        gradient: LinearGradient(
+          colors: [
+            Colors.white.withValues(alpha: 0.1),
+            Colors.white.withValues(alpha: 0.05),
+          ],
+        ),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.2),
+          width: 1,
+        ),
+      ),
+
+      // Content
+      child: TextFormField(
+        controller: controller,
+        obscureText: obscureText,
+        style: TextStyle(
+          color: Colors.white,
+          fontSize: 16,
+          fontWeight: FontWeight.w500,
+        ),
+        validator: validator,
+        decoration: InputDecoration(
+          labelText: labelText,
+          hintText: labelText,
+          prefixIcon: Icon(icon, color: Colors.white.withValues(alpha: 0.6)),
+          suffixIcon: suffixIcon,
+          floatingLabelBehavior: FloatingLabelBehavior.never,
+          hintStyle: const TextStyle(color: Colors.white),
+          labelStyle: const TextStyle(color: Colors.white),
+          filled: true,
+          fillColor: Colors.transparent,
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(16),
+            borderSide: BorderSide.none,
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(16),
+            borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.7)),
+          ),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 20,
+            vertical: 16,
+          ),
+          errorStyle: TextStyle(
+            color: Colors.red.shade300,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
       ),
     );
   }
+
+  Widget _buildAvatarSelector() {
+    return Column(
+      children: [
+        // Title
+        Text(
+          "Select your avatar",
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+            color: Colors.white,
+          ),
+        ),
+
+        // Padding
+        const SizedBox(height: 12),
+
+        // Avatars
+        GridView.builder(
+          padding: EdgeInsets.zero,
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 4,
+            crossAxisSpacing: 16,
+            mainAxisSpacing: 16,
+          ),
+          itemCount: 16,
+          itemBuilder: (context, index) {
+            final isSelected = _selectedAvatarIndex == index;
+
+            return GestureDetector(
+              onTap: () {
+                setState(() {
+                  _selectedAvatarIndex = index;
+                });
+              },
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 300),
+                transform: Matrix4.identity()..scale(isSelected ? 1.1 : 1.0),
+                transformAlignment: Alignment.center,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: isSelected ? Colors.white : Colors.transparent,
+                    width: isSelected ? 3 : 0,
+                  ),
+                  boxShadow:
+                      isSelected
+                          ? [
+                            BoxShadow(
+                              color: Colors.white.withAlpha(128),
+                              blurRadius: 8,
+                              spreadRadius: 1,
+                            ),
+                          ]
+                          : [],
+                ),
+                child: ClipOval(
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      Image.asset(
+                        'assets/ProfilePics/pic_${index + 1}.png',
+                        fit: BoxFit.cover,
+                      ),
+                      if (isSelected)
+                        Container(
+                          color: Colors.black.withValues(alpha: 0.3),
+                          child: Icon(
+                            Icons.check,
+                            color: Colors.white,
+                            size: 32,
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _buildContinueButton() {
+    return SizedBox(
+      width: double.infinity,
+      child: Container(
+        decoration: buttonDecoration(context),
+        child: ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.transparent,
+            shadowColor: Colors.transparent,
+            foregroundColor: Theme.of(context).colorScheme.onSurface,
+            elevation: 0,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
+          ),
+          onPressed: _isSigningUp ? null : _handleLocalOnboardingComplete,
+          child:
+              _isSigningUp
+                  ? const SizedBox(
+                    height: 20,
+                    width: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Colors.white,
+                    ),
+                  )
+                  : const Text(
+                    'Complete Setup',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                  ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBackToLoginPrompt() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        // Text
+        Text(
+          "Already have an account? ",
+          style: TextStyle(
+            fontSize: 14,
+            color: Colors.white.withValues(alpha: 0.8),
+          ),
+        ),
+
+        // Padding
+        const SizedBox(width: 4),
+
+        // Button
+        TextButton(
+          onPressed: widget.onBackToLogin,
+          style: TextButton.styleFrom(
+            foregroundColor: Colors.white,
+            backgroundColor: Colors.white.withValues(alpha: 0.15),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+          child: const Text(
+            "Sign In",
+            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+          ),
+        ),
+      ],
+    );
+  }
+
+  // ===== Build Method ===== //
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(24),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Header Logo
-          const SizedBox(height: 40),
-          Center(child: Image.asset('assets/settings/logo.png', height: 80)),
+    final scheme = Theme.of(context).colorScheme;
 
-          // Padding
-          const SizedBox(height: 40),
+    return Scaffold(
+      backgroundColor: Colors.transparent,
 
-          // Text fields section
-          sectionHeader(
-            context,
-            "Welcome aboard!",
-            "We just need a little info to get started.",
-          ),
-          StyledTextField(
-            controller: _emailController,
-            labelText: 'Email',
-            icon: Icons.email,
-          ),
-          const SizedBox(height: 16),
-          StyledTextField(
-            controller: _passwordController,
-            labelText: 'Password',
-            icon: Icons.password,
-            obscureText: true,
-          ),
-          const SizedBox(height: 16),
-          StyledTextField(
-            controller: _usernameController,
-            labelText: 'Choose a username',
-            icon: Icons.account_box,
-          ),
-          const SizedBox(height: 32),
-
-          // Avatar picker section
-          sectionHeader(context, "Avatar time", "Show us your style!"),
-
-          // Avatar picker
-          Container(
-            decoration: containerDecoration(context),
-            padding: const EdgeInsets.all(10),
-
-            child: GridView.builder(
-              padding: EdgeInsets.zero,
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 4,
-                crossAxisSpacing: 16,
-                mainAxisSpacing: 16,
-              ),
-              itemCount: 16,
-              itemBuilder: (context, index) {
-                final isSelected = _selectedAvatarIndex == index;
-
-                return GestureDetector(
-                  onTap: () {
-                    setState(() {
-                      _selectedAvatarIndex = index;
-                    });
-                  },
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 200),
-                    transform:
-                        Matrix4.identity()..scale(isSelected ? 1.1 : 1.0),
-                    transformAlignment: Alignment.center,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      // A simple border is MUCH faster than a shadow.
-                      border: Border.all(
-                        color:
-                            isSelected
-                                ? Theme.of(context).colorScheme.primary
-                                : Colors.transparent,
-                        width: isSelected ? 4 : 0,
-                      ),
-                    ),
-                    child: ClipOval(
-                      child: Stack(
-                        fit: StackFit.expand,
-                        children: [
-                          Image.asset(
-                            'assets/ProfilePics/pic_${index + 1}.png',
-                            fit: BoxFit.cover,
-                          ),
-                          // A simple colored overlay is also much faster.
-                          if (isSelected)
-                            Container(
-                              color: Colors.black.withValues(alpha: 0.3),
-                              child: Icon(
-                                Icons.check,
-                                color: Colors.white,
-                                size: 32,
-                              ),
-                            ),
-                        ],
-                      ),
-                    ),
-                  ),
-                );
-              },
-            ),
-          ),
-
-          // Padding
-          const SizedBox(height: 24),
-
-          // Preferences Section
-          sectionHeader(
-            context,
-            "Your Picks",
-            "Select what you like the most!",
-          ),
-          const SizedBox(height: 12),
-
-          _buildGenreCard("🎮 Game genres", genresGames, _selectedGameGenres),
-          const SizedBox(height: 16),
-
-          _buildGenreCard("📺 Show genres", genresShows, _selectedShowGenres),
-          const SizedBox(height: 16),
-
-          _buildGenreCard(
-            "🎬 Movie genres",
-            genresMovies,
-            _selectedMovieGenres,
-          ),
-          const SizedBox(height: 24),
-
-          const SizedBox(height: 40),
-
-          // Continue button
-          SizedBox(
-            width: double.infinity,
-            child: Container(
-              decoration: buttonDecoration(context),
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.transparent,
-                  shadowColor: Colors.transparent,
-                  foregroundColor: Theme.of(context).colorScheme.onSurface,
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                ),
-                onPressed: _isSigningUp ? null : _handleLocalOnboardingComplete,
-                child:
-                    _isSigningUp
-                        ? const SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: Colors.white,
-                          ),
-                        )
-                        : const Text(
-                          'Complete Setup',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
+      body: SafeArea(
+        child: Center(
+          child: SingleChildScrollView(
+            physics: const BouncingScrollPhysics(),
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+            child: FadeTransition(
+              opacity: _fadeAnimation,
+              child: SlideTransition(
+                position: _slideAnimation,
+                child: _buildOnboardingCard(context, scheme),
               ),
             ),
           ),
-          const SizedBox(height: 16),
-
-          // Back to login
-          Center(
-            child: TextButton(
-              onPressed: widget.onBackToLogin,
-              child: const Text(
-                'Already have an account? Sign in',
-                style: TextStyle(color: Colors.white70, fontSize: 14),
-              ),
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -600,137 +1053,22 @@ class ThemeSelectionContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final List<Color> colors = [
-      Color(0xFFEF5350),
-      Color(0xFF66BB6A),
-      Color(0xFF42A5F5),
-      Color(0xFFFFEB3B),
-      Color(0xFFAB47BC),
-      Color(0xFFFF7043),
-      Color(0xFF26C6DA),
-    ];
-
-    Widget colorButton(Color color) {
-      final bool isSelected = context.watch<ThemeProvider>().mainColor == color;
-      return GestureDetector(
-        onTap: () => context.read<ThemeProvider>().setMainColor(color),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          width: 280,
-          height: 50,
-          margin: const EdgeInsets.symmetric(vertical: 8),
-          decoration: BoxDecoration(
-            color: color,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: isSelected ? Colors.white : Colors.transparent,
-              width: 4,
-            ),
-            boxShadow:
-                isSelected
-                    ? [
-                      BoxShadow(
-                        color: color.withAlpha(128),
-                        blurRadius: 12,
-                        spreadRadius: 2,
-                      ),
-                    ]
-                    : null,
-          ),
-        ),
-      );
-    }
-
-    Widget themeCard({
-      required String assetPath,
-      required String label,
-      required ThemeMode themeMode,
-    }) {
-      final bool isSelected =
-          context.watch<ThemeProvider>().themeMode == themeMode;
-
-      return GestureDetector(
-        onTap: () => context.read<ThemeProvider>().setThemeMode(themeMode),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          width: 280,
-          height: 60,
-          margin: const EdgeInsets.symmetric(vertical: 8),
-          decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color:
-                  isSelected
-                      ? Theme.of(context).colorScheme.onPrimaryContainer
-                      : Colors.transparent,
-              width: 3,
-            ),
-            boxShadow:
-                isSelected
-                    ? [
-                      BoxShadow(
-                        color: Theme.of(
-                          context,
-                        ).colorScheme.onPrimaryContainer.withAlpha(64),
-                        blurRadius: 12,
-                        spreadRadius: 2,
-                      ),
-                    ]
-                    : null,
-          ),
-          child: Row(
-            children: [
-              const SizedBox(width: 16),
-              Container(
-                width: 40,
-                height: 60,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.3),
-                  ),
-                  color: Theme.of(context).colorScheme.primary,
-                ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
-                  child: Image.asset(assetPath, fit: BoxFit.cover),
-                ),
-              ),
-              const SizedBox(width: 16),
-              Text(
-                label,
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: Theme.of(context).colorScheme.onPrimaryContainer,
-                ),
-              ),
-              const Spacer(),
-              if (isSelected)
-                Icon(
-                  Icons.check_circle,
-                  color: Theme.of(context).colorScheme.onPrimaryContainer,
-                  size: 24,
-                ),
-              const SizedBox(width: 16),
-            ],
-          ),
-        ),
-      );
-    }
-
     return Container(
+      // Background
       decoration: BoxDecoration(gradient: gradientBackground(context)),
+
+      // Foreground
       child: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.only(top: 100, bottom: 32),
         child: Column(
           children: [
+            // Padding
             const SizedBox(height: 60),
 
             // Header
             Center(
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Icon(
                     Icons.palette,
@@ -745,100 +1083,58 @@ class ThemeSelectionContent extends StatelessWidget {
                       fontWeight: FontWeight.bold,
                       color: Theme.of(context).colorScheme.onPrimaryContainer,
                     ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Choose your theme and accent color',
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Theme.of(context).colorScheme.onPrimaryContainer,
-                    ),
+                    textAlign: TextAlign.center,
                   ),
                 ],
               ),
             ),
 
+            // Padding
             const SizedBox(height: 40),
 
             // Theme Mode Section
-            Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                'Theme Mode',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Theme.of(context).colorScheme.onPrimaryContainer,
-                ),
-              ),
-            ),
+            sectionHeader(context, "Theme Mode", "Choose how the app looks"),
             const SizedBox(height: 12),
+            ThemeSettingsPage().themeSelectionBar(context),
 
-            // Theme selection
-            Column(
-              children: [
-                themeCard(
-                  assetPath: 'assets/settings/LightMode.png',
-                  label: 'Light Mode',
-                  themeMode: ThemeMode.light,
-                ),
-                themeCard(
-                  assetPath: 'assets/settings/DarkMode.png',
-                  label: 'Dark Mode',
-                  themeMode: ThemeMode.dark,
-                ),
-                themeCard(
-                  assetPath: 'assets/settings/AutoMode.png',
-                  label: 'Auto Mode',
-                  themeMode: ThemeMode.system,
-                ),
-              ],
-            ),
-
+            // Padding
             const SizedBox(height: 32),
 
             // Accent Color Section
-            Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                'Accent Color',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Theme.of(context).colorScheme.onPrimaryContainer,
-                ),
-              ),
-            ),
+            sectionHeader(context, "Accent Color", "Pick a color you like"),
             const SizedBox(height: 12),
+            ThemeSettingsPage().colorSelectionBar(context),
 
-            // Color selection
-            Column(
-              children: colors.map((color) => colorButton(color)).toList(),
-            ),
-
+            // Padding
             const SizedBox(height: 40),
 
             // Done button
-            SizedBox(
-              width: double.infinity,
-              child: Container(
-                decoration: buttonDecoration(context),
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.transparent,
-                    shadowColor: Colors.transparent,
-                    foregroundColor: Theme.of(context).colorScheme.onSurface,
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: SizedBox(
+                width: double.infinity,
+                child: Container(
+                  decoration: buttonDecoration(context),
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.transparent,
+                      shadowColor: Colors.transparent,
+                      foregroundColor: Theme.of(context).colorScheme.onSurface,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                      ),
                     ),
-                  ),
-                  onPressed: () {
-                    onComplete();
-                  },
-                  child: const Text(
-                    'Apply Changes',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                    onPressed: () {
+                      onComplete();
+                    },
+                    child: const Text(
+                      'Apply Changes',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                   ),
                 ),
               ),

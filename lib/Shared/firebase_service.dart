@@ -86,6 +86,60 @@ class FirebaseService {
   // Sign out
   Future<void> signOut() async => _auth.signOut();
 
+  // Delete account
+  Future<void> deleteAccount(String email, String password) async {
+    final user = _auth.currentUser;
+    if (user != null) {
+      // Reauthenticate first
+      final cred = EmailAuthProvider.credential(
+        email: email,
+        password: password,
+      );
+      await user.reauthenticateWithCredential(cred);
+
+      // Delete user account
+      await removeUserFromFriendsLists(user.uid);
+      await _firestore.collection('users').doc(user.uid).delete();
+      await user.delete();
+    }
+  }
+
+  Future<void> removeUserFromFriendsLists(String userId) async {
+    final friendsSnapshot =
+        await _firestore
+            .collection('users')
+            .doc(userId)
+            .collection('friends')
+            .get();
+
+    final batch = _firestore.batch();
+
+    for (final doc in friendsSnapshot.docs) {
+      final friendId = doc.id;
+
+      // Delete current user from each friend's friends list
+      final friendRef = _firestore
+          .collection('users')
+          .doc(friendId)
+          .collection('friends')
+          .doc(userId);
+
+      batch.delete(friendRef);
+    }
+
+    // Also delete the user's own friends collection
+    for (final doc in friendsSnapshot.docs) {
+      final ref = _firestore
+          .collection('users')
+          .doc(userId)
+          .collection('friends')
+          .doc(doc.id);
+      batch.delete(ref);
+    }
+
+    await batch.commit();
+  }
+
   // ===== User Data ===== //
 
   // Save user data
@@ -459,18 +513,19 @@ class FirebaseService {
   // Search for users to add as friends
   Future<List<Map<String, dynamic>>> searchUsers(String query) async {
     final user = FirebaseAuth.instance.currentUser;
-    if (user == null) return [];
+    if (user == null || query.isEmpty) return [];
 
-    // Search by username (you might want to add more search criteria)
     final querySnapshot =
         await _firestore
             .collection('users')
-            .where('userName', isEqualTo: query)
+            .orderBy('userName')
+            .startAt([query])
+            .endAt(['$query\uf8ff'])
             .limit(10)
             .get();
 
     return querySnapshot.docs
-        .where((doc) => doc.id != user.uid) // Exclude current user
+        .where((doc) => doc.id != user.uid)
         .map(
           (doc) => {
             'id': doc.id,

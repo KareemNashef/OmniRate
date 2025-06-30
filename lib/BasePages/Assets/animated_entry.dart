@@ -137,7 +137,7 @@ class AnimatedBackgroundCardState extends State<AnimatedBackgroundCard>
       ]),
       builder: (context, child) {
         return AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
+          duration: const Duration(milliseconds: 300),
           curve: Curves.easeInOutCubic,
           height: _heightAnimation.value,
           child: ClipRRect(
@@ -151,7 +151,7 @@ class AnimatedBackgroundCardState extends State<AnimatedBackgroundCard>
                     child: Transform.scale(
                       scale: 1.3,
                       child: ImageFiltered(
-                        imageFilter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+                        imageFilter: ImageFilter.blur(sigmaX: 4, sigmaY: 4),
                         child: buildImageFromUrl(widget.inEntry.artworkUrl),
                       ),
                     ),
@@ -250,7 +250,7 @@ class AnimatedBackgroundCardState extends State<AnimatedBackgroundCard>
                                           ratingsIndicator(
                                             context,
                                             widget.inEntry.rating.toString(),
-                                            opaque: true
+                                            opaque: true,
                                           ),
                                         ],
                                       )

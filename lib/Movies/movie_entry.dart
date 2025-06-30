@@ -2,6 +2,7 @@
 
 // Flutter imports
 import 'package:flutter/material.dart';
+import 'package:omnirate/BasePages/Assets/cast_carousel.dart';
 
 // Local imports
 import 'package:omnirate/BasePages/base_entry_page.dart';
@@ -261,18 +262,29 @@ class MovieEntryState extends EntryPageBaseState with TickerProviderStateMixin {
         children: [
           // Add to list
           addToList(),
+
           // Padding
           const SizedBox(height: 8),
+
           // Game info
           movieInfo(),
+
           // Padding
           const SizedBox(height: 8),
-          // Time to beat
+
+          // Budget and revenue
           budgetAndRevenue(),
+
           // Padding
-          // const SizedBox(height: 8),
-          // Related media
-          // relatedMedia(),
+          const SizedBox(height: 8),
+
+          // Cast carousel
+          CastCarousel(
+            mediaType: "movie",
+            inNames: currentMovie.castNames,
+            inLinks: currentMovie.castImageUrls,
+          ),
+
           // Padding
           const SizedBox(height: 90),
         ],

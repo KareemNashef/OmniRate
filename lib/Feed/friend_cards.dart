@@ -285,8 +285,8 @@ class AddFriendDialogState extends State<AddFriendDialog> {
             Expanded(
               child: Text(
                 userName,
-                style: const TextStyle(
-                  color: Colors.white,
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.onSurface,
                   fontWeight: FontWeight.w600,
                   fontSize: 16,
                 ),
@@ -429,18 +429,23 @@ class AddFriendDialogState extends State<AddFriendDialog> {
               padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
               child: Row(
                 children: [
-                  const Text(
+
+                  // Title
+                  Text(
                     'Add Friends',
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 22,
-                      color: Colors.white,
+                      color: Theme.of(context).colorScheme.onSurface,
                     ),
                   ),
+
                   const Spacer(),
+
+                  // Close button
                   IconButton(
                     onPressed: () => Navigator.pop(context),
-                    icon: const Icon(Icons.close, color: Colors.white70),
+                    icon: Icon(Icons.close, color: Theme.of(context).colorScheme.onSurfaceVariant),
                     padding: EdgeInsets.zero,
                     constraints: const BoxConstraints(),
                   ),
@@ -453,18 +458,18 @@ class AddFriendDialogState extends State<AddFriendDialog> {
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: TextField(
                 controller: _controller,
-                style: const TextStyle(color: Colors.white),
+                style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
                 decoration: InputDecoration(
                   hintText: 'Search username...',
                   hintStyle: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.6),
+                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
                   ),
                   prefixIcon: Icon(
                     Icons.search,
-                    color: Colors.white.withValues(alpha: 0.7),
+                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
                   ),
                   filled: true,
-                  fillColor: Colors.white.withValues(alpha: 0.1),
+                  fillColor: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.1),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                     borderSide: BorderSide.none,
@@ -492,13 +497,13 @@ class AddFriendDialogState extends State<AddFriendDialog> {
                             Icon(
                               Icons.search,
                               size: 48,
-                              color: Colors.white.withValues(alpha: 0.4),
+                              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.4),
                             ),
                             const SizedBox(height: 12),
                             Text(
                               'Type at least 2 characters to search',
                               style: TextStyle(
-                                color: Colors.white.withValues(alpha: 0.7),
+                                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
                                 fontSize: 14,
                               ),
                               textAlign: TextAlign.center,
@@ -507,12 +512,12 @@ class AddFriendDialogState extends State<AddFriendDialog> {
                         ),
                       )
                       : _loading
-                      ? const Padding(
+                      ? Padding(
                         padding: EdgeInsets.all(40),
                         child: Center(
                           child: CircularProgressIndicator(
                             valueColor: AlwaysStoppedAnimation<Color>(
-                              Colors.white,
+                              Theme.of(context).colorScheme.onSurface,
                             ),
                           ),
                         ),
@@ -526,13 +531,13 @@ class AddFriendDialogState extends State<AddFriendDialog> {
                             Icon(
                               Icons.person_search,
                               size: 48,
-                              color: Colors.white.withValues(alpha: 0.4),
+                              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.4),
                             ),
                             const SizedBox(height: 12),
                             Text(
                               'No users found',
                               style: TextStyle(
-                                color: Colors.white.withValues(alpha: 0.7),
+                                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
                                 fontSize: 14,
                               ),
                             ),

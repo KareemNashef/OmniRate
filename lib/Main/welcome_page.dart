@@ -1,6 +1,8 @@
 // ==================== Welcome Page ==================== //
 
 // Flutter imports
+import 'dart:ui';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
@@ -40,9 +42,6 @@ class WelcomePageState extends State<WelcomePage>
   late final PageController _pageController;
   late final AnimationController _fadeController;
   late final Animation<double> _fadeAnimation;
-
-  // High-level state management
-  WelcomeState _currentState = WelcomeState.splash;
 
   // ===== Lifecycle Methods ===== //
 
@@ -91,9 +90,7 @@ class WelcomePageState extends State<WelcomePage>
   // ===== Logic & Navigation Methods ===== //
 
   void _navigateToState(WelcomeState newState) {
-    setState(() {
-      _currentState = newState;
-    });
+    setState(() {});
     _pageController.animateToPage(
       newState.index,
       duration: const Duration(milliseconds: 400),
@@ -145,9 +142,6 @@ class WelcomePageState extends State<WelcomePage>
     required String password,
     required String username,
     required int avatarIndex,
-    required Set<int> gameGenres,
-    required Set<int> showGenres,
-    required Set<int> movieGenres,
   }) async {
     try {
       if (email == "Ass") {
@@ -167,11 +161,7 @@ class WelcomePageState extends State<WelcomePage>
         final userData = UserData(
           userName: username,
           email: email,
-          // You should add these fields to your UserData class
           avatarIndex: avatarIndex,
-          // preferredGameGenres: gameGenres,
-          // preferredShowGenres: showGenres,
-          // preferredMovieGenres: movieGenres,
           listGames: {},
           listShows: {},
           listMovies: {},
@@ -221,31 +211,21 @@ class WelcomePageState extends State<WelcomePage>
 
   Widget _buildImageColumn(List<String> paths, ScrollController controller) {
     return Expanded(
-      child: ShaderMask(
-        shaderCallback:
-            (rect) => const LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [Colors.transparent, Colors.black, Colors.transparent],
-              stops: [0, 0.5, 1],
-            ).createShader(rect),
-        blendMode: BlendMode.dstIn,
-        child: ListView.builder(
-          controller: controller,
-          physics: const NeverScrollableScrollPhysics(),
-          itemCount: paths.length * 10,
-          itemBuilder:
-              (context, index) => Padding(
-                padding: const EdgeInsets.symmetric(vertical: 4.0),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(12),
-                  child: Image.asset(
-                    paths[index % paths.length],
-                    fit: BoxFit.cover,
-                  ),
+      child: ListView.builder(
+        controller: controller,
+        physics: const NeverScrollableScrollPhysics(),
+        itemCount: paths.length * 10,
+        itemBuilder:
+            (context, index) => Padding(
+              padding: const EdgeInsets.symmetric(vertical: 4.0),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: Image.asset(
+                  paths[index % paths.length],
+                  fit: BoxFit.cover,
                 ),
               ),
-        ),
+            ),
       ),
     );
   }
@@ -284,17 +264,22 @@ class WelcomePageState extends State<WelcomePage>
               opacity: _fadeAnimation,
               child: Row(
                 children: [
+                  const SizedBox(width: 4),
                   _buildImageColumn(gamesPaths, _gamesController),
-                  const SizedBox(width: 16),
+                  const SizedBox(width: 8),
                   _buildImageColumn(showsPaths, _showsController),
-                  const SizedBox(width: 16),
+                  const SizedBox(width: 8),
                   _buildImageColumn(moviesPaths, _moviesController),
+                  const SizedBox(width: 4),
                 ],
               ),
             ),
 
-            // Background overlay
-            Container(color: const Color.fromRGBO(0, 0, 0, 0.6)),
+            // Background blur
+            BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+              child: Container(color: const Color.fromRGBO(0, 0, 0, 0.5)),
+            ),
 
             // Page content
             PageView(
@@ -317,23 +302,6 @@ class WelcomePageState extends State<WelcomePage>
                 ),
               ],
             ),
-
-            // Back button
-            if (_currentState != WelcomeState.splash &&
-                _currentState != WelcomeState.themeSelection)
-              Positioned(
-                top: MediaQuery.of(context).padding.top + 8,
-                left: 8,
-                child: IconButton(
-                  onPressed:
-                      () => _navigateToState(
-                        _currentState == WelcomeState.login
-                            ? WelcomeState.splash
-                            : WelcomeState.login,
-                      ),
-                  icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
-                ),
-              ),
           ],
         ),
       ),

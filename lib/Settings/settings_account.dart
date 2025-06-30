@@ -10,6 +10,7 @@ import 'package:omnirate/Main/welcome_page.dart';
 import 'package:omnirate/Shared/firebase_service.dart';
 import 'package:omnirate/Shared/user_data.dart';
 import 'package:omnirate/Shared/utils.dart';
+import 'package:omnirate/shared/animated_list_item.dart';
 
 // ========== Account Settings Page Class ========== //
 
@@ -38,10 +39,10 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
   bool _isLoadingUsername = false;
   bool _isLoadingPassword = false;
   bool _isLoadingSignOut = false;
+  bool _isLoadingDelete = false;
 
   // Obscure
   bool _obscureNewPassword = true;
-  bool _obscureConfirmPassword = true;
 
   // Hive
   UserData? _userData;
@@ -147,7 +148,7 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
       _showSnackBar('Please fill in all password fields', isError: true);
       return;
     }
-    
+
     if (_oldPasswordController.text.length < 6) {
       _showSnackBar('Password must be at least 6 characters', isError: true);
       return;
@@ -240,6 +241,83 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
         false;
   }
 
+  Future<void> _deleteAccount() async {
+    final (shouldDelete, email, password) = await _showDeleteAccountDialog();
+    if (!shouldDelete || email == null || password == null) return;
+
+    setState(() => _isLoadingDelete = true);
+
+    try {
+      await _firebaseService.deleteAccount(email, password);
+
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('seenWelcome', false);
+
+      if (mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => WelcomePage()),
+        );
+      }
+    } catch (e) {
+      _showSnackBar('Failed to delete account: $e', isError: true);
+    } finally {
+      if (mounted) {
+        setState(() => _isLoadingDelete = false);
+      }
+    }
+  }
+
+  Future<(bool confirmed, String? email, String? password)>
+  _showDeleteAccountDialog() async {
+    final emailController = TextEditingController();
+    final passwordController = TextEditingController();
+
+    final confirmed =
+        await showDialog<bool>(
+          context: context,
+          builder: (context) {
+            return AlertDialog(
+              title: const Text('Delete Account'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text('Enter your email and password to confirm.'),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: emailController,
+                    decoration: const InputDecoration(labelText: 'Email'),
+                  ),
+                  TextField(
+                    controller: passwordController,
+                    obscureText: true,
+                    decoration: const InputDecoration(labelText: 'Password'),
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(false),
+                  child: const Text('Cancel'),
+                ),
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(true),
+                  style: TextButton.styleFrom(foregroundColor: Colors.red),
+                  child: const Text('Delete'),
+                ),
+              ],
+            );
+          },
+        ) ??
+        false;
+
+    return (
+      confirmed,
+      emailController.text.trim().isEmpty ? null : emailController.text.trim(),
+      passwordController.text.isEmpty ? null : passwordController.text,
+    );
+  }
+
   void _showSnackBar(String message, {bool isError = false}) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -300,24 +378,10 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
         child: Column(
           children: [
             // Username Input
-            TextField(
+            _buildGlassTextField(
               controller: _usernameController,
-              decoration: InputDecoration(
-                labelText: 'Username',
-                prefixIcon: Icon(Icons.person),
-                filled: true,
-                fillColor: Theme.of(
-                  context,
-                ).colorScheme.surface.withValues(alpha: 0.1),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(16),
-                  borderSide: BorderSide.none,
-                ),
-                contentPadding: const EdgeInsets.symmetric(
-                  vertical: 20,
-                  horizontal: 16,
-                ),
-              ),
+              labelText: 'Username',
+              icon: Icons.person,
             ),
 
             // Padding
@@ -387,19 +451,25 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
                 });
               },
               child: AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
+                duration: const Duration(milliseconds: 300),
                 transform: Matrix4.identity()..scale(isSelected ? 1.1 : 1.0),
                 transformAlignment: Alignment.center,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  // A simple border is MUCH faster than a shadow.
                   border: Border.all(
-                    color:
-                        isSelected
-                            ? Theme.of(context).colorScheme.primary
-                            : Colors.transparent,
-                    width: isSelected ? 4 : 0,
+                    color: isSelected ? Colors.white : Colors.transparent,
+                    width: isSelected ? 3 : 0,
                   ),
+                  boxShadow:
+                      isSelected
+                          ? [
+                            BoxShadow(
+                              color: Colors.white.withAlpha(128),
+                              blurRadius: 8,
+                              spreadRadius: 1,
+                            ),
+                          ]
+                          : [],
                 ),
                 child: ClipOval(
                   child: Stack(
@@ -409,7 +479,6 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
                         'assets/ProfilePics/pic_${index + 1}.png',
                         fit: BoxFit.cover,
                       ),
-                      // A simple colored overlay is also much faster.
                       if (isSelected)
                         Container(
                           color: Colors.black.withValues(alpha: 0.3),
@@ -440,35 +509,19 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
         child: Column(
           children: [
             // Password Inputs
-            TextField(
+            _buildGlassTextField(
               controller: _oldPasswordController,
+              labelText: 'Old Password',
+              icon: Icons.lock,
               obscureText: _obscureNewPassword,
-              decoration: InputDecoration(
-                labelText: 'Old Password',
-                prefixIcon: const Icon(Icons.lock),
-                suffixIcon: IconButton(
-                  icon: Icon(
-                    _obscureNewPassword
-                        ? Icons.visibility
-                        : Icons.visibility_off,
-                  ),
-                  onPressed:
-                      () => setState(() {
-                        _obscureNewPassword = !_obscureNewPassword;
-                      }),
+              suffixIcon: IconButton(
+                icon: Icon(
+                  _obscureNewPassword ? Icons.visibility : Icons.visibility_off,
                 ),
-                filled: true,
-                fillColor: Theme.of(
-                  context,
-                ).colorScheme.surface.withValues(alpha: 0.1),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(16),
-                  borderSide: BorderSide.none,
-                ),
-                contentPadding: const EdgeInsets.symmetric(
-                  vertical: 20,
-                  horizontal: 16,
-                ),
+                onPressed:
+                    () => setState(() {
+                      _obscureNewPassword = !_obscureNewPassword;
+                    }),
               ),
             ),
 
@@ -476,35 +529,19 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
             const SizedBox(height: 16),
 
             // Confirm Password Input
-            TextField(
+            _buildGlassTextField(
               controller: _newPasswordController,
-              obscureText: _obscureConfirmPassword,
-              decoration: InputDecoration(
-                labelText: 'New Password',
-                prefixIcon: const Icon(Icons.lock_outline),
-                suffixIcon: IconButton(
-                  icon: Icon(
-                    _obscureConfirmPassword
-                        ? Icons.visibility
-                        : Icons.visibility_off,
-                  ),
-                  onPressed:
-                      () => setState(() {
-                        _obscureConfirmPassword = !_obscureConfirmPassword;
-                      }),
+              labelText: 'New Password',
+              icon: Icons.lock,
+              obscureText: _obscureNewPassword,
+              suffixIcon: IconButton(
+                icon: Icon(
+                  _obscureNewPassword ? Icons.visibility : Icons.visibility_off,
                 ),
-                filled: true,
-                fillColor: Theme.of(
-                  context,
-                ).colorScheme.surface.withValues(alpha: 0.1),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(16),
-                  borderSide: BorderSide.none,
-                ),
-                contentPadding: const EdgeInsets.symmetric(
-                  vertical: 20,
-                  horizontal: 16,
-                ),
+                onPressed:
+                    () => setState(
+                      () => _obscureNewPassword = !_obscureNewPassword,
+                    ),
               ),
             ),
 
@@ -545,56 +582,169 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
   }
 
   Widget signOutSection() {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
-      decoration: containerDecoration(context),
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
 
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-
-        // Sign Out Button
-        child: SizedBox(
-          width: double.infinity,
-          child: Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [Colors.red, Colors.orange],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              borderRadius: BorderRadius.circular(12),
+      // Sign Out Button
+      child: SizedBox(
+        width: double.infinity,
+        child: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Colors.red, Colors.orange],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
             ),
-            child: ElevatedButton(
-              onPressed: _isLoadingSignOut ? null : _signOut,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.transparent,
-                shadowColor: Colors.transparent,
-                foregroundColor: Colors.white,
-                elevation: 0,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: ElevatedButton(
+            onPressed: _isLoadingSignOut ? null : _signOut,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.transparent,
+              shadowColor: Colors.transparent,
+              foregroundColor: Colors.white,
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
               ),
-              child:
-                  _isLoadingSignOut
-                      ? const SizedBox(
-                        height: 20,
-                        width: 20,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation<Color>(
-                            Colors.white,
-                          ),
-                        ),
-                      )
-                      : const Text('Sign Out'),
             ),
+            child:
+                _isLoadingSignOut
+                    ? const SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                      ),
+                    )
+                    : const Text('Sign Out'),
           ),
         ),
       ),
     );
   }
 
+  Widget deleteAccountSection() {
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+
+      // Sign Out Button
+      child: SizedBox(
+        width: double.infinity,
+        child: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                const Color.fromARGB(255, 255, 17, 0),
+                const Color.fromARGB(255, 94, 1, 1),
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: ElevatedButton(
+            onPressed: _isLoadingDelete ? null : _deleteAccount,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.transparent,
+              shadowColor: Colors.transparent,
+              foregroundColor: Colors.white,
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            child:
+                _isLoadingDelete
+                    ? const SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                      ),
+                    )
+                    : const Text('Delete Account'),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildGlassTextField({
+    required TextEditingController controller,
+    required String labelText,
+    required IconData icon,
+    bool obscureText = false,
+    Widget? suffixIcon,
+    String? Function(String?)? validator,
+  }) {
+    return Container(
+      // Theme
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        gradient: LinearGradient(
+          colors: [
+            Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.1),
+            Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.05),
+          ],
+        ),
+        border: Border.all(
+          color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.2),
+          width: 1,
+        ),
+      ),
+
+      // Content
+      child: TextFormField(
+        controller: controller,
+        obscureText: obscureText,
+        style: TextStyle(
+          color: Theme.of(context).colorScheme.onSurface,
+          fontSize: 16,
+          fontWeight: FontWeight.w500,
+        ),
+        validator: validator,
+        decoration: InputDecoration(
+          labelText: labelText,
+          hintText: labelText,
+          prefixIcon: Icon(
+            icon,
+            color: Theme.of(
+              context,
+            ).colorScheme.onSurface.withValues(alpha: 0.6),
+          ),
+          suffixIcon: suffixIcon,
+          floatingLabelBehavior: FloatingLabelBehavior.never,
+          hintStyle: TextStyle(color: Theme.of(context).colorScheme.onSurface),
+          labelStyle: TextStyle(color: Theme.of(context).colorScheme.onSurface),
+          filled: true,
+          fillColor: Colors.transparent,
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(16),
+            borderSide: BorderSide.none,
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(16),
+            borderSide: BorderSide(
+              color: Theme.of(
+                context,
+              ).colorScheme.onSurface.withValues(alpha: 0.7),
+            ),
+          ),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 20,
+            vertical: 16,
+          ),
+          errorStyle: TextStyle(
+            color: Colors.red.shade300,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ),
+    );
+  }
   // ===== Build Method ===== //
 
   @override
@@ -614,24 +764,109 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Account Info Section
-              sectionHeader(context, "Account Info", "Your account details"),
-              accountInfoSection(),
+              AnimatedListItem(
+                index: 1,
+                child: Column(
+                  children: [
+                    sectionHeader(
+                      context,
+                      "Account Info",
+                      "Your account details",
+                    ),
+                    accountInfoSection(),
+                  ],
+                ),
+              ),
+
+              // Padding
+              const SizedBox(height: 16),
 
               // Change Username Section
-              sectionHeader(context, "Change Username", "Update your username"),
-              usernameSection(),
+              AnimatedListItem(
+                index: 2,
+                child: Column(
+                  children: [
+                    sectionHeader(
+                      context,
+                      "Change Username",
+                      "Update your username",
+                    ),
+                    usernameSection(),
+                  ],
+                ),
+              ),
+
+              // Padding
+              const SizedBox(height: 16),
 
               // Change Avatar Section
-              sectionHeader(context, "Change Avatar", "Update your avatar"),
-              avatarSection(),
+              AnimatedListItem(
+                index: 3,
+                child: Column(
+                  children: [
+                    sectionHeader(
+                      context,
+                      "Change Avatar",
+                      "Update your avatar",
+                    ),
+                    avatarSection(),
+                  ],
+                ),
+              ),
+
+              // Padding
+              const SizedBox(height: 16),
 
               // Change Password Section
-              sectionHeader(context, "Change Password", "Update your password"),
-              passwordSection(),
+              AnimatedListItem(
+                index: 4,
+                child: Column(
+                  children: [
+                    sectionHeader(
+                      context,
+                      "Change Password",
+                      "Update your password",
+                    ),
+                    passwordSection(),
+                  ],
+                ),
+              ),
+
+              // Padding
+              const SizedBox(height: 16),
 
               // Sign Out Section
-              sectionHeader(context, "Sign Out", "Sign out of your account"),
-              signOutSection(),
+              AnimatedListItem(
+                index: 5,
+                child: Column(
+                  children: [
+                    sectionHeader(
+                      context,
+                      "Sign Out",
+                      "Sign out of your account",
+                    ),
+                    signOutSection(),
+                  ],
+                ),
+              ),
+
+              // Padding
+              const SizedBox(height: 16),
+
+              // Delete Account Section
+              AnimatedListItem(
+                index: 6,
+                child: Column(
+                  children: [
+                    sectionHeader(
+                      context,
+                      "Delete Account",
+                      "Permanently delete your account",
+                    ),
+                    deleteAccountSection(),
+                  ],
+                ),
+              ),
             ],
           ),
         ),

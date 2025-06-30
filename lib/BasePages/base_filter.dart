@@ -37,7 +37,7 @@ abstract class FilterModalBaseState<T extends FilterModalBase>
   late int selectedCategoryId;
   late double ratingValue;
   late Set<int> selectedGenreIds;
-  double get ratingDisplay => ratingValue / 10;
+  double get ratingDisplay => ratingValue;
 
   // ===== Lifecycle Methods ===== //
 

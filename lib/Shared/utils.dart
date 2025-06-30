@@ -1,57 +1,47 @@
 // ==================== Utils ==================== //
 
 // Flutter imports
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
 // ========== Stock thumbnails for onboarding ========== //
 
 List<String> gamesPaths = [
-  "assets/Debug/Games/1.webp",
-  "assets/Debug/Games/2.webp",
-  "assets/Debug/Games/3.webp",
-  "assets/Debug/Games/4.webp",
-  "assets/Debug/Games/5.webp",
-  "assets/Debug/Games/6.webp",
-  "assets/Debug/Games/7.webp",
-  "assets/Debug/Games/8.webp",
-  "assets/Debug/Games/9.webp",
-  "assets/Debug/Games/10.webp",
-  "assets/Debug/Games/11.webp",
-  "assets/Debug/Games/12.webp",
-  "assets/Debug/Games/13.webp",
+  "assets/Debug/Games/1.png",
+  "assets/Debug/Games/2.png",
+  "assets/Debug/Games/3.png",
+  "assets/Debug/Games/4.png",
+  "assets/Debug/Games/5.png",
+  "assets/Debug/Games/6.png",
+  "assets/Debug/Games/7.png",
+  "assets/Debug/Games/8.png",
+  "assets/Debug/Games/9.png",
 ];
 
 List<String> showsPaths = [
-  "assets/Debug/Shows/1.webp",
-  "assets/Debug/Shows/2.webp",
-  "assets/Debug/Shows/3.webp",
-  "assets/Debug/Shows/4.webp",
-  "assets/Debug/Shows/5.webp",
-  "assets/Debug/Shows/6.webp",
-  "assets/Debug/Shows/7.webp",
-  "assets/Debug/Shows/8.webp",
-  "assets/Debug/Shows/9.webp",
-  "assets/Debug/Shows/10.webp",
-  "assets/Debug/Shows/11.webp",
-  "assets/Debug/Shows/12.webp",
-  "assets/Debug/Shows/13.webp",
+  "assets/Debug/Shows/1.png",
+  "assets/Debug/Shows/2.png",
+  "assets/Debug/Shows/3.png",
+  "assets/Debug/Shows/4.png",
+  "assets/Debug/Shows/5.png",
+  "assets/Debug/Shows/6.png",
+  "assets/Debug/Shows/7.png",
+  "assets/Debug/Shows/8.png",
+  "assets/Debug/Shows/9.png",
 ];
 
 List<String> moviesPaths = [
-  "assets/Debug/Movies/1.webp",
-  "assets/Debug/Movies/2.webp",
-  "assets/Debug/Movies/3.webp",
-  "assets/Debug/Movies/4.webp",
-  "assets/Debug/Movies/5.webp",
-  "assets/Debug/Movies/6.webp",
-  "assets/Debug/Movies/7.webp",
-  "assets/Debug/Movies/8.webp",
-  "assets/Debug/Movies/9.webp",
-  "assets/Debug/Movies/10.webp",
-  "assets/Debug/Movies/11.webp",
-  "assets/Debug/Movies/12.webp",
-  "assets/Debug/Movies/13.webp",
+  "assets/Debug/Movies/1.png",
+  "assets/Debug/Movies/2.png",
+  "assets/Debug/Movies/3.png",
+  "assets/Debug/Movies/4.png",
+  "assets/Debug/Movies/5.png",
+  "assets/Debug/Movies/6.png",
+  "assets/Debug/Movies/7.png",
+  "assets/Debug/Movies/8.png",
+  "assets/Debug/Movies/9.png",
 ];
 
 // ========== Constant Maps ========== //
@@ -302,50 +292,53 @@ Widget ratingsIndicator(
   String inRating, {
   bool opaque = false,
 }) {
-  // Parse and validate rating
   final double? rating = double.tryParse(inRating);
   final bool hasValidRating = rating != null && rating > 0.0;
+  final colorScheme = Theme.of(context).colorScheme;
 
   return Container(
-    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
     decoration: BoxDecoration(
       color:
           hasValidRating
-              ? opaque
-                  ? Colors.amber.shade100.withValues(alpha: 0.75)
-                  : Colors.amber.withValues(alpha: 0.1)
-              : opaque
-              ? Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.75)
-              : Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
-      borderRadius: BorderRadius.circular(8),
+              ? (opaque
+                  ? Colors.amber.shade100
+                  : Colors.amber.withValues(alpha: 0.12))
+              : (opaque
+                  ? colorScheme.surfaceContainerHighest.withValues(alpha: 0.8)
+                  : colorScheme.surfaceContainerHighest.withValues(alpha: 0.5)),
+      borderRadius: BorderRadius.circular(12),
       border: Border.all(
         color:
             hasValidRating
-                ? opaque
-                    ? Colors.amber.shade300.withValues(alpha: 0.75)
-                    : Colors.amber.withValues(alpha: 0.3)
-                : opaque
-                ? Theme.of(context).colorScheme.outline.withValues(alpha: 0.75)
-                : Theme.of(context).colorScheme.outline.withValues(alpha: 0.3),
-        width: 1,
+                ? (opaque
+                    ? Colors.amber.shade300
+                    : Colors.amber.withValues(alpha: 0.4))
+                : colorScheme.outline.withValues(alpha: opaque ? 0.7 : 0.3),
+        width: 1.2,
       ),
     ),
     child: Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        if (hasValidRating) ...[
-          Icon(Icons.star_rounded, size: 14, color: Colors.amber.shade700),
-          const SizedBox(width: 4),
-        ],
+        Icon(
+          hasValidRating ? Icons.star_rounded : Icons.star_outline_rounded,
+          size: 16,
+          color:
+              hasValidRating
+                  ? Colors.amber.shade700
+                  : colorScheme.outlineVariant,
+        ),
+        const SizedBox(width: 6),
         Text(
           hasValidRating ? rating.toStringAsFixed(1) : 'Not Rated',
           style: TextStyle(
-            fontSize: 11,
+            fontSize: 12,
             fontWeight: FontWeight.w600,
             color:
                 hasValidRating
                     ? Colors.amber.shade800
-                    : Theme.of(context).colorScheme.onSurfaceVariant,
+                    : colorScheme.onSurfaceVariant,
           ),
         ),
       ],
@@ -359,3 +352,65 @@ Widget buildImageFromUrl(String inURL) => CachedNetworkImage(
   placeholder: (_, __) => const Center(child: CircularProgressIndicator()),
   errorWidget: (_, __, ___) => Icon(Icons.broken_image),
 );
+
+// ===== Glass Container =====
+
+
+class GlassContainer extends StatelessWidget {
+  final Widget child;
+  final EdgeInsets padding;
+  final double borderRadius;
+
+  const GlassContainer({
+    super.key,
+    required this.child,
+    this.padding = const EdgeInsets.all(32),
+    this.borderRadius = 24,
+  });
+
+  BoxDecoration boxDecoration(context) => BoxDecoration(
+    borderRadius: BorderRadius.circular(borderRadius),
+    gradient: LinearGradient(
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+      colors: [
+        Colors.white.withValues(alpha: 0.1),
+        Colors.white.withValues(alpha: 0.05),
+      ],
+    ),
+    border: Border.all(color: Colors.white.withValues(alpha: 0.2), width: 1),
+    boxShadow: [
+      BoxShadow(
+        color: Colors.black.withValues(alpha: 0.1),
+        blurRadius: 20,
+        offset: const Offset(0, 8),
+      ),
+      BoxShadow(
+        color: Colors.white.withValues(alpha: 0.05),
+        blurRadius: 20,
+        offset: const Offset(0, -4),
+      ),
+    ],
+  );
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      constraints: const BoxConstraints(maxWidth: 400),
+      decoration: boxDecoration(context),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(borderRadius),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
+          child: Container(
+            padding: padding,
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.05),
+            ),
+            child: child,
+          ),
+        ),
+      ),
+    );
+  }
+}

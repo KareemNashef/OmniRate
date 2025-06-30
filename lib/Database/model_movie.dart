@@ -12,7 +12,7 @@ part 'model_movie.g.dart';
 // ========== Movie entry model ==========
 
 @HiveType(typeId: 2)
-class Movie implements MediaEntry{
+class Movie implements MediaEntry {
   // ===== Class variables =====
 
   // Main data
@@ -54,11 +54,17 @@ class Movie implements MediaEntry{
   @HiveField(9)
   final String revenue;
 
+  // Cast info
+  @HiveField(10)
+  final List<String> castNames;
+
+  @HiveField(11)
+  final List<String> castImageUrls;
+
   // ===== MediaEntry Implementation =====
 
   @override
   MediaType get mediaType => MediaType.movie;
-
 
   // ===== Class methods =====
 
@@ -76,6 +82,9 @@ class Movie implements MediaEntry{
 
     required this.budget,
     required this.revenue,
+
+    required this.castNames,
+    required this.castImageUrls,
   });
 
   // Convert to map
@@ -93,6 +102,9 @@ class Movie implements MediaEntry{
 
     'budget': budget,
     'revenue': revenue,
+
+    'castNames': castNames,
+    'castImageUrls': castImageUrls,
   };
 
   // Convert from map
@@ -109,11 +121,14 @@ class Movie implements MediaEntry{
 
     budget: map['budget'],
     revenue: map['revenue'],
+
+    castNames: map['castNames'],
+    castImageUrls: map['castImageUrls'],
   );
 
   // Convert to string
-@override
-String toString() => '''
+  @override
+  String toString() => '''
 Movie:
   ID: $id
   Name: $name
@@ -125,5 +140,7 @@ Movie:
   Overview: $overview
   Budget: $budget
   Revenue: $revenue
+  Cast Names: ${castNames.join(', ')}
+  Cast Image URLs: ${castImageUrls.join(', ')}
 ''';
 }

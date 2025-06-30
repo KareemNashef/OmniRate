@@ -2,6 +2,7 @@
 
 // Flutter imports
 import 'package:flutter/material.dart';
+import 'package:omnirate/Shared/animated_list_item.dart';
 import 'package:omnirate/Shared/utils.dart';
 import 'package:provider/provider.dart';
 
@@ -24,38 +25,36 @@ class ThemeSettingsPage extends StatelessWidget {
       final double width = 120;
       final double height = 200;
 
-      return AnimatedContainer(
-        duration: const Duration(milliseconds: 300),
+      return SizedBox(
         width: width,
         height: height,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            width: 3,
-            color:
-                isSelected
-                    ? Theme.of(context).colorScheme.primary
-                    : Colors.transparent,
-          ),
-        ),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(12),
           child: Stack(
             children: [
-              Container(
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 300),
                 width: width,
                 height: height,
-                color:
-                    isSelected
-                        ? Theme.of(context).colorScheme.primary
-                        : Colors.transparent,
+                padding: const EdgeInsets.all(3),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
+                  color:
+                      isSelected
+                          ? Theme.of(context).colorScheme.primary
+                          : Colors.transparent,
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(9),
+                  child: Image.asset(
+                    assetPath,
+                    width: width,
+                    height: height,
+                    fit: BoxFit.cover,
+                  ),
+                ),
               ),
-              Image.asset(
-                assetPath,
-                width: width,
-                height: height,
-                fit: BoxFit.cover,
-              ),
+
               Material(
                 color: Colors.transparent,
                 child: InkWell(
@@ -106,51 +105,55 @@ class ThemeSettingsPage extends StatelessWidget {
 
   Widget colorSelectionBar(BuildContext context) {
     List<Color> colors = [
-      Color(0xFFEF5350),
-      Color(0xFF66BB6A),
-      Color(0xFF42A5F5),
-      Color(0xFFFFEB3B),
-      Color(0xFFAB47BC),
-      Color(0xFFFF7043),
-      Color(0xFF26C6DA),
+      Color(0xFF2196f3),
+      Color(0xFF6750a4),
+      Color(0xFF009688),
+      Color(0xFFffeb3b),
+      Color(0xFFff9800),
+      Color(0xFFe91e63),
+      Color(0xFF4caf50),
+      Color(0xFF3f51b5),
     ];
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Wrap(
-        spacing: 12,
-        runSpacing: 12,
-        children:
-            colors.map((color) {
-              bool isSelected =
-                  context.watch<ThemeProvider>().mainColor == color;
-              return GestureDetector(
-                onTap: () => context.read<ThemeProvider>().setMainColor(color),
-                child: AnimatedContainer(
-                  duration: Duration(milliseconds: 200),
-                  width: 48,
-                  height: 48,
-                  decoration: BoxDecoration(
-                    color: color,
-                    shape: BoxShape.circle,
-                    border:
-                        isSelected
-                            ? Border.all(color: Colors.white, width: 3)
-                            : null,
-                    boxShadow:
-                        isSelected
-                            ? [
-                              BoxShadow(
-                                color: color.withAlpha(128),
-                                blurRadius: 8,
-                                spreadRadius: 1,
-                              ),
-                            ]
-                            : [],
+      child: Center(
+        child: Wrap(
+          spacing: 16,
+          runSpacing: 16,
+          children:
+              colors.map((color) {
+                bool isSelected =
+                    context.watch<ThemeProvider>().mainColor == color;
+                return GestureDetector(
+                  onTap:
+                      () => context.read<ThemeProvider>().setMainColor(color),
+                  child: AnimatedContainer(
+                    duration: Duration(milliseconds: 300),
+                    width: 64,
+                    height: 64,
+                    decoration: BoxDecoration(
+                      color: color,
+                      shape: BoxShape.circle,
+                      border:
+                          isSelected
+                              ? Border.all(color: Colors.white, width: 3)
+                              : null,
+                      boxShadow:
+                          isSelected
+                              ? [
+                                BoxShadow(
+                                  color: color.withAlpha(128),
+                                  blurRadius: 8,
+                                  spreadRadius: 1,
+                                ),
+                              ]
+                              : [],
+                    ),
                   ),
-                ),
-              );
-            }).toList(),
+                );
+              }).toList(),
+        ),
       ),
     );
   }
@@ -173,17 +176,37 @@ class ThemeSettingsPage extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              sectionHeader(
-                context,
-                "Theme Mode",
-                "Choose how the app looks",
+              AnimatedListItem(
+                index: 1,
+                child: Column(
+                  children: [
+                    sectionHeader(
+                      context,
+                      "Theme Mode",
+                      "Choose how the app looks",
+                    ),
+                    const SizedBox(height: 12),
+                    themeSelectionBar(context),
+                  ],
+                ),
               ),
-              const SizedBox(height: 12),
-              themeSelectionBar(context),
+
               const SizedBox(height: 32),
-              sectionHeader(context, "Accent Color", "Pick a color you like"),
-              const SizedBox(height: 12),
-              colorSelectionBar(context),
+
+              AnimatedListItem(
+                index: 2,
+                child: Column(
+                  children: [
+                    sectionHeader(
+                      context,
+                      "Accent Color",
+                      "Pick a color you like",
+                    ),
+                    const SizedBox(height: 12),
+                    colorSelectionBar(context),
+                  ],
+                ),
+              ),
             ],
           ),
         ),

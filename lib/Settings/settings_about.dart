@@ -7,6 +7,7 @@ import 'dart:math';
 
 // Local imports
 import 'package:omnirate/Database/database_helper.dart';
+import 'package:omnirate/Shared/animated_list_item.dart';
 import 'package:omnirate/Shared/utils.dart';
 
 // ========== About Page Class ========== //
@@ -280,7 +281,7 @@ class _AboutPageState extends State<AboutPage> with TickerProviderStateMixin {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.transparent,
-    
+
       // Body
       body: Container(
         decoration: BoxDecoration(gradient: gradientBackground(context)),
@@ -290,118 +291,165 @@ class _AboutPageState extends State<AboutPage> with TickerProviderStateMixin {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               // App Logo and Name
-              _buildAppLogo(context),
+              AnimatedListItem(index: 1, child: _buildAppLogo(context)),
               const SizedBox(height: 24),
-    
-              Text(
-                "OmniRate",
-                style: TextStyle(
-                  fontSize: 32,
-                  fontWeight: FontWeight.bold,
-                  color: Theme.of(context).colorScheme.onSurface,
+
+              AnimatedListItem(
+                index: 2,
+                child: Text(
+                  "OmniRate",
+                  style: TextStyle(
+                    fontSize: 32,
+                    fontWeight: FontWeight.bold,
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
                 ),
               ),
+
               const SizedBox(height: 8),
-    
-              Text(
-                "Your Ultimate Entertainment Tracker",
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Theme.of(
-                    context,
-                  ).colorScheme.onSurface.withAlpha(180),
+
+              AnimatedListItem(
+                index: 3,
+                child: Text(
+                  "Your Ultimate Entertainment Tracker",
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.onSurface.withAlpha(180),
+                  ),
                 ),
               ),
-    
+
               const SizedBox(height: 32),
-    
+
               // Features Section
-              sectionHeader(
-                context,
-                "What OmniRate Does",
-                "Track, discover, and organize your entertainment",
+              AnimatedListItem(
+                index: 4,
+                child: sectionHeader(
+                  context,
+                  "What OmniRate Does",
+                  "Track, discover, and organize your entertainment",
+                ),
               ),
+
               const SizedBox(height: 16),
-    
-              _buildInfoCard(
-                context,
-                icon: Icons.videogame_asset,
-                title: "Video Games",
-                description:
-                    "Discover new games, track your progress, and build your gaming library",
+
+              AnimatedListItem(
+                index: 5,
+                child: _buildInfoCard(
+                  context,
+                  icon: Icons.videogame_asset,
+                  title: "Video Games",
+                  description:
+                      "Discover new games, track your progress, and build your gaming library",
+                ),
               ),
-    
-              _buildInfoCard(
-                context,
-                icon: Icons.tv,
-                title: "TV Shows",
-                description:
-                    "Keep track of episodes, seasons, and your favorite series",
+
+              AnimatedListItem(
+                index: 6,
+                child: _buildInfoCard(
+                  context,
+                  icon: Icons.tv,
+                  title: "TV Shows",
+                  description:
+                      "Keep track of episodes, seasons, and your favorite series",
+                ),
               ),
-    
-              _buildInfoCard(
-                context,
-                icon: Icons.movie,
-                title: "Movies",
-                description:
-                    "Rate movies, create watchlists, and never forget what to watch next",
+
+              AnimatedListItem(
+                index: 8,
+                child: _buildInfoCard(
+                  context,
+                  icon: Icons.movie,
+                  title: "Movies",
+                  description:
+                      "Rate movies, create watchlists, and never forget what to watch next",
+                ),
               ),
-    
-              _buildInfoCard(
-                context,
-                icon: Icons.list_alt,
-                title: "Personal Lists",
-                description:
-                    "Organize your entertainment with custom lists and progress tracking",
+
+              AnimatedListItem(
+                index: 9,
+                child: _buildInfoCard(
+                  context,
+                  icon: Icons.list_alt,
+                  title: "Personal Lists",
+                  description:
+                      "Organize your entertainment with custom lists and progress tracking",
+                ),
               ),
-    
+
               const SizedBox(height: 32),
-    
+
               // Data Sources Section
-              sectionHeader(
-                context,
-                "Powered By",
-                "Quality data from trusted sources",
+              AnimatedListItem(
+                index: 10,
+                child: sectionHeader(
+                  context,
+                  "Powered By",
+                  "Quality data from trusted sources",
+                ),
               ),
+
               const SizedBox(height: 16),
-    
-              _buildDataSourceCard(
-                context,
-                name: "IGDB",
-                description:
-                    "Internet Game Database - Comprehensive video game information and metadata",
-                url: "api.igdb.com",
+
+              AnimatedListItem(
+                index: 11,
+                child: _buildDataSourceCard(
+                  context,
+                  name: "IGDB",
+                  description:
+                      "Internet Game Database - Comprehensive video game information and metadata",
+                  url: "api.igdb.com",
+                ),
               ),
-    
-              _buildDataSourceCard(
-                context,
-                name: "TMDB",
-                description:
-                    "The Movie Database - Extensive movie and TV show data",
-                url: "api.themoviedb.org",
+
+              AnimatedListItem(
+                index: 12,
+                child: _buildDataSourceCard(
+                  context,
+                  name: "TMDB",
+                  description:
+                      "The Movie Database - Extensive movie and TV show data",
+                  url: "api.themoviedb.org",
+                ),
               ),
-    
+
+              AnimatedListItem(
+                index: 13,
+                child: _buildDataSourceCard(
+                  context,
+                  name: "Gemini",
+                  description:
+                      "Google Gemini - AI-powered recommendations and natural language understanding",
+                  url: "gemini.google.com",
+                ),
+              ),
+
               const SizedBox(height: 32),
-    
+
               // Version Info
-              GestureDetector(
-                onDoubleTap: () {
-                  HiveHelper.clearAllData();
-                },
-    
-                child: Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 16),
-                  padding: const EdgeInsets.all(16),
-                  decoration: containerDecoration(context),
-                  child: Text(
-                    "Made with ❤️ for entertainment enthusiasts",
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Theme.of(
-                        context,
-                      ).colorScheme.onSurface.withAlpha(160),
-                      fontStyle: FontStyle.italic,
+              AnimatedListItem(
+                index: 14,
+                child: GestureDetector(
+                  onDoubleTap: () {
+                    HiveHelper.clearAllData();
+                  },
+
+                  child: Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 16),
+                    padding: const EdgeInsets.all(16),
+                    decoration: containerDecoration(context),
+                    child: Text(
+                      "Made with ❤️ for entertainment enthusiasts",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.onSurface.withAlpha(160),
+                        fontStyle: FontStyle.italic,
+                      ),
                     ),
                   ),
                 ),

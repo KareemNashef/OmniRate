@@ -2,6 +2,7 @@
 
 // Flutter imports
 import 'package:flutter/material.dart';
+import 'package:omnirate/BasePages/Assets/cast_carousel.dart';
 
 // Local imports
 import 'package:omnirate/BasePages/base_entry_page.dart';
@@ -264,7 +265,7 @@ class ShowEntryState extends EntryPageBaseState with TickerProviderStateMixin {
             height: 220,
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
-              physics: BouncingScrollPhysics(), // Smooth momentum scrolling
+              physics: BouncingScrollPhysics(),
               itemCount: currentShow.seasonsNum,
               itemBuilder: (context, index) {
                 return Container(
@@ -325,7 +326,7 @@ class ShowEntryState extends EntryPageBaseState with TickerProviderStateMixin {
                         ),
 
                         // Padding
-                        SizedBox(height: 8),
+                        const SizedBox(height: 8),
 
                         // Title
                         Column(
@@ -380,18 +381,29 @@ class ShowEntryState extends EntryPageBaseState with TickerProviderStateMixin {
         children: [
           // Add to list
           addToList(),
+
           // Padding
           const SizedBox(height: 8),
+
           // Game info
           showInfo(),
+
           // Padding
           const SizedBox(height: 8),
-          // Time to beat
-          showSeasons(),
+
+          // Cast carousel
+          CastCarousel(
+            mediaType: "show",
+            inNames: currentShow.castNames,
+            inLinks: currentShow.castImageUrls,
+          ),
+
           // Padding
-          // const SizedBox(height: 8),
-          // Related media
-          // relatedMedia(),
+          const SizedBox(height: 8),
+
+          // Seasons
+          showSeasons(),
+
           // Padding
           const SizedBox(height: 90),
         ],
