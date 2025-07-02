@@ -391,29 +391,36 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
             SizedBox(
               width: double.infinity,
               child: Container(
+                width: double.infinity,
+                height: 56,
                 decoration: buttonDecoration(context),
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.transparent,
-                    shadowColor: Colors.transparent,
-                    foregroundColor: Theme.of(context).colorScheme.onSurface,
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
+
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(16),
+                    onTap: _isLoadingUsername ? null : _changeUsername,
+
+                    child: Container(
+                      alignment: Alignment.center,
+                      child:
+                          _isLoadingUsername
+                              ? SizedBox(
+                                height: 24,
+                                width: 24,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 3,
+                                ),
+                              )
+                              : Text(
+                                'Update Username',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
                     ),
                   ),
-                  onPressed: _isLoadingUsername ? null : _changeUsername,
-                  child:
-                      _isLoadingUsername
-                          ? SizedBox(
-                            height: 20,
-                            width: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: Theme.of(context).colorScheme.surface,
-                            ),
-                          )
-                          : const Text('Update Username'),
                 ),
               ),
             ),
@@ -549,30 +556,30 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
             const SizedBox(height: 16),
 
             // Update Password Button
-            SizedBox(
+            Container(
               width: double.infinity,
-              child: Container(
-                decoration: buttonDecoration(context),
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.transparent,
-                    shadowColor: Colors.transparent,
-                    foregroundColor: Theme.of(context).colorScheme.onSurface,
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
-                    ),
+              height: 56,
+              decoration: buttonDecoration(context),
+
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.transparent,
+                  shadowColor: Colors.transparent,
+                  foregroundColor: Theme.of(context).colorScheme.onSurface,
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
                   ),
-                  onPressed: _isLoadingPassword ? null : _changePassword,
-                  child:
-                      _isLoadingPassword
-                          ? const SizedBox(
-                            height: 20,
-                            width: 20,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                          : const Text('Update Password'),
                 ),
+                onPressed: _isLoadingPassword ? null : _changePassword,
+                child:
+                    _isLoadingPassword
+                        ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                        : const Text('Update Password'),
               ),
             ),
           ],
@@ -586,40 +593,40 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
       padding: const EdgeInsets.all(16.0),
 
       // Sign Out Button
-      child: SizedBox(
+      child: Container(
         width: double.infinity,
-        child: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Colors.red, Colors.orange],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-            borderRadius: BorderRadius.circular(12),
+        height: 56,
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Colors.red, Colors.orange],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
           ),
-          child: ElevatedButton(
-            onPressed: _isLoadingSignOut ? null : _signOut,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.transparent,
-              shadowColor: Colors.transparent,
-              foregroundColor: Colors.white,
-              elevation: 0,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
+          borderRadius: BorderRadius.circular(12),
+        ),
+
+        child: ElevatedButton(
+          onPressed: _isLoadingSignOut ? null : _signOut,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.transparent,
+            shadowColor: Colors.transparent,
+            foregroundColor: Colors.white,
+            elevation: 0,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
             ),
-            child:
-                _isLoadingSignOut
-                    ? const SizedBox(
-                      height: 20,
-                      width: 20,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                      ),
-                    )
-                    : const Text('Sign Out'),
           ),
+          child:
+              _isLoadingSignOut
+                  ? const SizedBox(
+                    height: 20,
+                    width: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                    ),
+                  )
+                  : const Text('Sign Out'),
         ),
       ),
     );
@@ -630,43 +637,44 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
       padding: const EdgeInsets.all(16.0),
 
       // Sign Out Button
-      child: SizedBox(
+      child: Container(
         width: double.infinity,
-        child: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [
-                const Color.fromARGB(255, 255, 17, 0),
-                const Color.fromARGB(255, 94, 1, 1),
-              ],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-            borderRadius: BorderRadius.circular(12),
+        height: 56,
+
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              const Color.fromARGB(255, 255, 17, 0),
+              const Color.fromARGB(255, 94, 1, 1),
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
           ),
-          child: ElevatedButton(
-            onPressed: _isLoadingDelete ? null : _deleteAccount,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.transparent,
-              shadowColor: Colors.transparent,
-              foregroundColor: Colors.white,
-              elevation: 0,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
+          borderRadius: BorderRadius.circular(12),
+        ),
+
+        child: ElevatedButton(
+          onPressed: _isLoadingDelete ? null : _deleteAccount,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.transparent,
+            shadowColor: Colors.transparent,
+            foregroundColor: Colors.white,
+            elevation: 0,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
             ),
-            child:
-                _isLoadingDelete
-                    ? const SizedBox(
-                      height: 20,
-                      width: 20,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                      ),
-                    )
-                    : const Text('Delete Account'),
           ),
+          child:
+              _isLoadingDelete
+                  ? const SizedBox(
+                    height: 20,
+                    width: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                    ),
+                  )
+                  : const Text('Delete Account'),
         ),
       ),
     );

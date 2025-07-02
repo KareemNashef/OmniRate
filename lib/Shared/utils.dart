@@ -1,8 +1,6 @@
 // ==================== Utils ==================== //
 
 // Flutter imports
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
@@ -355,7 +353,6 @@ Widget buildImageFromUrl(String inURL) => CachedNetworkImage(
 
 // ===== Glass Container =====
 
-
 class GlassContainer extends StatelessWidget {
   final Widget child;
   final EdgeInsets padding;
@@ -368,49 +365,19 @@ class GlassContainer extends StatelessWidget {
     this.borderRadius = 24,
   });
 
-  BoxDecoration boxDecoration(context) => BoxDecoration(
-    borderRadius: BorderRadius.circular(borderRadius),
-    gradient: LinearGradient(
-      begin: Alignment.topLeft,
-      end: Alignment.bottomRight,
-      colors: [
-        Colors.white.withValues(alpha: 0.1),
-        Colors.white.withValues(alpha: 0.05),
-      ],
-    ),
-    border: Border.all(color: Colors.white.withValues(alpha: 0.2), width: 1),
-    boxShadow: [
-      BoxShadow(
-        color: Colors.black.withValues(alpha: 0.1),
-        blurRadius: 20,
-        offset: const Offset(0, 8),
-      ),
-      BoxShadow(
-        color: Colors.white.withValues(alpha: 0.05),
-        blurRadius: 20,
-        offset: const Offset(0, -4),
-      ),
-    ],
-  );
-
   @override
   Widget build(BuildContext context) {
     return Container(
       constraints: const BoxConstraints(maxWidth: 400),
-      decoration: boxDecoration(context),
-      child: ClipRRect(
+      decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(borderRadius),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
-          child: Container(
-            padding: padding,
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.05),
-            ),
-            child: child,
-          ),
+        gradient: gradientContainer(context),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.15),
+          width: 1,
         ),
       ),
+      child: Container(padding: padding, child: child),
     );
   }
 }

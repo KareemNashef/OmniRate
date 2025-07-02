@@ -81,8 +81,13 @@ class SplashContent extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
+          // Logo
           Image.asset('assets/settings/logo.png', height: 200),
+
+          // Padding
           const SizedBox(height: 20),
+
+          // Subtitle
           const Padding(
             padding: EdgeInsets.symmetric(horizontal: 32.0),
             child: Text(
@@ -95,27 +100,33 @@ class SplashContent extends StatelessWidget {
               ),
             ),
           ),
+
+          // Padding
           const SizedBox(height: 60),
+
+          // Continue Button
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: SizedBox(
+            child: Container(
               width: double.infinity,
-              child: Container(
-                decoration: buttonDecoration(context),
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.transparent,
-                    shadowColor: Colors.transparent,
-                    foregroundColor: Theme.of(context).colorScheme.onSurface,
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
+              height: 56,
+              decoration: buttonDecoration(context),
+              child: Material(
+                color: Colors.transparent,
+
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(16),
+                  onTap: onGetStarted,
+
+                  child: Container(
+                    alignment: Alignment.center,
+                    child: const Text(
+                      "Get Started",
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
-                  ),
-                  onPressed: onGetStarted,
-                  child: const Text(
-                    "Get Started",
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                   ),
                 ),
               ),
@@ -951,32 +962,36 @@ class OnboardingContentState extends State<OnboardingContent>
     return SizedBox(
       width: double.infinity,
       child: Container(
+        width: double.infinity,
+        height: 56,
         decoration: buttonDecoration(context),
-        child: ElevatedButton(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.transparent,
-            shadowColor: Colors.transparent,
-            foregroundColor: Theme.of(context).colorScheme.onSurface,
-            elevation: 0,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(20),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            borderRadius: BorderRadius.circular(16),
+            onTap: _isSigningUp ? null : _handleLocalOnboardingComplete,
+
+            child: Container(
+              alignment: Alignment.center,
+              child:
+                  _isSigningUp
+                      ? const SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                      : const Text(
+                        'Complete Setup',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
             ),
           ),
-          onPressed: _isSigningUp ? null : _handleLocalOnboardingComplete,
-          child:
-              _isSigningUp
-                  ? const SizedBox(
-                    height: 20,
-                    width: 20,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: Colors.white,
-                    ),
-                  )
-                  : const Text(
-                    'Complete Setup',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-                  ),
         ),
       ),
     );
@@ -1111,28 +1126,26 @@ class ThemeSelectionContent extends StatelessWidget {
             // Done button
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: SizedBox(
+              child: Container(
                 width: double.infinity,
-                child: Container(
-                  decoration: buttonDecoration(context),
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.transparent,
-                      shadowColor: Colors.transparent,
-                      foregroundColor: Theme.of(context).colorScheme.onSurface,
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                    ),
-                    onPressed: () {
+                height: 56,
+                decoration: buttonDecoration(context),
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(16),
+                    onTap: () {
                       onComplete();
                     },
-                    child: const Text(
-                      'Apply Changes',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
+
+                    child: Container(
+                      alignment: Alignment.center,
+                      child: const Text(
+                        'Apply Changes',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ),
                   ),
