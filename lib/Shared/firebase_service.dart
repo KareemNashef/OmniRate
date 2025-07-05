@@ -47,6 +47,23 @@ class FirebaseService {
     return user;
   }
 
+  // Check if username is unique
+  Future<bool> isUsernameUnique(String username) async {
+    final query =
+        await _firestore
+            .collection('users')
+            .where('username', isEqualTo: username)
+            .limit(1)
+            .get();
+
+    return query.docs.isEmpty;
+  }
+
+  // Forgot password
+  Future<void> sendPasswordResetEmail(String email) async {
+    await _auth.sendPasswordResetEmail(email: email);
+  }
+
   // Change username
   Future<void> changeUsername(String newUsername) async {
     final user = _auth.currentUser;
@@ -67,6 +84,7 @@ class FirebaseService {
     }
   }
 
+  // Change password
   Future<void> changePassword(
     String email,
     String currentPassword,
@@ -104,6 +122,7 @@ class FirebaseService {
     }
   }
 
+  // Delete helper
   Future<void> removeUserFromFriendsLists(String userId) async {
     final friendsSnapshot =
         await _firestore
@@ -623,5 +642,16 @@ class FirebaseService {
     }
 
     return foundGames;
+  }
+
+  // ===== IGDB API ===== //
+
+  String? _cachedAccessToken;
+  Future<String> getAccessToken() async {
+    if (_cachedAccessToken != null) return _cachedAccessToken!;
+
+    final doc = await _firestore.collection('config').doc('twitchToken').get();
+    _cachedAccessToken = doc.data()?['accessToken'] ?? '';
+    return _cachedAccessToken!;
   }
 }

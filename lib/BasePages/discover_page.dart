@@ -252,7 +252,7 @@ class DiscoverPageState extends State<DiscoverPage>
 
       // Store the applied filters for next time
       _lastCategoryId = int.tryParse(safeCategoryId) ?? 0;
-      _lastRatingValue = (double.tryParse(safeMinRating) ?? 0.0) * 10;
+      _lastRatingValue = double.tryParse(safeMinRating) ?? 0.0;
 
       // Convert genre names back to IDs for storage
       _lastSelectedGenreIds = <int>{};

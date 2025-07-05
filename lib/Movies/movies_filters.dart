@@ -51,7 +51,7 @@ class _MoviesFilterPageState extends FilterModalBaseState<MoviesFilterPage> {
 
   @override
   String get categoriesTitle => "Availability:";
-  
+
   @override
   bool shouldShowRating(int categoryId) => categoryId == 0;
 }

@@ -2,17 +2,22 @@
 
 // Flutter imports
 import 'dart:async';
-
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:omnirate/Shared/firebase_service.dart';
 
 // ========== IGDB Constants ========== //
 
 // API Keys
-final igdbHeaders = {
-  'Client-ID': dotenv.env['IGDB_CLIENT_ID'] ?? '',
-  'Authorization': 'Bearer ${dotenv.env['IGDB_BEARER_ID'] ?? ''}',
-  'Accept': 'application/json',
-};
+Future<Map<String, String>> getIgdbHeaders() async {
+  final firebaseService = FirebaseService();
+  final token = await firebaseService.getAccessToken();
+  final clientId = dotenv.env['IGDB_CLIENT_ID'] ?? '';
+  return {
+    'Client-ID': clientId,
+    'Authorization': 'Bearer $token',
+    'Accept': 'application/json',
+  };
+}
 
 // API URLs
 const String gamesAPIUrl = 'https://api.igdb.com/v4/games';
@@ -40,7 +45,8 @@ const String gamesMissingArtworkUrl =
 // API Base URLs
 const String tmdbBaseUrl = 'https://api.themoviedb.org/3';
 const String tmdbImageBaseUrl = 'https://image.tmdb.org/t/p/w500';
-const String tmbdCastImageBaseUrl = 'https://media.themoviedb.org/t/p/w300_and_h450_bestv2';
+const String tmbdCastImageBaseUrl =
+    'https://media.themoviedb.org/t/p/w300_and_h450_bestv2';
 
 // Missing images
 const String tmdbMissingThumbnail =

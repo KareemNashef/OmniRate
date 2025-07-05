@@ -19,7 +19,8 @@ Future<http.Response> postRequest(String inURL, String inQuery) async {
   await RateLimiter.waitForRateLimit();
 
   // Send the request
-  return await http.post(Uri.parse(inURL), headers: igdbHeaders, body: inQuery);
+  final headers = await getIgdbHeaders();
+  return await http.post(Uri.parse(inURL), headers: headers, body: inQuery);
 }
 
 String timestampToDate(int? timestamp) {
@@ -521,7 +522,7 @@ Future<List<Game>> searchGamesByName(String name) async {
 }
 
 Future<List<Game>> getGamesByIDs(List<String> gameIDs) async {
- // Empty check
+  // Empty check
   if (gameIDs.isEmpty) {
     return [];
   }

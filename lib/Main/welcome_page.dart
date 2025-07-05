@@ -2,7 +2,6 @@
 
 // Flutter imports
 import 'dart:ui';
-
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
@@ -137,6 +136,21 @@ class WelcomePageState extends State<WelcomePage>
     }
   }
 
+  Future<void> _handleForgotPassword(String email) async {
+    try {
+      if (email == '') {
+        _showSnackBar('Please enter an email address.');
+        return;
+      }
+
+      final firebaseService = FirebaseService();
+      await firebaseService.sendPasswordResetEmail(email);
+      _showSnackBar('Password reset email sent successfully.');
+    } catch (e) {
+      _showSnackBar('Failed to send password reset email: $e');
+    }
+  }
+
   Future<void> _handleOnboardingComplete({
     required String email,
     required String password,
@@ -144,16 +158,28 @@ class WelcomePageState extends State<WelcomePage>
     required int avatarIndex,
   }) async {
     try {
+      // For testing
       if (email == "Ass") {
         _navigateToState(WelcomeState.themeSelection);
         return;
       }
+
+      // Check if the input is valid
       if (email.isEmpty || password.isEmpty || username.isEmpty) {
         _showSnackBar('Please fill in all fields');
         return;
       }
 
+      // Attempt to sign up
       final firebaseService = FirebaseService();
+
+      // Check if the username is already taken
+      final existingUser = await firebaseService.isUsernameUnique(username);
+      if (existingUser == true) {
+        _showSnackBar('Username is already taken');
+        return;
+      }
+
       final user = await firebaseService.signUp(email, password, username);
 
       if (user != null) {
@@ -292,6 +318,7 @@ class WelcomePageState extends State<WelcomePage>
                 LoginContent(
                   onSignIn: _handleSignIn,
                   onSignUp: () => _navigateToState(WelcomeState.onboarding),
+                  onForgotPassword: _handleForgotPassword,
                 ),
                 OnboardingContent(
                   onComplete: _handleOnboardingComplete,

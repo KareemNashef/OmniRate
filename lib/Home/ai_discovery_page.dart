@@ -5,7 +5,6 @@ import 'dart:convert';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:http/http.dart' as http;
 import 'package:omnirate/API/igdb_api.dart';
 import 'package:omnirate/API/tmdb_api.dart';
@@ -840,28 +839,29 @@ Rules:
           child: _buildResultsHeader(),
         ),
         Expanded(
-          child: AnimationLimiter(
-            key: const ValueKey('results'),
-            child: ListView.builder(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 40),
-              itemCount: allItems.length,
-              itemBuilder: (context, index) {
-                final item = allItems[index];
-                return AnimationConfiguration.staggeredList(
-                  position: index,
-                  duration: const Duration(milliseconds: 600),
-                  child: SlideAnimation(
-                    verticalOffset: 75.0,
-                    child: FadeInAnimation(
-                      child:
-                          item is String
-                              ? _buildSectionHeader(item)
-                              : _buildRecommendationItem(item),
+          child: ListView.builder(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 40),
+            itemCount: allItems.length,
+            itemBuilder: (context, index) {
+              final item = allItems[index];
+              return TweenAnimationBuilder<double>(
+                tween: Tween(begin: 0, end: 1),
+                duration: Duration(milliseconds: 500 + index * 50),
+                builder: (context, value, child) {
+                  return Opacity(
+                    opacity: value,
+                    child: Transform.translate(
+                      offset: Offset(0, 50 * (1 - value)),
+                      child: child,
                     ),
-                  ),
-                );
-              },
-            ),
+                  );
+                },
+                child:
+                    item is String
+                        ? _buildSectionHeader(item)
+                        : _buildRecommendationItem(item),
+              );
+            },
           ),
         ),
       ],

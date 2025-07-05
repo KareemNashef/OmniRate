@@ -428,9 +428,43 @@ class _AboutPageState extends State<AboutPage> with TickerProviderStateMixin {
 
               const SizedBox(height: 32),
 
-              // Version Info
+              // Legal Section
               AnimatedListItem(
                 index: 14,
+                child: sectionHeader(
+                  context,
+                  "Legal & Policies",
+                  "Your data, your rights, transparently outlined",
+                ),
+              ),
+
+              AnimatedListItem(
+                index: 16,
+                child: _buildDataSourceCard(
+                  context,
+                  name: "Privacy Policy",
+                  description:
+                      "Read about how we protect your data and privacy.",
+                  url: "kareemnashef.github.io/privacy-policy/",
+                ),
+              ),
+
+              AnimatedListItem(
+                index: 17,
+                child: _buildDataSourceCard(
+                  context,
+                  name: "Terms of Service",
+                  description:
+                      "Understand the rules and conditions for using the app.",
+                  url: "kareemnashef.github.io/privacy-policy/terms.html",
+                ),
+              ),
+
+              const SizedBox(height: 32),
+
+              // Version Info
+              AnimatedListItem(
+                index: 18,
                 child: GestureDetector(
                   onDoubleTap: () {
                     HiveHelper.clearAllData();

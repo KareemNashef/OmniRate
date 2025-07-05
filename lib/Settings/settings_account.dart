@@ -221,20 +221,67 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
     return await showDialog<bool>(
           context: context,
           builder: (BuildContext context) {
-            return AlertDialog(
-              title: const Text('Sign Out'),
-              content: const Text('Are you sure you want to sign out?'),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.of(context).pop(false),
-                  child: const Text('Cancel'),
+            return Dialog(
+              backgroundColor: Colors.transparent,
+              insetPadding: const EdgeInsets.all(20),
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: gradientBackground(context),
+                  borderRadius: BorderRadius.circular(16),
                 ),
-                TextButton(
-                  onPressed: () => Navigator.of(context).pop(true),
-                  style: TextButton.styleFrom(foregroundColor: Colors.red),
-                  child: const Text('Sign Out'),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 24,
+                    horizontal: 20,
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Title
+                      Text(
+                        'Sign Out',
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: Theme.of(context).colorScheme.onSurface,
+                        ),
+                      ),
+
+                      // Subtitle
+                      const SizedBox(height: 12),
+                      Text(
+                        'Are you sure you want to sign out?',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.onSurface.withValues(alpha: 0.8),
+                        ),
+                      ),
+
+                      // Buttons
+                      const SizedBox(height: 24),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          TextButton(
+                            onPressed: () => Navigator.of(context).pop(false),
+                            child: const Text('Cancel'),
+                          ),
+                          TextButton(
+                            onPressed: () => Navigator.of(context).pop(true),
+                            style: TextButton.styleFrom(
+                              foregroundColor: Colors.red,
+                            ),
+                            child: const Text('Sign Out'),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
-              ],
+              ),
             );
           },
         ) ??
@@ -277,35 +324,86 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
         await showDialog<bool>(
           context: context,
           builder: (context) {
-            return AlertDialog(
-              title: const Text('Delete Account'),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Text('Enter your email and password to confirm.'),
-                  const SizedBox(height: 12),
-                  TextField(
-                    controller: emailController,
-                    decoration: const InputDecoration(labelText: 'Email'),
+            return Dialog(
+              backgroundColor: Colors.transparent,
+              insetPadding: const EdgeInsets.all(20),
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: gradientBackground(context),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 24,
+                    horizontal: 20,
                   ),
-                  TextField(
-                    controller: passwordController,
-                    obscureText: true,
-                    decoration: const InputDecoration(labelText: 'Password'),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Title
+                      Text(
+                        'Delete Account',
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: Theme.of(context).colorScheme.onSurface,
+                        ),
+                      ),
+
+                      // Subtitle
+                      const SizedBox(height: 12),
+                      Text(
+                        'Enter your email and password to confirm.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.onSurface.withValues(alpha: 0.8),
+                        ),
+                      ),
+
+                      // Inputs
+                      const SizedBox(height: 20),
+                      TextField(
+                        controller: emailController,
+                        decoration: const InputDecoration(
+                          labelText: 'Email',
+                          border: OutlineInputBorder(),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      TextField(
+                        controller: passwordController,
+                        obscureText: true,
+                        decoration: const InputDecoration(
+                          labelText: 'Password',
+                          border: OutlineInputBorder(),
+                        ),
+                      ),
+
+                      // Buttons
+                      const SizedBox(height: 24),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          TextButton(
+                            onPressed: () => Navigator.of(context).pop(false),
+                            child: const Text('Cancel'),
+                          ),
+                          TextButton(
+                            onPressed: () => Navigator.of(context).pop(true),
+                            style: TextButton.styleFrom(
+                              foregroundColor: Colors.red,
+                            ),
+                            child: const Text('Delete'),
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
-                ],
+                ),
               ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.of(context).pop(false),
-                  child: const Text('Cancel'),
-                ),
-                TextButton(
-                  onPressed: () => Navigator.of(context).pop(true),
-                  style: TextButton.styleFrom(foregroundColor: Colors.red),
-                  child: const Text('Delete'),
-                ),
-              ],
             );
           },
         ) ??

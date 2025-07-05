@@ -10,67 +10,7 @@ import 'package:provider/provider.dart';
 import 'package:omnirate/Shared/utils.dart';
 import 'package:omnirate/Shared/providers.dart';
 
-// === 1. Reusable Styled Text Field ===
-class StyledTextField extends StatelessWidget {
-  const StyledTextField({
-    super.key,
-    required this.controller,
-    required this.labelText,
-    required this.icon,
-    this.obscureText = false,
-  });
-
-  final TextEditingController controller;
-  final String labelText;
-  final IconData icon;
-  final bool obscureText;
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    return Container(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: colorScheme.outline.withValues(alpha: 0.2)),
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            colorScheme.surfaceContainerHighest.withValues(alpha: 0.8),
-            colorScheme.surfaceContainerHighest.withValues(alpha: 0.4),
-          ],
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: colorScheme.outline.withValues(alpha: 0.2),
-            blurRadius: 4,
-          ),
-        ],
-      ),
-      child: TextField(
-        controller: controller,
-        obscureText: obscureText,
-        decoration: InputDecoration(
-          labelText: labelText,
-          prefixIcon: Icon(icon),
-          floatingLabelBehavior: FloatingLabelBehavior.never,
-          contentPadding: const EdgeInsets.symmetric(
-            vertical: 20,
-            horizontal: 16,
-          ),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(16),
-            borderSide: BorderSide.none,
-          ),
-          filled: true,
-          fillColor: colorScheme.surface.withValues(alpha: 0.1),
-        ),
-      ),
-    );
-  }
-}
-
-// === 2. Splash Screen Content ===
+// ===== Splash Screen Content =====
 class SplashContent extends StatelessWidget {
   const SplashContent({super.key, required this.onGetStarted});
   final VoidCallback onGetStarted;
@@ -138,15 +78,17 @@ class SplashContent extends StatelessWidget {
   }
 }
 
-// === 3. Login Screen Content ===
+// ===== Login Screen Content =====
 class LoginContent extends StatefulWidget {
   const LoginContent({
     super.key,
     required this.onSignIn,
     required this.onSignUp,
+    required this.onForgotPassword,
   });
   final Future<void> Function(String email, String password) onSignIn;
   final VoidCallback onSignUp;
+  final Future<void> Function(String email) onForgotPassword;
 
   @override
   State<LoginContent> createState() => LoginContentState();
@@ -247,6 +189,8 @@ class LoginContentState extends State<LoginContent>
             const SizedBox(height: 32),
             _buildSignInButton(),
             const SizedBox(height: 24),
+            _buildForgotPasswordPrompt(),
+            const SizedBox(height: 6),
             _buildSignUpPrompt(),
           ],
         ),
@@ -519,6 +463,39 @@ class LoginContentState extends State<LoginContent>
     );
   }
 
+Widget _buildForgotPasswordPrompt() {
+  return Row(
+    mainAxisAlignment: MainAxisAlignment.center,
+    children: [
+      Text(
+        "Forgot your password? ",
+        style: TextStyle(fontSize: 14, color: Colors.white.withValues(alpha: 0.8)),
+      ),
+      // Use InkWell for a ripple effect without a button background
+      InkWell(
+        onTap: () {
+          final email = _emailController.text.trim();
+          widget.onForgotPassword(email);
+        },
+        // Apply borderRadius to the InkWell to match the Text's shape if you add padding
+        borderRadius: BorderRadius.circular(8), 
+        child: Padding(
+          // Add padding to increase the tap area for better accessibility
+          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+          child: Text(
+            "Reset Password",
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
+              color: Colors.white, // Use a brighter, solid color
+            ),
+          ),
+        ),
+      ),
+    ],
+  );
+}
+
   // ===== Build Method ===== //
 
   @override
@@ -546,7 +523,7 @@ class LoginContentState extends State<LoginContent>
   }
 }
 
-// === 4. Onboarding Screen Content ===
+// ===== Onboarding Screen Content =====
 class OnboardingContent extends StatefulWidget {
   const OnboardingContent({
     super.key,
@@ -1061,7 +1038,7 @@ class OnboardingContentState extends State<OnboardingContent>
   }
 }
 
-// === 5. Theme Selection Content ===
+// ===== Theme Selection Content =====
 class ThemeSelectionContent extends StatelessWidget {
   const ThemeSelectionContent({super.key, required this.onComplete});
   final VoidCallback onComplete;
