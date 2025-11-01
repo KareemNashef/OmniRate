@@ -175,7 +175,7 @@ class WelcomePageState extends State<WelcomePage>
 
       // Check if the username is already taken
       final existingUser = await firebaseService.isUsernameUnique(username);
-      if (existingUser == true) {
+      if (existingUser == false) {
         _showSnackBar('Username is already taken');
         return;
       }
