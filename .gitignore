@@ -48,4 +48,4 @@ android/key.properties
 android/app/keystore.jks
 
 # Environment variables
-.env
+.envandroid/app/google-services.json
