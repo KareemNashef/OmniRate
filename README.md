@@ -1,20 +1,112 @@
-# OmniRate
+# OmniRate - All-in-One Entertainment Tracker
 
-The app addresses the challenge of managing and discovering entertainment content across games, movies, and shows in one unified platform. By consolidating user activity, personalized recommendations, and content tracking in a single interface, it simplifies the user experience, reducing the need to navigate multiple apps. This centralization not only enhances content discovery but also fosters user engagement by providing tailored suggestions based on viewing and playing habits, making it an essential tool for avid gamers and entertainment enthusiasts.
+<p align="center">
+  <img src="https://github.com/KareemNashef/OmniRate/blob/release/2.0/assets/settings/icon.png?raw=true" width="180" alt="OmniRate Logo"/><br>
+  <a href="https://play.google.com/store/apps/details?id=com.technion.android.omnirate">
+    <img src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png" width="230" alt="Get it on Google Play"/>
+  </a>
+</p>
 
-# Core Features
+<p align="center">
+  <b>Your personal hub for discovering, rating, and tracking video games, TV shows, and movies.</b>
+</p>
 
-The app’s core features include a unified content management system that tracks games, movies, and shows in one platform, personalized recommendations based on user activity, and comprehensive content details including ratings, release dates, and episode tracking. Additionally, users can create and manage custom lists, resume content seamlessly, and explore trending and top-rated content across all media types, enhancing both discovery and engagement.
+---
 
-# Additional features that enhance the user experience
+## 📱 About
+OmniRate is a Flutter-built entertainment tracker that unifies gaming, TV, and movie experiences. Track, discover, and get AI-powered recommendations based on your preferences.
 
-1.Favorites List: Save your favorite stores, games, movies, and shows for quick access later.
+---
 
-2.Content Ratings: View ratings for each episode, game, or movie to make informed viewing choices.
+## 📸 Screenshots
 
-3.Customizable Themes: Personalize the app’s color scheme to match your style.
+<p align="center">
+  <img src="https://github.com/KareemNashef/OmniRate/blob/release/2.0/Sprint%202/Screenshot_2025-07-05-12-17-18-410_com.technion.android.omnirate-edit.png?raw=true" width="30%"/>
+  <img src="https://github.com/KareemNashef/OmniRate/blob/release/2.0/Sprint%202/Screenshot_2025-07-05-12-17-50-844_com.technion.android.omnirate-edit.png?raw=true" width="30%"/>
+  <img src="https://github.com/KareemNashef/OmniRate/blob/release/2.0/Sprint%202/Screenshot_2025-07-05-12-18-06-096_com.technion.android.omnirate-edit.png?raw=true" width="30%"/><br><br>
+  <img src="https://github.com/KareemNashef/OmniRate/blob/release/2.0/Sprint%202/Screenshot_2025-07-05-12-19-47-087_com.technion.android.omnirate-edit.png?raw=true" width="30%"/>
+  <img src="https://github.com/KareemNashef/OmniRate/blob/release/2.0/Sprint%202/Screenshot_2025-07-05-12-20-31-318_com.technion.android.omnirate-edit.png?raw=true" width="30%"/>
+  <img src="https://github.com/KareemNashef/OmniRate/blob/release/2.0/Sprint%202/Screenshot_2025-07-05-12-21-37-054_com.technion.android.omnirate-edit.png?raw=true" width="30%"/>
+</p>
 
-4.Cross-Content Recommendations: Receive suggestions based on your activity across all content types – games, movies, and shows.
+---
 
-5.Episode Tracking: Keep track of watched episodes and easily navigate to the next one.
+## 💡 Core Functionality
+- **Multi-Platform Discovery** - Games, TV, and movies in one place  
+- **Personal Lists** - Organize by “Playing,” “Watched,” “Plan to Watch,” etc.  
+- **Ratings & Reviews** - Record and revisit opinions  
+- **Detailed Info** - Genres, trailers, release dates, and more  
 
+## 🌐 Social Features
+- **Friends System** - Follow and compare activity  
+- **Comments & Reviews** - Discuss content  
+- **Activity Feed** - See friends’ updates in real time  
+
+## 🤖 Smart Features
+- **AI Recommendations** - Gemini AI suggests based on your ratings  
+- **Offline Access** - Full local browsing  
+- **Real-time Sync** - Instant Firebase updates  
+
+---
+
+## 🛠️ Technical Stack
+**Framework:** Flutter (Dart)  
+**Backend:** Firebase Auth · Firestore · Storage  
+**APIs:** TMDB · IGDB · Gemini AI  
+**Local DB:** Hive  
+**Architecture:** Modular, provider-based  
+**UI:** Material Design 3, adaptive layout  
+
+---
+
+## 📊 Project Stats
+- ~20,000 lines of code  
+- 20+ unique screens  
+- 4 months development  
+
+---
+
+## 🚀 Highlights
+- **70 % API reduction** via Hive caching  
+- **Instant sync** with Firebase listeners  
+- **AI-driven recommendations**  
+- **Scalable, modular architecture**  
+- **Responsive design** with adaptive layouts  
+
+---
+
+## 🔐 Privacy & Data
+- Firebase Auth (email/password)  
+- Firestore for user data  
+- Secrets via environment variables  
+- Compliant with Google Play privacy policies  
+
+---
+
+## 📝 Notes
+Final-year Computer Science capstone at **Technion**.  
+Full-stack mobile app from concept to deployment.
+
+---
+
+## 🎓 Learning Outcomes
+- Full Flutter development cycle  
+- REST API integration and optimization  
+- Firebase ecosystem mastery  
+- Offline caching and state management  
+- AI API integration and Play Store deployment  
+
+---
+
+## 📧 Contact
+**Kareem Nashef**  
+📩 Kareem.na@outlook.com  
+🔗 [LinkedIn](https://linkedin.com/in/kareem-nashef)  
+💻 [GitHub](https://github.com/KareemNashef)
+
+---
+
+<p align="center">
+  Built with <b>Flutter 💙</b><br>
+  Developed as part of Computer Science B.Sc. at Technion – Israel Institute of Technology
+</p>
